@@ -1,8 +1,8 @@
 "use client";
 import React, { useState } from "react";
 import { UserIcon, Cog6ToothIcon, ChevronLeftIcon, ChevronRightIcon, HomeIcon, PlusIcon } from "@heroicons/react/24/solid";
-import ClientDetails from "./ClientDetails";
-import DashboardContent from "./DashboardContent";
+import ClientDetails from "./components/ClientDetails";
+import DashboardContent from "./components/DashboardContent";
 
 // Dummy clients with unique info
 const initialClients = [
