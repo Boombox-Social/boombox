@@ -24,7 +24,7 @@ export const INITIAL_CLIENTS: Client[] = [
   },
   {
     id: 2,
-    name: "Banana Media",
+    name: "Banana Mediass",
     info: "Cebu",
     logo: '',
     industry: "Marketing",
