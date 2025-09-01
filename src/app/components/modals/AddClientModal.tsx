@@ -196,64 +196,9 @@ function LogoUploadSection({
   );
 }
 
-function BasicInfoSection({ formData, updateFormField }: SectionProps) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        gap: UI_CONFIG.FORM_GAP,
-        flexWrap: "wrap",
-      }}
-    >
-      <FormField
-        placeholder="Industry"
-        value={formData.industry}
-        onChange={updateFormField("industry")}
-        required
-        style={{ flex: 1, minWidth: 220 }}
-      />
-      <FormField
-        placeholder="Links (comma separated)"
-        value={formData.links}
-        onChange={updateFormField("links")}
-        style={{ flex: 1, minWidth: 220 }}
-      />
-      <FormField
-        placeholder="Niche"
-        value={formData.niche}
-        onChange={updateFormField("niche")}
-        style={{ flex: 1, minWidth: 220 }}
-      />
-      <FormField
-        placeholder="Business Age"
-        value={formData.businessAge}
-        onChange={updateFormField("businessAge")}
-        style={{ flex: 1, minWidth: 220 }}
-      />
-    </div>
-  );
-}
-
-function DescriptionSection({ formData, updateFormField }: SectionProps) {
-  return (
-    <FormField
-      placeholder="Short Description"
-      value={formData.description}
-      onChange={updateFormField("description")}
-      multiline
-    />
-  );
-}
-
 function BusinessDetailsSection({ formData, updateFormField }: SectionProps) {
   return (
-    <div
-      style={{
-        display: "flex",
-        gap: UI_CONFIG.FORM_GAP,
-        flexWrap: "wrap",
-      }}
-    >
+    <div style={{ display: "flex", gap: UI_CONFIG.FORM_GAP, flexWrap: "wrap" }}>
       <FormField
         placeholder="Core Products/Services (comma separated)"
         value={formData.coreProducts}
@@ -261,27 +206,45 @@ function BusinessDetailsSection({ formData, updateFormField }: SectionProps) {
         style={{ flex: 1, minWidth: 220 }}
       />
       <FormField
-        placeholder="Ideal Customer"
-        value={formData.idealCustomer}
-        onChange={updateFormField("idealCustomer")}
+        placeholder="Ideal Customers"
+        value={formData.idealCustomers}
+        onChange={updateFormField("idealCustomers")}
         style={{ flex: 1, minWidth: 220 }}
       />
       <FormField
-        placeholder="Desired Brand Emotion"
+        placeholder="Brand Emotion"
         value={formData.brandEmotion}
         onChange={updateFormField("brandEmotion")}
         style={{ flex: 1, minWidth: 220 }}
       />
       <FormField
-        placeholder="Unique Selling Proposition"
-        value={formData.uniqueSelling}
-        onChange={updateFormField("uniqueSelling")}
+        placeholder="Unique Value Proposition"
+        value={formData.uniqueProposition}
+        onChange={updateFormField("uniqueProposition")}
         style={{ flex: 1, minWidth: 220 }}
       />
       <FormField
-        placeholder="Main Social Media Goal"
+        placeholder="Why Choose Us"
+        value={formData.whyChooseUs}
+        onChange={updateFormField("whyChooseUs")}
+        style={{ flex: 1, minWidth: 220 }}
+      />
+      <FormField
+        placeholder="Main Goal"
         value={formData.mainGoal}
         onChange={updateFormField("mainGoal")}
+        style={{ flex: 1, minWidth: 220 }}
+      />
+      <FormField
+        placeholder="Short Term Goal"
+        value={formData.shortTermGoal}
+        onChange={updateFormField("shortTermGoal")}
+        style={{ flex: 1, minWidth: 220 }}
+      />
+      <FormField
+        placeholder="Long Term Goal"
+        value={formData.longTermGoal}
+        onChange={updateFormField("longTermGoal")}
         style={{ flex: 1, minWidth: 220 }}
       />
     </div>
@@ -290,23 +253,17 @@ function BusinessDetailsSection({ formData, updateFormField }: SectionProps) {
 
 function CompetitionSection({ formData, updateFormField }: SectionProps) {
   return (
-    <div
-      style={{
-        display: "flex",
-        gap: UI_CONFIG.FORM_GAP,
-        flexWrap: "wrap",
-      }}
-    >
+    <div style={{ display: "flex", gap: UI_CONFIG.FORM_GAP, flexWrap: "wrap" }}>
       <FormField
-        placeholder="Competitors (comma separated)"
+        placeholder="Direct Competitors (comma separated)"
         value={formData.competitors}
         onChange={updateFormField("competitors")}
         style={{ flex: 1, minWidth: 220 }}
       />
       <FormField
-        placeholder="Inspiration Businesses (comma separated)"
-        value={formData.inspo}
-        onChange={updateFormField("inspo")}
+        placeholder="Indirect Competitors (comma separated)"
+        value={formData.indirectCompetitors}
+        onChange={updateFormField("indirectCompetitors")}
         style={{ flex: 1, minWidth: 220 }}
       />
     </div>
@@ -320,77 +277,57 @@ function BrandingSection({
   updateFormField,
 }: LogoSectionProps) {
   return (
-    <div
-      style={{
-        display: "flex",
-        gap: UI_CONFIG.FORM_GAP,
-        flexWrap: "wrap",
-      }}
-    >
+    <div style={{ display: "flex", gap: UI_CONFIG.FORM_GAP, flexWrap: "wrap" }}>
       <FormField
-        placeholder="Brand Colors (e.g. #2563eb, #181A20)"
-        value={formData.brandColors}
-        onChange={updateFormField("brandColors")}
+        placeholder="SMM Drive Link"
+        value={formData.smmDriveLink}
+        onChange={updateFormField("smmDriveLink")}
         style={{ flex: 1, minWidth: 220 }}
       />
-
-      <div
-        style={{
-          flex: 1,
-          minWidth: 220,
-          display: "flex",
-          flexDirection: "column",
-          gap: 8,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <input
-            type="file"
-            accept="image/*,application/pdf"
-            id="brand-guide-upload"
-            style={{ display: "none" }}
-            onChange={(e) =>
-              handleFileUpload(
-                e.target.files?.[0] || null,
-                setFormData,
-                "brandGuideFile"
-              )
-            }
-          />
-          <label
-            htmlFor="brand-guide-upload"
-            style={{
-              fontSize: 13,
-              color: COLORS.text,
-              background: COLORS.accent,
-              border: `1px solid ${COLORS.accent}`,
-              borderRadius: UI_CONFIG.BORDER_RADIUS.SMALL,
-              padding: "4px 12px",
-              cursor: "pointer",
-              fontWeight: 600,
-            }}
-          >
-            Upload Brand Guide
-          </label>
-          {formData.brandGuideFileUrl && (
-            <a
-              href={formData.brandGuideFileUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: COLORS.accent, fontSize: 13 }}
-            >
-              Preview
-            </a>
-          )}
-        </div>
-      </div>
-
       <FormField
-        placeholder="Font Used"
+        placeholder="Contract Deliverables"
+        value={formData.contractDeliverables}
+        onChange={updateFormField("contractDeliverables")}
+        style={{ flex: 1, minWidth: 220 }}
+      />
+      <FormField
+        placeholder="Font Used (comma separated)"
         value={formData.fontUsed}
         onChange={updateFormField("fontUsed")}
         style={{ flex: 1, minWidth: 220 }}
       />
+      {/* Brand Assets Upload Section */}
+      <div style={{ flex: 1, minWidth: 220 }}>
+        <input
+          type="file"
+          accept="image/*,application/pdf"
+          id="brand-assets-upload"
+          multiple
+          style={{ display: "none" }}
+          onChange={(e) =>
+            handleFileUpload(
+              e.target.files?.[0] || null,
+              setFormData,
+              "brandAssets"
+            )
+          }
+        />
+        <label
+          htmlFor="brand-assets-upload"
+          style={{
+            fontSize: 13,
+            color: COLORS.text,
+            background: COLORS.accent,
+            border: `1px solid ${COLORS.accent}`,
+            borderRadius: UI_CONFIG.BORDER_RADIUS.SMALL,
+            padding: "4px 12px",
+            cursor: "pointer",
+            fontWeight: 600,
+          }}
+        >
+          Upload Brand Assets
+        </label>
+      </div>
     </div>
   );
 }

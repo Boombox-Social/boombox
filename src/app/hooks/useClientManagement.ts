@@ -14,8 +14,11 @@ export function useClientManagement() {
       links: formData.links.split(',').map(s => s.trim()).filter(Boolean),
       coreProducts: formData.coreProducts.split(',').map(s => s.trim()).filter(Boolean),
       competitors: formData.competitors.split(',').map(s => s.trim()).filter(Boolean),
-      inspo: formData.inspo.split(',').map(s => s.trim()).filter(Boolean),
-      logo: formData.logoUrl,
+      indirectCompetitors: [], // Add new field
+      brandAssets: [], // Add new field
+      fontUsed: formData.fontUsed.split(',').map(s => s.trim()).filter(Boolean),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
 
     setClients(prev => [...prev, newClient]);
