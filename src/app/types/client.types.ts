@@ -1,9 +1,8 @@
-// types/client.types.ts
 export interface Client {
   id: number;
   name: string;
   info: string;
-  logo: string;
+  logo: string; // ⬅ add this line
   industry: string;
   links: string[];
   niche: string;

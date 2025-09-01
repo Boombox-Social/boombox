@@ -3,7 +3,7 @@ export interface NewClientForm {
   name: string;
   info: string;
   logo: File | null;
-  logoUrl: string;
+  logoUrl?: string;
   industry: string;
   links: string;
   niche: string;
@@ -18,10 +18,8 @@ export interface NewClientForm {
   inspo: string;
   brandColors: string;
   brandColorsFile: File | null;
-  brandColorsFileUrl: string;
+  brandColorsFileUrl?: string;
   brandGuideFile: File | null;
-  brandGuideFileUrl: string;
+  brandGuideFileUrl?: string;
   fontUsed: string;
 }
-
-export type FileUploadField = keyof Pick<NewClientForm, 'logo' | 'brandGuideFile' | 'brandColorsFile'>;

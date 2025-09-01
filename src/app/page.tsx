@@ -1,8 +1,10 @@
 "use client";
 import React, { useState } from "react";
 import { COLORS, UI_CONFIG } from "./constants";
-import { useClientManagement, useModal } from "./hooks";
+import { useClientManagement } from "./hooks";
+import { useModal } from "./hooks/useModal";
 import { createClientFromForm } from "./utils";
+import LogoutButton from "./components/auth/logoutButton";
 
 // Import Components
 import { SidePanel } from "./components/sidebar";
@@ -100,6 +102,11 @@ export default function Home() {
       {/* Main Content */}
       <main style={mainContentStyle}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          {/* 🔒 Logout Button (top-right) */}
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
+            <LogoutButton />
+          </div>
+
           {selectedClient ? (
             <ClientDetails client={selectedClient} />
           ) : (

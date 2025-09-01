@@ -1,0 +1,45 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Client {
+  id           BigInt   @id @default(autoincrement())
+  name         String
+  info         String
+  logoUrl      String?  // store as URL or base64 (dev)
+  industry     String
+  links        String[] @default([])
+  niche        String?
+  businessAge  String? 
+  description  String?
+  coreProducts String[] @default([])
+  idealCustomer String?
+  brandEmotion String?
+  uniqueSelling String?
+  mainGoal     String?
+  competitors  String[] @default([])
+  inspo        String[] @default([])
+  brandColors  String?
+  fontUsed     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+
+

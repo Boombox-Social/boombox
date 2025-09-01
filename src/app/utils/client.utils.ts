@@ -1,15 +1,15 @@
 // utils/client.utils.ts
 import { Client, NewClientForm } from '../types';
 
-export const createClientFromForm = (formData: NewClientForm): Client => ({
+export const createClientFromForm = (formData: NewClientForm) => ({
   ...formData,
-  id: Date.now(),
-  links: formData.links.split(',').map(s => s.trim()).filter(Boolean),
-  coreProducts: formData.coreProducts.split(',').map(s => s.trim()).filter(Boolean),
-  competitors: formData.competitors.split(',').map(s => s.trim()).filter(Boolean),
-  inspo: formData.inspo.split(',').map(s => s.trim()).filter(Boolean),
-  logo: formData.logoUrl,
+  links: formData.links ? formData.links.split(',').map(s => s.trim()).filter(Boolean) : [],
+  coreProducts: formData.coreProducts ? formData.coreProducts.split(',').map(s => s.trim()).filter(Boolean) : [],
+  competitors: formData.competitors ? formData.competitors.split(',').map(s => s.trim()).filter(Boolean) : [],
+  inspo: formData.inspo ? formData.inspo.split(',').map(s => s.trim()).filter(Boolean) : [],
+  logoUrl: formData.logoUrl,
 });
+
 
 export const filterClients = (clients: Client[], searchTerm: string): Client[] => {
   if (!searchTerm.trim()) return clients;
