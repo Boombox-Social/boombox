@@ -1,27 +1,23 @@
 // types/form.types.ts
 export interface NewClientForm {
   name: string;
-  info: string;
-  logo: File | null;
-  logoUrl: string;
+  address: string;
   industry: string;
+  slogan?: string;
   links: string;
-  niche: string;
-  businessAge: string;
-  description: string;
   coreProducts: string;
-  idealCustomer: string;
+  idealCustomers: string;
   brandEmotion: string;
-  uniqueSelling: string;
+  uniqueProposition: string;
+  whyChooseUs: string;
   mainGoal: string;
+  shortTermGoal?: string;
+  longTermGoal?: string;
   competitors: string;
-  inspo: string;
-  brandColors: string;
-  brandColorsFile: File | null;
-  brandColorsFileUrl: string;
-  brandGuideFile: File | null;
-  brandGuideFileUrl: string;
+  indirectCompetitors: string;
+  brandAssets: string[];
   fontUsed: string;
+  smmDriveLink?: string;
+  contractDeliverables?: string;
 }
 
-export type FileUploadField = keyof Pick<NewClientForm, 'logo' | 'brandGuideFile' | 'brandColorsFile'>;
