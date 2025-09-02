@@ -3,8 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   experimental: {
-    // Enable strict mode for better error handling
-    strictMode: true,
+    // Remove strictMode from experimental - it's not a valid Next.js experimental feature
   },
   // Enable TypeScript strict mode
   typescript: {
