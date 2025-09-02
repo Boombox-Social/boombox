@@ -1,12 +1,11 @@
-// File Structure: src/app/types/form.types.ts - Form type definitions with consistent array handling
 // types/form.types.ts
 export interface NewClientForm {
   name: string;
   address: string;
   industry: string;
   slogan?: string;
-  links?: string | string[];
-  coreProducts?: string | string[];
+  links?: string[];
+  coreProducts?: string[];
   idealCustomers?: string;
   brandEmotion?: string;
   uniqueProposition?: string;
@@ -14,44 +13,24 @@ export interface NewClientForm {
   mainGoal?: string;
   shortTermGoal?: string;
   longTermGoal?: string;
-  competitors?: string | string[];
-  indirectCompetitors?: string | string[];
+  competitors?: string[];
+  indirectCompetitors?: string[];
   brandAssets?: string[];
-  fontUsed?: string | string[];
+  fontUsed?: string[];
   smmDriveLink?: string;
   contractDeliverables?: string;
   logo?: string | null;
 }
 
-// Add this missing type
 export type FileUploadField = 'logo' | 'brandAssets';
 
-// Helper type for form fields that can be either string or array
 export type FormArrayField = string | string[] | undefined;
 
-// Type guard functions
-export const isStringArray = (value: FormArrayField): value is string[] => {
-  return Array.isArray(value);
-};
-
-export const isString = (value: FormArrayField): value is string => {
-  return typeof value === 'string';
-};
-
-// Conversion utilities
-export const arrayFieldToString = (value: FormArrayField): string => {
-  if (Array.isArray(value)) {
-    return value.join(', ');
-  }
-  if (typeof value === 'string') {
-    return value;
-  }
-  return '';
+// Helper functions
+export const arrayFieldToString = (field: string[] | undefined): string => {
+  return field ? field.join(', ') : '';
 };
 
 export const stringToArrayField = (value: string): string[] => {
-  if (!value || value.trim() === '') {
-    return [];
-  }
-  return value.split(',').map(s => s.trim()).filter(Boolean);
+  return value.split(',').map(item => item.trim()).filter(Boolean);
 };
