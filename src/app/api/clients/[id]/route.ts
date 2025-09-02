@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
-import { DatabaseUtils } from "../../../utils/db.utils";
-import { AuthUtils } from "../../../utils/auth.utils";
+import { NextRequest, NextResponse } from 'next/server';
+import { AuthUtils } from '../../../../utils/auth.utils';
+import { DatabaseUtils } from '../../../../utils/db.utils';
+import { UserRole } from '../../../../../generated/prisma';
+
 
 export async function GET(
   request: NextRequest,
@@ -190,15 +192,21 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const clientId = parseInt(params.id);
-    if (isNaN(clientId)) {
-      return NextResponse.json({ error: "Invalid client ID" }, { status: 400 });
+    // Await the params in Next.js 15
+    const { id } = await params;
+    const userId = parseInt(id);
+    
+    if (isNaN(userId)) {
+      return NextResponse.json(
+        { error: 'Invalid user ID' },
+        { status: 400 }
+      );
     }
 
-    // Use your existing auth system
+    // Check authentication
     const token = request.cookies.get('auth-token')?.value;
     if (!token) {
       return NextResponse.json(
@@ -207,6 +215,7 @@ export async function DELETE(
       );
     }
 
+    // Verify token and get current user
     const payload = AuthUtils.parseJWT(token);
     if (!payload) {
       return NextResponse.json(
@@ -223,15 +232,47 @@ export async function DELETE(
       );
     }
 
-    await DatabaseUtils.deleteClient(clientId);
+    // Check permissions - only SUPER_ADMIN can delete users
+    if (currentUser.role !== UserRole.SUPER_ADMIN) {
+      return NextResponse.json(
+        { error: 'Only Super Admins can delete users' },
+        { status: 403 }
+      );
+    }
+
+    // Check if trying to delete self
+    if (currentUser.id === userId) {
+      return NextResponse.json(
+        { error: 'You cannot delete your own account' },
+        { status: 400 }
+      );
+    }
+
+    // Get the user to be deleted
+    const userToDelete = await DatabaseUtils.findUserById(userId);
+    if (!userToDelete) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    // Delete the user
+    await DatabaseUtils.deleteUser(userId);
 
     return NextResponse.json({
-      message: "Client deleted successfully",
+      message: 'User deleted successfully',
+      deletedUser: {
+        id: userToDelete.id,
+        name: userToDelete.name,
+        email: userToDelete.email
+      }
     });
+
   } catch (error) {
-    console.error("Delete client error:", error);
+    console.error('Delete user error:', error);
     return NextResponse.json(
-      { error: "Failed to delete client" },
+      { error: 'Failed to delete user' },
       { status: 500 }
     );
   }
