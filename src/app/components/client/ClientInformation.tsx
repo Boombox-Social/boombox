@@ -1,6 +1,5 @@
-// File Structure: src/app/components/client/ClientInformation.tsx - Updated to handle URLs instead of files
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Client } from "../../types";
 import { EditableField } from "./EditableField";
 import { EditableTagField } from "./EditableTagField";
@@ -30,59 +29,45 @@ export function ClientInformation({ client }: ClientInformationProps) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>("");
-  const [originalFormData, setOriginalFormData] = useState({
-    industry: "",
-    slogan: "",
-    links: [] as string[],
-    coreProducts: [] as string[],
-    idealCustomers: "",
-    brandEmotion: "",
-    uniqueProposition: "",
-    whyChooseUs: "",
-    mainGoal: "",
-    shortTermGoal: "",
-    longTermGoal: "",
-    competitors: [] as string[],
-    indirectCompetitors: [] as string[],
-    brandAssets: [] as string[], // URLs, not files
-    fontUsed: [] as string[], // Font names, not files
-    smmDriveLink: "",
-    contractDeliverables: "",
-  });
-  const [formData, setFormData] = useState(originalFormData);
+
+  const getInitialFormData = useCallback(
+    () => ({
+      industry: client?.industry ?? "",
+      slogan: client?.slogan ?? "",
+      links: client?.links ?? [],
+      coreProducts: client?.coreProducts ?? [],
+      idealCustomers: client?.idealCustomers ?? "",
+      brandEmotion: client?.brandEmotion ?? "",
+      uniqueProposition: client?.uniqueProposition ?? "",
+      whyChooseUs: client?.whyChooseUs ?? "",
+      mainGoal: client?.mainGoal ?? "",
+      shortTermGoal: client?.shortTermGoal ?? "",
+      longTermGoal: client?.longTermGoal ?? "",
+      competitors: client?.competitors ?? [],
+      indirectCompetitors: client?.indirectCompetitors ?? [],
+      brandAssets: client?.brandAssets ?? [],
+      fontUsed: client?.fontUsed ?? [],
+      smmDriveLink: client?.smmDriveLink ?? "",
+      contractDeliverables: client?.contractDeliverables ?? "",
+    }),
+    [client]
+  );
+
+  const [originalFormData, setOriginalFormData] = useState(getInitialFormData);
+  const [formData, setFormData] = useState(getInitialFormData);
 
   // Update form data when client changes
   useEffect(() => {
     if (client) {
-      const newFormData = {
-        // Handle null values by converting to empty string or empty array
-        industry: client.industry ?? "",
-        slogan: client.slogan ?? "",
-        links: client.links ?? [],
-        coreProducts: client.coreProducts ?? [],
-        idealCustomers: client.idealCustomers ?? "",
-        brandEmotion: client.brandEmotion ?? "",
-        uniqueProposition: client.uniqueProposition ?? "",
-        whyChooseUs: client.whyChooseUs ?? "",
-        mainGoal: client.mainGoal ?? "",
-        shortTermGoal: client.shortTermGoal ?? "",
-        longTermGoal: client.longTermGoal ?? "",
-        competitors: client.competitors ?? [],
-        indirectCompetitors: client.indirectCompetitors ?? [],
-        brandAssets: client.brandAssets ?? [], // Brand asset URLs
-        fontUsed: client.fontUsed ?? [], // Font names
-        smmDriveLink: client.smmDriveLink ?? "",
-        contractDeliverables: client.contractDeliverables ?? "",
-      };
-
+      const newFormData = getInitialFormData();
       setFormData(newFormData);
       setOriginalFormData(newFormData);
       setEditing(false);
       setError("");
     }
-  }, [client?.id, client?.name]);
+  }, [client?.id, client?.name, getInitialFormData]);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     if (!client?.id) return;
 
     setSaving(true);
@@ -99,7 +84,9 @@ export function ClientInformation({ client }: ClientInformationProps) {
       setOriginalFormData(formData);
       setEditing(false);
     } catch (error) {
-      console.error("Error updating client:", error);
+      if (process.env.NODE_ENV !== "production") {
+        console.error("Error updating client:", error);
+      }
       setError(
         error instanceof Error
           ? error.message
@@ -108,19 +95,22 @@ export function ClientInformation({ client }: ClientInformationProps) {
     } finally {
       setSaving(false);
     }
-  };
+  }, [client, formData, updateClient]);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     setFormData(originalFormData);
     setEditing(false);
     setError("");
-  };
+  }, [originalFormData]);
 
-  const updateField = (field: string) => (value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error when user makes changes
-    if (error) setError("");
-  };
+  const updateField = useCallback(
+    (field: string) => (value: any) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+      // Clear error when user makes changes
+      if (error) setError("");
+    },
+    [error]
+  );
 
   return (
     <div
