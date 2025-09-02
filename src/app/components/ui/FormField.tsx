@@ -12,6 +12,7 @@ interface FormFieldProps {
   rows?: number;
   className?: string;
   style?: React.CSSProperties;
+  type?: string; // Add this missing property
 }
 
 export function FormField({
@@ -25,6 +26,7 @@ export function FormField({
   rows = 4,
   className = "",
   style,
+  type = "text", // Add default value
 }: FormFieldProps) {
   const baseStyles: React.CSSProperties = {
     width: "100%",
@@ -58,7 +60,7 @@ export function FormField({
       )}
 
       <InputComponent
-        type={multiline ? undefined : "text"}
+        type={multiline ? undefined : type} // Use the type prop
         placeholder={placeholder}
         value={value}
         onChange={(

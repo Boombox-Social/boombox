@@ -11,7 +11,7 @@ import {
   arrayFieldToString,
   stringToArrayField,
 } from "../../types";
-import { COLORS, UI_CONFIG, INITIAL_FORM_STATE } from "../../constants";
+import { INITIAL_FORM_STATE } from "../../constants";
 import { Modal, FormField } from "../ui";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -26,7 +26,7 @@ export function AddClientModal({
   onClose,
   onSubmit,
 }: AddClientModalProps) {
-  const { authState } = useAuth();
+  const { authState: _authState } = useAuth();
   const [formData, setFormData] = useState<NewClientForm>(INITIAL_FORM_STATE);
   const [logoPreview, setLogoPreview] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
@@ -90,8 +90,6 @@ export function AddClientModal({
     setErrors({});
 
     try {
-      console.log("AddClientModal - Submitting form data:", formData);
-
       // Transform form data for API - ensure all array fields are arrays
       const clientData: NewClientForm = {
         ...formData,
@@ -106,12 +104,8 @@ export function AddClientModal({
           : [],
       };
 
-      console.log("AddClientModal - Transformed client data:", clientData);
-
       // Call the onSubmit callback which will use useClientManagement's addClient
       await onSubmit(clientData);
-
-      console.log("AddClientModal - Client created successfully");
 
       // Reset form and close modal
       setFormData(INITIAL_FORM_STATE);
@@ -120,7 +114,6 @@ export function AddClientModal({
       setErrors({});
       onClose();
     } catch (error) {
-      console.error("AddClientModal - Error creating client:", error);
       setErrors({
         submit:
           error instanceof Error ? error.message : "Failed to create client",
@@ -173,12 +166,6 @@ export function AddClientModal({
         });
       };
       reader.readAsDataURL(file);
-    }
-  };
-
-  const nextStep = () => {
-    if (validateStep(currentStep)) {
-      setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
     }
   };
 

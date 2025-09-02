@@ -4,12 +4,12 @@ import type { NextRequest } from 'next/server'
 // Define protected routes that require authentication
 const protectedRoutes = [
   '/dashboard',
-  '/settings',
+  '/settings', 
   '/settings/users',
 ]
 
-// Define public routes that don't require authentication
-const publicRoutes = [
+// Remove unused publicRoutes or prefix with _
+const _publicRoutes = [
   '/signin',
   '/auth/register',
   '/auth/forgot-password',
@@ -18,7 +18,7 @@ const publicRoutes = [
 // Define auth routes (redirect to dashboard if already authenticated)
 const authRoutes = [
   '/signin',
-  '/auth/register',
+  '/auth/register', 
   '/auth/forgot-password',
 ]
 
@@ -74,6 +74,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - public folder files
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|public|.*\\.).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|public/).*)',
   ],
 }

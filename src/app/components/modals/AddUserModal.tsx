@@ -1,11 +1,6 @@
-// File Structure: src/app/components/modals/AddUserModal.tsx - Add user modal for Super Admins
 "use client";
 import React, { useState } from "react";
-import {
-  UserIcon,
-  XMarkIcon,
-  CloudArrowUpIcon,
-} from "@heroicons/react/24/solid";
+import { UserIcon, CloudArrowUpIcon } from "@heroicons/react/24/solid";
 import { UserRole } from "../../types";
 import { Modal, FormField } from "../ui";
 
@@ -83,7 +78,10 @@ export function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModalProps) {
       await onSubmit(formData);
       handleClose();
     } catch (error) {
-      console.error("Error creating user:", error);
+      // Wrap console with production check
+      if (process.env.NODE_ENV !== "production") {
+        console.error("Error creating user:", error);
+      }
       setErrors({
         submit:
           error instanceof Error ? error.message : "Failed to create user",
@@ -95,7 +93,6 @@ export function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModalProps) {
 
   const updateFormField = (field: keyof CreateUserData) => (value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors((prev) => {
         const newErrors = { ...prev };

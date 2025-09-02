@@ -1,4 +1,3 @@
-// File Structure: src/app/api/auth/users/[id]/route.ts - User deletion API endpoint
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthUtils } from '../../../../utils/auth.utils';
 import { DatabaseUtils } from '../../../../utils/db.utils';
@@ -6,10 +5,13 @@ import { UserRole } from '../../../../../generated/prisma';
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = parseInt(params.id);
+    // Await the params in Next.js 15
+    const { id } = await params;
+    const userId = parseInt(id);
+    
     if (isNaN(userId)) {
       return NextResponse.json(
         { error: 'Invalid user ID' },
