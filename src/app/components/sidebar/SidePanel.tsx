@@ -1,17 +1,22 @@
 // components/sidebar/SidePanel.tsx
 import React from "react";
-import { SidePanelProps } from "../../types";
+import { Client } from "../../types";
 import { COLORS, UI_CONFIG } from "../../constants";
 import { SidebarHeader } from "./SidebarHeader";
 import { DashboardSection } from "./DashboardSection";
 import { ClientList } from "./ClientList";
 import { SidebarFooter } from "./SidebarFooter";
 
+interface SidePanelProps {
+  collapsed: boolean;
+  onCollapse: () => void;
+  clients: Client[];
+  onAddClientClick: () => void;
+}
+
 export function SidePanel({
   collapsed,
   onCollapse,
-  selectedClient,
-  setSelectedClient,
   clients,
   onAddClientClick,
 }: SidePanelProps) {
@@ -33,17 +38,8 @@ export function SidePanel({
   return (
     <aside style={sidebarStyle}>
       <SidebarHeader collapsed={collapsed} onCollapse={onCollapse} />
-      <DashboardSection
-        collapsed={collapsed}
-        selectedClient={selectedClient}
-        setSelectedClient={setSelectedClient}
-      />
-      <ClientList
-        clients={clients}
-        selectedClient={selectedClient}
-        setSelectedClient={setSelectedClient}
-        collapsed={collapsed}
-      />
+      <DashboardSection collapsed={collapsed} />
+      <ClientList clients={clients} collapsed={collapsed} />
       <SidebarFooter
         collapsed={collapsed}
         onAddClientClick={onAddClientClick}

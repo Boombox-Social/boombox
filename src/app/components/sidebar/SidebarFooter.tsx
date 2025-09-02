@@ -1,5 +1,6 @@
-// components/sidebar/SidebarFooter.tsx
+"use client";
 import React from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { PlusIcon, Cog6ToothIcon } from "@heroicons/react/24/solid";
 import { ActionButton } from "../ui";
 
@@ -12,15 +13,20 @@ export function SidebarFooter({
   collapsed,
   onAddClientClick,
 }: SidebarFooterProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const handleSettingsClick = () => {
+    router.push("/dashboard/settings");
+  };
+
+  const isOnSettings = pathname === "/dashboard/settings";
+
   return (
     <div
-      style={{
-        padding: collapsed ? 8 : 20,
-        display: "flex",
-        flexDirection: "column",
-        gap: 8,
-        alignItems: "center",
-      }}
+      className={`flex flex-col gap-2 items-center ${
+        collapsed ? "p-2" : "p-5"
+      }`}
     >
       <ActionButton
         onClick={onAddClientClick}
@@ -30,8 +36,8 @@ export function SidebarFooter({
         text="+ ADD CLIENT"
       />
       <ActionButton
-        onClick={() => console.log("Settings clicked")}
-        variant="secondary"
+        onClick={handleSettingsClick}
+        variant={isOnSettings ? "primary" : "secondary"} // Highlight when on settings
         collapsed={collapsed}
         icon={<Cog6ToothIcon width={20} />}
         text="SETTINGS"

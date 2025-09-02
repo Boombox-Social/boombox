@@ -6,8 +6,6 @@ import { NewClientForm } from './form.types';
 export interface SidePanelProps {
   collapsed: boolean;
   onCollapse: () => void;
-  selectedClient: Client | null;
-  setSelectedClient: (client: Client | null) => void;
   clients: Client[];
   onAddClientClick: () => void;
 }
@@ -46,12 +44,12 @@ export interface AddClientModalProps {
 export type ButtonVariant = 'primary' | 'secondary';
 
 export interface ColorTheme {
-  readonly bg: string;
-  readonly side: string;
-  readonly card: string;
-  readonly accent: string;
-  readonly text: string;
-  readonly muted: string;
-  readonly border: string;
-  readonly hover: string;
+  bg: string;
+  side: string;
+  card: string;
+  accent: string;
+  text: string;
+  muted: string;
+  border: string;
+  hover: string;
 }

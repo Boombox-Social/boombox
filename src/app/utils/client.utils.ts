@@ -1,14 +1,16 @@
-// utils/client.utils.ts
 import { Client, NewClientForm } from '../types';
 
 export const createClientFromForm = (formData: NewClientForm): Client => ({
   ...formData,
   id: Date.now(),
-  links: formData.links.split(',').map(s => s.trim()).filter(Boolean),
-  coreProducts: formData.coreProducts.split(',').map(s => s.trim()).filter(Boolean),
-  competitors: formData.competitors.split(',').map(s => s.trim()).filter(Boolean),
-  inspo: formData.inspo.split(',').map(s => s.trim()).filter(Boolean),
-  logo: formData.logoUrl,
+  links: formData.links ? formData.links.split(',').map(s => s.trim()).filter(Boolean) : [],
+  coreProducts: formData.coreProducts ? formData.coreProducts.split(',').map(s => s.trim()).filter(Boolean) : [],
+  competitors: formData.competitors ? formData.competitors.split(',').map(s => s.trim()).filter(Boolean) : [],
+  indirectCompetitors: formData.indirectCompetitors ? formData.indirectCompetitors.split(',').map(s => s.trim()).filter(Boolean) : [],
+  fontUsed: formData.fontUsed ? formData.fontUsed.split(',').map(s => s.trim()).filter(Boolean) : [],
+  brandAssets: formData.brandAssets || [],
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString()
 });
 
 export const filterClients = (clients: Client[], searchTerm: string): Client[] => {
@@ -16,28 +18,22 @@ export const filterClients = (clients: Client[], searchTerm: string): Client[] =
   
   const term = searchTerm.toLowerCase();
   return clients.filter(client =>
-    client.name.toLowerCase().includes(term) ||
-    client.industry.toLowerCase().includes(term) ||
-    client.niche.toLowerCase().includes(term) ||
-    client.info.toLowerCase().includes(term)
+    client.name?.toLowerCase().includes(term) ||
+    client.industry?.toLowerCase().includes(term) ||
+    client.address?.toLowerCase().includes(term)
   );
 };
 
-export const sortClients = (clients: Client[], sortBy: 'name' | 'industry' | 'businessAge' = 'name'): Client[] => {
+export const sortClients = (clients: Client[], sortBy: 'name' | 'industry' | 'createdAt' = 'name'): Client[] => {
   return [...clients].sort((a, b) => {
     if (sortBy === 'name') {
-      return a.name.localeCompare(b.name);
+      return (a.name || '').localeCompare(b.name || '');
     }
     if (sortBy === 'industry') {
-      return a.industry.localeCompare(b.industry);
+      return (a.industry || '').localeCompare(b.industry || '');
     }
-    if (sortBy === 'businessAge') {
-      // Extract numeric value from business age for proper sorting
-      const getYears = (age: string) => {
-        const match = age.match(/(\d+)/);
-        return match ? parseInt(match[1]) : 0;
-      };
-      return getYears(b.businessAge) - getYears(a.businessAge);
+    if (sortBy === 'createdAt') {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     }
     return 0;
   });
@@ -50,7 +46,7 @@ export const validateClient = (client: Partial<NewClientForm>): string[] => {
     errors.push('Business name is required');
   }
   
-  if (!client.info?.trim()) {
+  if (!client.address?.trim()) {
     errors.push('Business address is required');
   }
   
