@@ -1,194 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { DatabaseUtils } from '../../utils/db.utils';
-import { AuthUtils } from '../../utils/auth.utils';
+import { NextRequest, NextResponse } from "next/server";
+import { DatabaseUtils } from "../../../utils/db.utils";
+import { AuthUtils } from "../../../utils/auth.utils";
 
-export async function POST(request: NextRequest) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    console.log('POST /api/clients - Starting request');
+    const { id } = await params;
+    const clientId = parseInt(id);
     
-    // Use your existing auth system
-    const token = request.cookies.get('auth-token')?.value;
-    if (!token) {
-      console.log('POST /api/clients - No auth token');
-      return NextResponse.json(
-        { 
-          success: false,
-          error: 'Authentication required' 
-        },
-        { status: 401 }
-      );
+    if (isNaN(clientId)) {
+      return NextResponse.json({ error: "Invalid client ID" }, { status: 400 });
     }
 
-    const payload = AuthUtils.parseJWT(token);
-    if (!payload) {
-      console.log('POST /api/clients - Invalid token');
-      return NextResponse.json(
-        { 
-          success: false,
-          error: 'Invalid token' 
-        },
-        { status: 401 }
-      );
-    }
-
-    const currentUser = await DatabaseUtils.findUserById(payload.userId);
-    if (!currentUser || !currentUser.isActive) {
-      console.log('POST /api/clients - User not found or inactive');
-      return NextResponse.json(
-        { 
-          success: false,
-          error: 'User not found or inactive' 
-        },
-        { status: 401 }
-      );
-    }
-
-    const clientData = await request.json();
-    console.log('POST /api/clients - Client data received:', {
-      name: clientData.name,
-      industry: clientData.industry,
-      address: clientData.address,
-      links: clientData.links,
-      coreProducts: clientData.coreProducts,
-      competitors: clientData.competitors,
-      indirectCompetitors: clientData.indirectCompetitors,
-      fontUsed: clientData.fontUsed,
-      brandAssets: clientData.brandAssets
-    });
-
-    // Validate required fields
-    if (!clientData.name?.trim()) {
-      return NextResponse.json(
-        { 
-          success: false,
-          error: 'Client name is required' 
-        },
-        { status: 400 }
-      );
-    }
-
-    if (!clientData.industry?.trim()) {
-      return NextResponse.json(
-        { 
-          success: false,
-          error: 'Industry is required' 
-        },
-        { status: 400 }
-      );
-    }
-
-    if (!clientData.address?.trim()) {
-      return NextResponse.json(
-        { 
-          success: false,
-          error: 'Address is required' 
-        },
-        { status: 400 }
-      );
-    }
-
-    console.log('POST /api/clients - Creating client in database');
-
-    // Ensure arrays are properly formatted
-    const newClient = await DatabaseUtils.createClient({
-      name: clientData.name,
-      logo: clientData.logo || null,
-      address: clientData.address,
-      industry: clientData.industry,
-      slogan: clientData.slogan || null,
-      links: Array.isArray(clientData.links) ? clientData.links : [],
-      coreProducts: Array.isArray(clientData.coreProducts) ? clientData.coreProducts : [],
-      idealCustomers: clientData.idealCustomers || null,
-      brandEmotion: clientData.brandEmotion || null,
-      uniqueProposition: clientData.uniqueProposition || null,
-      whyChooseUs: clientData.whyChooseUs || null,
-      mainGoal: clientData.mainGoal || null,
-      shortTermGoal: clientData.shortTermGoal || null,
-      longTermGoal: clientData.longTermGoal || null,
-      competitors: Array.isArray(clientData.competitors) ? clientData.competitors : [],
-      indirectCompetitors: Array.isArray(clientData.indirectCompetitors) ? clientData.indirectCompetitors : [],
-      brandAssets: Array.isArray(clientData.brandAssets) ? clientData.brandAssets : [],
-      fontUsed: Array.isArray(clientData.fontUsed) ? clientData.fontUsed : [],
-      smmDriveLink: clientData.smmDriveLink || null,
-      contractDeliverables: clientData.contractDeliverables || null,
-      createdById: currentUser.id,
-      assignedUserId: clientData.assignedUserId || currentUser.id,
-    });
-
-    console.log('POST /api/clients - Client created successfully:', {
-      id: newClient.id,
-      name: newClient.name,
-      links: newClient.links,
-      coreProducts: newClient.coreProducts,
-      competitors: newClient.competitors,
-      indirectCompetitors: newClient.indirectCompetitors,
-      fontUsed: newClient.fontUsed,
-      brandAssets: newClient.brandAssets
-    });
-
-    // Transform database client to match frontend Client type
-    const transformedClient = {
-      id: newClient.id,
-      name: newClient.name,
-      logo: newClient.logo,
-      address: newClient.address,
-      industry: newClient.industry,
-      slogan: newClient.slogan,
-      links: newClient.links,
-      coreProducts: newClient.coreProducts,
-      idealCustomers: newClient.idealCustomers,
-      brandEmotion: newClient.brandEmotion,
-      uniqueProposition: newClient.uniqueProposition,
-      whyChooseUs: newClient.whyChooseUs,
-      mainGoal: newClient.mainGoal,
-      shortTermGoal: newClient.shortTermGoal,
-      longTermGoal: newClient.longTermGoal,
-      competitors: newClient.competitors,
-      indirectCompetitors: newClient.indirectCompetitors,
-      brandAssets: newClient.brandAssets,
-      fontUsed: newClient.fontUsed,
-      smmDriveLink: newClient.smmDriveLink,
-      contractDeliverables: newClient.contractDeliverables,
-      createdAt: newClient.createdAt.toISOString(),
-      updatedAt: newClient.updatedAt.toISOString(),
-    };
-
-    console.log('POST /api/clients - Sending response');
-
-    return NextResponse.json({
-      success: true,
-      message: 'Client created successfully',
-      client: transformedClient
-    }, { status: 201 });
-    
-  } catch (error) {
-    console.error('POST /api/clients - Error creating client:', error);
-    
-    // Handle Prisma specific errors
-    if (error instanceof Error && error.message.includes('Unique constraint')) {
-      return NextResponse.json(
-        { 
-          success: false,
-          error: 'A client with this name already exists' 
-        },
-        { status: 409 }
-      );
-    }
-    
-    return NextResponse.json(
-      { 
-        success: false,
-        error: 'Failed to create client',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
-  }
-}
-
-// GET method remains the same...
-export async function GET(request: NextRequest) {
-  try {
     // Use your existing auth system
     const token = request.cookies.get('auth-token')?.value;
     if (!token) {
@@ -214,11 +39,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Use your existing findClientsByUser method
-    const clients = await DatabaseUtils.findClientsByUser(currentUser.id, currentUser.role);
-    
-    // Transform database clients to match frontend Client type
-    const transformedClients = clients.map(client => ({
+    const client = await DatabaseUtils.findClientById(clientId);
+    if (!client) {
+      return NextResponse.json({ error: "Client not found" }, { status: 404 });
+    }
+
+    // Transform database client to match frontend Client type
+    const transformedClient = {
       id: client.id,
       name: client.name,
       logo: client.logo,
@@ -242,21 +69,175 @@ export async function GET(request: NextRequest) {
       contractDeliverables: client.contractDeliverables,
       createdAt: client.createdAt.toISOString(),
       updatedAt: client.updatedAt.toISOString(),
-    }));
-    
-    return NextResponse.json({ 
-      success: true,
-      clients: transformedClients 
-    }, { status: 200 });
-    
+    };
+
+    return NextResponse.json({ client: transformedClient });
   } catch (error) {
-    console.error('Get clients error:', error);
+    console.error("Get client error:", error);
     return NextResponse.json(
-      { 
-        success: false,
-        error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const clientId = parseInt(id);
+    
+    if (isNaN(clientId)) {
+      return NextResponse.json({ error: "Invalid client ID" }, { status: 400 });
+    }
+
+    // Use your existing auth system
+    const token = request.cookies.get('auth-token')?.value;
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const payload = AuthUtils.parseJWT(token);
+    if (!payload) {
+      return NextResponse.json(
+        { error: 'Invalid token' },
+        { status: 401 }
+      );
+    }
+
+    const currentUser = await DatabaseUtils.findUserById(payload.userId);
+    if (!currentUser || !currentUser.isActive) {
+      return NextResponse.json(
+        { error: 'User not found or inactive' },
+        { status: 401 }
+      );
+    }
+
+    const clientData = await request.json();
+
+    // Validate required fields
+    if (!clientData.name?.trim()) {
+      return NextResponse.json(
+        { error: "Client name is required" },
+        { status: 400 }
+      );
+    }
+
+    const updatedClient = await DatabaseUtils.updateClient(clientId, {
+      name: clientData.name,
+      logo: clientData.logo || null,
+      address: clientData.address || null,
+      industry: clientData.industry || null,
+      slogan: clientData.slogan || null,
+      links: clientData.links || [],
+      coreProducts: clientData.coreProducts || [],
+      idealCustomers: clientData.idealCustomers || null,
+      brandEmotion: clientData.brandEmotion || null,
+      uniqueProposition: clientData.uniqueProposition || null,
+      whyChooseUs: clientData.whyChooseUs || null,
+      mainGoal: clientData.mainGoal || null,
+      shortTermGoal: clientData.shortTermGoal || null,
+      longTermGoal: clientData.longTermGoal || null,
+      competitors: clientData.competitors || [],
+      indirectCompetitors: clientData.indirectCompetitors || [],
+      brandAssets: clientData.brandAssets || [],
+      fontUsed: clientData.fontUsed || [],
+      smmDriveLink: clientData.smmDriveLink || null,
+      contractDeliverables: clientData.contractDeliverables || null,
+      assignedUserId: clientData.assignedUserId || null,
+    });
+
+    // Transform database client to match frontend Client type
+    const transformedClient = {
+      id: updatedClient.id,
+      name: updatedClient.name,
+      logo: updatedClient.logo,
+      address: updatedClient.address,
+      industry: updatedClient.industry,
+      slogan: updatedClient.slogan,
+      links: updatedClient.links,
+      coreProducts: updatedClient.coreProducts,
+      idealCustomers: updatedClient.idealCustomers,
+      brandEmotion: updatedClient.brandEmotion,
+      uniqueProposition: updatedClient.uniqueProposition,
+      whyChooseUs: updatedClient.whyChooseUs,
+      mainGoal: updatedClient.mainGoal,
+      shortTermGoal: updatedClient.shortTermGoal,
+      longTermGoal: updatedClient.longTermGoal,
+      competitors: updatedClient.competitors,
+      indirectCompetitors: updatedClient.indirectCompetitors,
+      brandAssets: updatedClient.brandAssets,
+      fontUsed: updatedClient.fontUsed,
+      smmDriveLink: updatedClient.smmDriveLink,
+      contractDeliverables: updatedClient.contractDeliverables,
+      createdAt: updatedClient.createdAt.toISOString(),
+      updatedAt: updatedClient.updatedAt.toISOString(),
+    };
+
+    return NextResponse.json({
+      message: "Client updated successfully",
+      client: transformedClient,
+    });
+  } catch (error) {
+    console.error("Update client error:", error);
+    return NextResponse.json(
+      { error: "Failed to update client" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const clientId = parseInt(id);
+    
+    if (isNaN(clientId)) {
+      return NextResponse.json({ error: "Invalid client ID" }, { status: 400 });
+    }
+
+    // Use your existing auth system
+    const token = request.cookies.get('auth-token')?.value;
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const payload = AuthUtils.parseJWT(token);
+    if (!payload) {
+      return NextResponse.json(
+        { error: 'Invalid token' },
+        { status: 401 }
+      );
+    }
+
+    const currentUser = await DatabaseUtils.findUserById(payload.userId);
+    if (!currentUser || !currentUser.isActive) {
+      return NextResponse.json(
+        { error: 'User not found or inactive' },
+        { status: 401 }
+      );
+    }
+
+    await DatabaseUtils.deleteClient(clientId);
+
+    return NextResponse.json({
+      message: "Client deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete client error:", error);
+    return NextResponse.json(
+      { error: "Failed to delete client" },
       { status: 500 }
     );
   }
