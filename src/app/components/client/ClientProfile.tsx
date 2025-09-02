@@ -49,9 +49,7 @@ export function ClientProfile({ client }: ClientProfileProps) {
     setDeleteError("");
 
     try {
-      console.log(`Deleting client ${client.name} (ID: ${client.id})`);
       await deleteClient(client.id);
-      console.log(`Client ${client.name} deleted successfully`);
 
       // Close modal first
       setShowDeleteModal(false);
@@ -59,7 +57,6 @@ export function ClientProfile({ client }: ClientProfileProps) {
       // Navigate back to dashboard after successful deletion
       router.push("/dashboard");
     } catch (error) {
-      console.error("Error deleting client:", error);
       setDeleteError(
         error instanceof Error ? error.message : "Failed to delete client"
       );
