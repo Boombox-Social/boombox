@@ -1,0 +1,11 @@
+.next
+node_modules
+out
+build
+dist
+*.config.js
+*.config.mjs
+public
+.env*
+generated
+prisma/migrations
