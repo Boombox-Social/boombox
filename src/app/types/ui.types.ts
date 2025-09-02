@@ -8,6 +8,8 @@ export interface SidePanelProps {
   onCollapse: () => void;
   clients: Client[];
   onAddClientClick: () => void;
+  isLoading?: boolean; // Add this
+  error?: string; // Add this
 }
 
 export interface ClientItemProps {

@@ -5,8 +5,8 @@ export interface NewClientForm {
   address: string;
   industry: string;
   slogan?: string;
-  links?: string | string[]; // FIXED: Allow both string and array
-  coreProducts?: string | string[]; // FIXED: Allow both string and array
+  links?: string | string[];
+  coreProducts?: string | string[];
   idealCustomers?: string;
   brandEmotion?: string;
   uniqueProposition?: string;
@@ -14,14 +14,17 @@ export interface NewClientForm {
   mainGoal?: string;
   shortTermGoal?: string;
   longTermGoal?: string;
-  competitors?: string | string[]; // FIXED: Allow both string and array
-  indirectCompetitors?: string | string[]; // FIXED: Allow both string and array
+  competitors?: string | string[];
+  indirectCompetitors?: string | string[];
   brandAssets?: string[];
-  fontUsed?: string | string[]; // FIXED: Allow both string and array
+  fontUsed?: string | string[];
   smmDriveLink?: string;
   contractDeliverables?: string;
   logo?: string | null;
 }
+
+// Add this missing type
+export type FileUploadField = 'logo' | 'brandAssets';
 
 // Helper type for form fields that can be either string or array
 export type FormArrayField = string | string[] | undefined;
