@@ -2,3 +2,4 @@
 export * from './client.types';
 export * from './form.types';
 export * from './ui.types';
+export * from './auth.types'

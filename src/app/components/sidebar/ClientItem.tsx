@@ -1,5 +1,6 @@
-// components/sidebar/ClientItem.tsx
+"use client";
 import React from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { UserIcon } from "@heroicons/react/24/solid";
 import { ClientItemProps } from "../../types";
 import { COLORS } from "../../constants";
@@ -10,9 +11,24 @@ export function ClientItem({
   collapsed,
   onClick,
 }: ClientItemProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const handleClientClick = () => {
+    console.log(
+      "ClientItem clicked:",
+      client.name,
+      "navigating to:",
+      `/dashboard/client/${client.id}`
+    ); // Debug log
+
+    // Navigate to the client-specific page
+    router.push(`/dashboard/client/${client.id}`);
+  };
+
   return (
     <button
-      onClick={onClick}
+      onClick={handleClientClick}
       style={{
         display: "flex",
         flexDirection: collapsed ? "column" : "row",

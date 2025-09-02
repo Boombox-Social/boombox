@@ -1,4 +1,4 @@
-// constants/client.constants.ts
+// File Structure: src/app/constants/client.constants.ts - Updated with correct data types
 import { Client, NewClientForm } from '../types';
 
 export const INITIAL_CLIENTS: Client[] = [
@@ -19,8 +19,12 @@ export const INITIAL_CLIENTS: Client[] = [
     longTermGoal: "Become industry leader in AI logistics",
     competitors: ["Flexport", "Project44"],
     indirectCompetitors: ["Traditional freight companies"],
-    brandAssets: [],
-    fontUsed: ["Inter", "Arial"],
+    brandAssets: [
+      "https://example.com/logo.png",
+      "https://example.com/brand-guide.pdf",
+      "https://example.com/color-palette.png"
+    ], // URLs to brand assets
+    fontUsed: ["Inter", "Arial", "Roboto"], // Font names
     smmDriveLink: "https://drive.google.com/example",
     contractDeliverables: "Monthly reporting, 3 posts per week",
     createdAt: new Date().toISOString(),
@@ -33,8 +37,8 @@ export const INITIAL_FORM_STATE: NewClientForm = {
   address: '',
   industry: '',
   slogan: '',
-  links: '',
-  coreProducts: '',
+  links: [], // Array of URLs
+  coreProducts: [], // Array of product names
   idealCustomers: '',
   brandEmotion: '',
   uniqueProposition: '',
@@ -42,10 +46,11 @@ export const INITIAL_FORM_STATE: NewClientForm = {
   mainGoal: '',
   shortTermGoal: '',
   longTermGoal: '',
-  competitors: '',
-  indirectCompetitors: '',
-  brandAssets: [],
-  fontUsed: '',
+  competitors: [], // Array of competitor names
+  indirectCompetitors: [], // Array of competitor names
+  brandAssets: [], // Array of URLs
+  fontUsed: [], // Array of font names
   smmDriveLink: '',
-  contractDeliverables: ''
+  contractDeliverables: '',
+  logo: null
 };

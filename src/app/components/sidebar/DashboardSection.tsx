@@ -1,20 +1,24 @@
-// components/sidebar/DashboardSection.tsx
+"use client";
 import React from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { HomeIcon } from "@heroicons/react/24/solid";
-import { Client } from "../../types";
 import { COLORS } from "../../constants";
 
 interface DashboardSectionProps {
   collapsed: boolean;
-  selectedClient: Client | null;
-  setSelectedClient: (client: Client | null) => void;
 }
 
-export function DashboardSection({
-  collapsed,
-  selectedClient,
-  setSelectedClient,
-}: DashboardSectionProps) {
+export function DashboardSection({ collapsed }: DashboardSectionProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const handleDashboardClick = () => {
+    // Navigate to main dashboard
+    router.push("/dashboard");
+  };
+
+  const isOnDashboard = pathname === "/dashboard";
+
   return (
     <div
       style={{
@@ -23,13 +27,13 @@ export function DashboardSection({
       }}
     >
       <button
-        onClick={() => setSelectedClient(null)}
+        onClick={handleDashboardClick}
         style={{
           width: "100%",
           display: "flex",
           alignItems: "center",
           gap: 10,
-          background: selectedClient == null ? COLORS.hover : COLORS.card,
+          background: isOnDashboard ? COLORS.hover : COLORS.card,
           color: COLORS.text,
           border: `1px solid ${COLORS.border}`,
           borderRadius: 8,
