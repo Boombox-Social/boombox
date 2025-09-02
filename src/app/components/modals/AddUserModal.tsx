@@ -1,11 +1,7 @@
 // File Structure: src/app/components/modals/AddUserModal.tsx - Add user modal for Super Admins
 "use client";
 import React, { useState } from "react";
-import {
-  UserIcon,
-  XMarkIcon,
-  CloudArrowUpIcon,
-} from "@heroicons/react/24/solid";
+import { UserIcon, CloudArrowUpIcon } from "@heroicons/react/24/solid";
 import { UserRole } from "../../types";
 import { Modal, FormField } from "../ui";
 

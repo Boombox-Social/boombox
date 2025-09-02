@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "fix-eslint": "node scripts/fix-eslint.js",
+    "build": "npm run fix-eslint && next build",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",

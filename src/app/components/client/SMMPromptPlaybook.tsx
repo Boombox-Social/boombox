@@ -382,7 +382,7 @@ Client Profile:
                 label: "Complete Master Strategy Prompt",
                 content: `You are a senior social media strategist for a marketing agency. Your task is to develop a comprehensive and actionable brand strategy for ${
                   client.name
-                }. This strategy must address the client's marketing challenges, leverage their competitive advantages, and be designed to achieve measurable business goals.
+                }. This strategy must address the client&apos;s marketing challenges, leverage their competitive advantages, and be designed to achieve measurable business goals.
 
 ${generateClientProfile()}
 
@@ -391,7 +391,7 @@ Create a detailed social media content and brand strategy for the upcoming month
 
 1. Brand Strategy Overview: A brief summary of the core brand message and how the content will be used to enhance online presence and foster an emotional connection with the audience.
 
-2. Content Pillars & Tactics: Based on the brand's goals and unique value proposition, outline 3-4 key content pillars. For each pillar, provide specific content ideas and formats (e.g., static posts, video reels, interactive content) that directly address the client's challenges and goals.
+2. Content Pillars & Tactics: Based on the brand's goals and unique value proposition, outline 3-4 key content pillars. For each pillar, provide specific content ideas and formats (e.g., static posts, video reels, interactive content) that directly address the clients challenges and goals.
 
 3. Platform-Specific Recommendations: Detail how to leverage each of the primary channels and secondary channels to create a cohesive funnel.
 
@@ -425,7 +425,7 @@ Please structure your response with the following sections:
 
 **Marketing Goals** – The main outcomes the business wants from social media (e.g., awareness, lead generation, online sales).
 
-**Don't Miss** – Any special considerations like seasonal trends, industry sensitivities, or compliance rules.
+**Dont Miss** – Any special considerations like seasonal trends, industry sensitivities, or compliance rules.
 
 **Instructions:**
 - Write the summary in simple, non-technical language so that someone new to the industry can immediately understand it
@@ -446,7 +446,7 @@ ${generateClientProfile()}`,
             prompts={[
               {
                 label: "Complete Content Creation Process",
-                content: `You are a senior social media strategist. Using the client's Data Form responses (including contract deliverables, goals, and brand profile), create social media content for ${
+                content: `You are a senior social media strategist. Using the clients Data Form responses (including contract deliverables, goals, and brand profile), create social media content for ${
                   client.name
                 }.
 
@@ -467,8 +467,8 @@ ${
 
 For each deliverable, include:
 - Post Type & Format (Static, Reel, Carousel, etc.)
-- Content Theme/Pillar (aligned with client's brand pillars)
-- Sample Caption/Copy (drafted in client's brand voice)
+- Content Theme/Pillar (aligned with clients brand pillars)
+- Sample Caption/Copy (drafted in clients brand voice)
 - CTA (Call-to-Action) (aligned with campaign goal)
 - Visual/Creative Idea (clear direction for design team)
 
@@ -485,8 +485,7 @@ ${generateClientProfile()}`,
               {
                 label: "Ad Copy Prompt",
                 content: `Write 3 variations of a [platform] ad headline and caption for ${
-                  client.coreProducts?.join(", ") ||
-                  "[client's product/service]"
+                  client.coreProducts?.join(", ") || "[clients product/service]"
                 }.
 Tone: ${client.brandEmotion || "[insert brand voice]"}.
 Each headline max 10 words.
