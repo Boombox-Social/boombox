@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthUtils } from '../../utils/auth.utils';
 import { DatabaseUtils } from '../../utils/db.utils';
-import { UserRole } from '@prisma/client'; // Fix import path
+import { UserRole } from '../../../generated/prisma';
 
 // GET /api/clients - Get all clients for the authenticated user
 export async function GET(request: NextRequest) {
