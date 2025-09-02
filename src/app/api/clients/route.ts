@@ -1,12 +1,14 @@
-import { NextRequest, NextResponse } from "next/server";
-import { DatabaseUtils } from "../../../utils/db.utils";
-import { AuthUtils } from "../../../utils/auth.utils";
+import { NextRequest, NextResponse } from 'next/server';
+import { AuthUtils } from '../../../utils/auth.utils';
+import { DatabaseUtils } from '../../../utils/db.utils';
+import { UserRole } from '../../../../generated/prisma';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Await params for Next.js 15 compatibility
     const { id } = await params;
     const clientId = parseInt(id);
     
@@ -86,6 +88,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Await params for Next.js 15 compatibility
     const { id } = await params;
     const clientId = parseInt(id);
     
@@ -197,6 +200,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Await params for Next.js 15 compatibility
     const { id } = await params;
     const clientId = parseInt(id);
     

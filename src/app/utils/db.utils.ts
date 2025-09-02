@@ -404,23 +404,22 @@ export class DatabaseUtils {
     return stats;
   }
 
-  static async deleteUser(userId: number) {
-    try {
-      // First, unassign the user from any clients
-      await prisma.client.updateMany({
-        where: { assignedUserId: userId },
-        data: { assignedUserId: null }
-      });
+static async deleteUser(userId: number) {
+  try {
+    // First, unassign the user from any clients
+    await prisma.client.updateMany({
+      where: { assignedUserId: userId },
+      data: { assignedUserId: null }
+    });
 
-      // Then delete the user
-      await prisma.user.delete({
-        where: { id: userId }
-      });
+    // Then delete the user
+    await prisma.user.delete({
+      where: { id: userId }
+    });
 
-      console.log(`User with ID ${userId} deleted successfully`);
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      throw error;
-    }
+    console.log(`User with ID ${userId} deleted successfully`);
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    throw error;
   }
 }
