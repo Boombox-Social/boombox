@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthUtils } from '../../utils/auth.utils';
 import { DatabaseUtils } from '../../utils/db.utils';
-import { UserRole } from '../../../generated/prisma';
+import { UserRole } from '@prisma/client'; // Fix import path
 
 // GET /api/clients - Get all clients for the authenticated user
 export async function GET(request: NextRequest) {
@@ -65,10 +65,8 @@ export async function GET(request: NextRequest) {
       success: true,
       clients: transformedClients 
     });
-  } catch (error: unknown) { // Add explicit type
-    if (process.env.NODE_ENV !== 'production') {
-      console.error("Get clients error:", error);
-    }
+  } catch (error: unknown) {
+    // Remove console.error or wrap with production check
     return NextResponse.json(
       { error: "Failed to load clients" },
       { status: 500 }
@@ -118,7 +116,7 @@ export async function POST(request: NextRequest) {
     const newClient = await DatabaseUtils.createClient({
       ...clientData,
       createdById: currentUser.id,
-      assignedUserId: clientData.assignedUserId || currentUser.id, // Default to current user if not specified
+      assignedUserId: clientData.assignedUserId || currentUser.id,
     });
 
     // Transform for frontend
@@ -154,10 +152,8 @@ export async function POST(request: NextRequest) {
       client: transformedClient,
     }, { status: 201 });
 
-  } catch (error: unknown) { // Add explicit type
-    if (process.env.NODE_ENV !== 'production') {
-      console.error("Create client error:", error);
-    }
+  } catch (error: unknown) {
+    // Remove console.error or wrap with production check
     return NextResponse.json(
       { error: "Failed to create client" },
       { status: 500 }

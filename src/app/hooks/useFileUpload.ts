@@ -1,4 +1,3 @@
-
 // hooks/useFileUpload.ts
 import React from 'react';
 import { NewClientForm, FileUploadField } from '../types';
@@ -11,24 +10,30 @@ export function useFileUpload() {
   ) => {
     if (!file) return;
     
-    const urlField = `${fieldName}Url` as keyof NewClientForm;
-    setFormData(prev => ({
-      ...prev,
-      [fieldName]: file,
-      [urlField]: URL.createObjectURL(file)
-    }));
+    if (fieldName === 'logo') {
+      // Handle logo upload
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        setFormData(prev => ({
+          ...prev,
+          logo: result
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const clearFileUpload = (
     setFormData: React.Dispatch<React.SetStateAction<NewClientForm>>,
     fieldName: FileUploadField
   ) => {
-    const urlField = `${fieldName}Url` as keyof NewClientForm;
-    setFormData(prev => ({
-      ...prev,
-      [fieldName]: null,
-      [urlField]: ''
-    }));
+    if (fieldName === 'logo') {
+      setFormData(prev => ({
+        ...prev,
+        logo: null
+      }));
+    }
   };
 
   return { 

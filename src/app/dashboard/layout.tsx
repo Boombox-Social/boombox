@@ -45,26 +45,11 @@ export default function DashboardLayout({
   const { clients, addClient, isLoading, error } = useClientManagement();
   const addClientModal = useModal();
 
-  console.log(
-    "DashboardLayout - clients:",
-    clients,
-    "isLoading:",
-    isLoading,
-    "error:",
-    error
-  ); // Debug log
-
   // Event Handlers
   const handleAddClientSubmit = async (formData: NewClientForm) => {
     try {
-      console.log("Dashboard - handleAddClientSubmit called with:", formData);
       const newClient = await addClient(formData);
-      console.log("Dashboard - Client added successfully:", newClient);
-      addClientModal.close();
     } catch (error) {
-      console.error("Dashboard - Error in handleAddClientSubmit:", error);
-      // Don't close the modal on error - let the modal handle error display
-      // The error will be shown in the AddClientModal component
       throw error; // Re-throw so the modal can catch it
     }
   };
