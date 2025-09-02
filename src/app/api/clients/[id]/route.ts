@@ -192,21 +192,15 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    // Await the params in Next.js 15
-    const { id } = await params;
-    const userId = parseInt(id);
-    
-    if (isNaN(userId)) {
-      return NextResponse.json(
-        { error: 'Invalid user ID' },
-        { status: 400 }
-      );
+    const clientId = parseInt(params.id);
+    if (isNaN(clientId)) {
+      return NextResponse.json({ error: "Invalid client ID" }, { status: 400 });
     }
 
-    // Check authentication
+    // Use your existing auth system
     const token = request.cookies.get('auth-token')?.value;
     if (!token) {
       return NextResponse.json(
@@ -215,7 +209,6 @@ export async function DELETE(
       );
     }
 
-    // Verify token and get current user
     const payload = AuthUtils.parseJWT(token);
     if (!payload) {
       return NextResponse.json(
@@ -232,47 +225,15 @@ export async function DELETE(
       );
     }
 
-    // Check permissions - only SUPER_ADMIN can delete users
-    if (currentUser.role !== UserRole.SUPER_ADMIN) {
-      return NextResponse.json(
-        { error: 'Only Super Admins can delete users' },
-        { status: 403 }
-      );
-    }
-
-    // Check if trying to delete self
-    if (currentUser.id === userId) {
-      return NextResponse.json(
-        { error: 'You cannot delete your own account' },
-        { status: 400 }
-      );
-    }
-
-    // Get the user to be deleted
-    const userToDelete = await DatabaseUtils.findUserById(userId);
-    if (!userToDelete) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
-    }
-
-    // Delete the user
-    await DatabaseUtils.deleteUser(userId);
+    await DatabaseUtils.deleteClient(clientId);
 
     return NextResponse.json({
-      message: 'User deleted successfully',
-      deletedUser: {
-        id: userToDelete.id,
-        name: userToDelete.name,
-        email: userToDelete.email
-      }
+      message: "Client deleted successfully",
     });
-
   } catch (error) {
-    console.error('Delete user error:', error);
+    console.error("Delete client error:", error);
     return NextResponse.json(
-      { error: 'Failed to delete user' },
+      { error: "Failed to delete client" },
       { status: 500 }
     );
   }
