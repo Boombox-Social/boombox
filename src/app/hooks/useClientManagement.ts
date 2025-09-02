@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Client, NewClientForm } from '../types';
 import { INITIAL_CLIENTS } from '../constants';
 import { createClientFromForm } from '../utils';
@@ -11,18 +11,8 @@ export function useClientManagement() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>("");
 
-  // Load clients from API on mount and when user changes
-  useEffect(() => {
-    if (authState.user) {
-      loadClients();
-    } else if (!authState.isLoading) {
-      // User is not authenticated
-      setIsLoading(false);
-      setClients([]);
-    }
-  }, [authState.user, authState.isLoading, loadClients]);
-
-  const loadClients = async () => {
+  // Use useCallback to memoize loadClients and prevent infinite re-renders
+  const loadClients = useCallback(async () => {
     if (!authState.user) {
       setIsLoading(false);
       return;
@@ -75,10 +65,21 @@ export function useClientManagement() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [authState.user]); // Only depend on authState.user
+
+  // Load clients from API on mount and when user changes
+  useEffect(() => {
+    if (authState.user) {
+      loadClients();
+    } else if (!authState.isLoading) {
+      // User is not authenticated
+      setIsLoading(false);
+      setClients([]);
+    }
+  }, [authState.user, authState.isLoading, loadClients]);
 
   // Add client function
-  const addClient = async (formData: NewClientForm): Promise<Client> => {
+  const addClient = useCallback(async (formData: NewClientForm): Promise<Client> => {
     if (process.env.NODE_ENV !== 'production') {
       console.log('useClientManagement - addClient called with:', formData);
     }
@@ -138,10 +139,10 @@ export function useClientManagement() {
       
       throw error;
     }
-  };
+  }, []); // No dependencies needed since it doesn't reference state
 
   // Update client function
-  const updateClient = async (updatedClient: Client): Promise<void> => {
+  const updateClient = useCallback(async (updatedClient: Client): Promise<void> => {
     if (!updatedClient.id) {
       throw new Error('Client ID is required for updates');
     }
@@ -184,10 +185,10 @@ export function useClientManagement() {
       }
       throw error;
     }
-  };
+  }, []); // No dependencies needed
 
   // Delete client function
-  const deleteClient = async (clientId: number): Promise<void> => {
+  const deleteClient = useCallback(async (clientId: number): Promise<void> => {
     try {
       if (process.env.NODE_ENV !== 'production') {
         console.log('Deleting client with ID:', clientId);
@@ -218,7 +219,7 @@ export function useClientManagement() {
       }
       throw error;
     }
-  };
+  }, []); // No dependencies needed
 
   return {
     clients,
@@ -234,9 +235,9 @@ export function useClientManagement() {
 export function useModal(initialState: boolean = false) {
   const [isOpen, setIsOpen] = useState(initialState);
   
-  const open = () => setIsOpen(true);
-  const close = () => setIsOpen(false);
-  const toggle = () => setIsOpen(prev => !prev);
+  const open = useCallback(() => setIsOpen(true), []);
+  const close = useCallback(() => setIsOpen(false), []);
+  const toggle = useCallback(() => setIsOpen(prev => !prev), []);
   
   return { isOpen, open, close, toggle };
 }
