@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
     // Get clients based on user role using the existing method
     const clients = await DatabaseUtils.findClientsByUser(currentUser.id, currentUser.role);
 
+
     // Transform clients for frontend
     const transformedClients = clients.map(client => ({
       id: client.id,
@@ -65,8 +66,10 @@ export async function GET(request: NextRequest) {
       success: true,
       clients: transformedClients 
     });
+
   } catch (error: unknown) {
     // Remove console.error or wrap with production check
+
     return NextResponse.json(
       { error: "Failed to load clients" },
       { status: 500 }
@@ -151,6 +154,7 @@ export async function POST(request: NextRequest) {
       message: "Client created successfully",
       client: transformedClient,
     }, { status: 201 });
+
 
   } catch (error: unknown) {
     // Remove console.error or wrap with production check
