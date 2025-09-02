@@ -1,3 +1,4 @@
+// File Structure: src/app/components/modals/AddClientModal.tsx - Multi-step modal with improved type safety
 "use client";
 import React, { useState } from "react";
 import {
@@ -10,7 +11,7 @@ import {
   arrayFieldToString,
   stringToArrayField,
 } from "../../types";
-import { INITIAL_FORM_STATE } from "../../constants";
+import { COLORS, UI_CONFIG, INITIAL_FORM_STATE } from "../../constants";
 import { Modal, FormField } from "../ui";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -25,7 +26,7 @@ export function AddClientModal({
   onClose,
   onSubmit,
 }: AddClientModalProps) {
-  const { authState: _authState } = useAuth(); // Prefix with _ to indicate intentionally unused
+  const { authState } = useAuth();
   const [formData, setFormData] = useState<NewClientForm>(INITIAL_FORM_STATE);
   const [logoPreview, setLogoPreview] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
@@ -74,6 +75,7 @@ export function AddClientModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // If not on the last step, just go to next step
     if (currentStep < steps.length - 1) {
       if (validateStep(currentStep)) {
         setCurrentStep((prev) => prev + 1);
@@ -81,45 +83,62 @@ export function AddClientModal({
       return;
     }
 
-    // Final submission
+    // Final step - validate and submit
     if (!validateStep(currentStep)) return;
 
     setIsLoading(true);
     setErrors({});
 
     try {
-      const processedData: NewClientForm = {
+      console.log("AddClientModal - Submitting form data:", formData);
+
+      // Transform form data for API - ensure all array fields are arrays
+      const clientData: NewClientForm = {
         ...formData,
+        logo: logoPreview || null,
         links: safeStringToArray(formData.links),
         coreProducts: safeStringToArray(formData.coreProducts),
         competitors: safeStringToArray(formData.competitors),
         indirectCompetitors: safeStringToArray(formData.indirectCompetitors),
-        brandAssets: safeStringToArray(formData.brandAssets),
         fontUsed: safeStringToArray(formData.fontUsed),
-        logo: logoPreview || null,
+        brandAssets: Array.isArray(formData.brandAssets)
+          ? formData.brandAssets
+          : [],
       };
 
-      if (process.env.NODE_ENV !== "production") {
-        console.log("Form submission:", processedData);
-      }
+      console.log("AddClientModal - Transformed client data:", clientData);
 
-      await onSubmit(processedData);
+      // Call the onSubmit callback which will use useClientManagement's addClient
+      await onSubmit(clientData);
 
-      // Reset form on success
+      console.log("AddClientModal - Client created successfully");
+
+      // Reset form and close modal
       setFormData(INITIAL_FORM_STATE);
       setLogoPreview("");
       setCurrentStep(0);
+      setErrors({});
+      onClose();
     } catch (error) {
-      if (process.env.NODE_ENV !== "production") {
-        console.error("Form submission error:", error);
-      }
-
+      console.error("AddClientModal - Error creating client:", error);
       setErrors({
         submit:
           error instanceof Error ? error.message : "Failed to create client",
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const updateFormField = (field: keyof NewClientForm) => (value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
     }
   };
 
@@ -131,51 +150,33 @@ export function AddClientModal({
     onClose();
   };
 
-  const updateFormField = (field: keyof NewClientForm) => (value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    }
-  };
-
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (file) {
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        setErrors((prev) => ({
+          ...prev,
+          logo: "Logo file must be smaller than 5MB",
+        }));
+        return;
+      }
 
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      setErrors((prev) => ({ ...prev, logo: "Please select an image file" }));
-      return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        setLogoPreview(result);
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors.logo;
+          return newErrors;
+        });
+      };
+      reader.readAsDataURL(file);
     }
-
-    // Validate file size (5MB max)
-    if (file.size > 5 * 1024 * 1024) {
-      setErrors((prev) => ({
-        ...prev,
-        logo: "Logo file must be smaller than 5MB",
-      }));
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const result = event.target?.result as string;
-      setLogoPreview(result);
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors.logo;
-        return newErrors;
-      });
-    };
-    reader.readAsDataURL(file);
   };
 
-  const _nextStep = () => {
-    // Prefix with _ since it's not used but might be needed later
+  const nextStep = () => {
     if (validateStep(currentStep)) {
       setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
     }
@@ -319,6 +320,7 @@ export function AddClientModal({
               >
                 Cancel
               </button>
+
               <button
                 type="submit"
                 disabled={isLoading}
@@ -354,7 +356,6 @@ interface SectionProps {
   updateFormField: (field: keyof NewClientForm) => (value: string) => void;
   errors: Record<string, string>;
 }
-
 interface LogoSectionProps extends SectionProps {
   logoPreview: string;
   onLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -370,124 +371,213 @@ function LogoUploadSection({
   errors,
 }: LogoSectionProps) {
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-[#F1F5F9]">
-        Company Information
-      </h3>
-
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
       {/* Logo Upload */}
-      <div className="flex flex-col items-center space-y-4 p-6 border-2 border-dashed border-[#2D3142] rounded-lg">
-        <div className="text-center">
-          <UserIcon className="mx-auto h-12 w-12 text-[#94A3B8]" />
-          <div className="mt-4">
-            <label
-              htmlFor="logo-upload"
-              className="cursor-pointer rounded-md bg-[#2563eb] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#1E40AF] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563eb]"
-            >
-              Upload Company Logo
-            </label>
-            <input
-              id="logo-upload"
-              name="logo-upload"
-              type="file"
-              className="sr-only"
-              accept="image/*"
-              onChange={onLogoUpload}
-            />
+      <div className="flex flex-col items-center space-y-3">
+        <div className="relative">
+          <div className="w-20 h-20 rounded-full bg-[#2D3142] border-2 border-dashed border-[#94A3B8] flex items-center justify-center overflow-hidden hover:border-[#2563eb] transition-colors">
+            {logoPreview ? (
+              <img
+                src={logoPreview}
+                alt="Logo Preview"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <UserIcon className="w-10 h-10 text-[#94A3B8]" />
+            )}
           </div>
-          <p className="text-xs leading-5 text-[#94A3B8] mt-2">
-            PNG, JPG, GIF up to 5MB
-          </p>
-        </div>
-
-        {/* Logo Preview */}
-        {logoPreview && (
-          <div className="mt-4">
-            <img
-              src={logoPreview}
-              alt="Logo Preview"
-              className="h-16 w-16 rounded-full object-cover"
-            />
+          {logoPreview && (
             <button
               type="button"
               onClick={() => setLogoPreview("")}
-              className="mt-2 text-sm text-red-400 hover:text-red-300"
+              className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
             >
-              Remove
+              <XMarkIcon className="w-4 h-4 text-white" />
             </button>
-          </div>
-        )}
+          )}
+        </div>
 
-        {errors.logo && <p className="text-sm text-red-400">{errors.logo}</p>}
+        <input
+          type="file"
+          accept="image/*"
+          className="hidden"
+          id="client-logo-upload"
+          onChange={onLogoUpload}
+        />
+        <label
+          htmlFor="client-logo-upload"
+          className="px-4 py-2 bg-[#2563eb] text-white text-sm font-medium rounded-lg hover:bg-[#1E40AF] cursor-pointer transition-colors"
+        >
+          Upload Logo
+        </label>
+        {errors.logo && (
+          <p className="text-red-400 text-xs text-center">{errors.logo}</p>
+        )}
       </div>
 
-      {/* Basic Company Info */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="md:col-span-2">
+      {/* Business Name */}
+      <div className="md:col-span-3 space-y-4">
+        <FormField
+          label="Business Name *"
+          placeholder="Enter company name"
+          value={formData.name}
+          onChange={updateFormField("name")}
+          error={errors.name}
+          className="text-lg font-semibold"
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
-            label="Company Name *"
-            placeholder="Enter company name"
-            value={formData.name}
-            onChange={updateFormField("name")}
-            error={errors.name}
+            label="Industry *"
+            placeholder="e.g., Technology, Healthcare"
+            value={formData.industry}
+            onChange={updateFormField("industry")}
+            error={errors.industry}
+          />
+          <FormField
+            label="Business Address *"
+            placeholder="City, Country"
+            value={formData.address}
+            onChange={updateFormField("address")}
+            error={errors.address}
           />
         </div>
-        <FormField
-          label="Industry *"
-          placeholder="e.g., Technology, Healthcare, Finance"
-          value={formData.industry}
-          onChange={updateFormField("industry")}
-          error={errors.industry}
-        />
-        <FormField
-          label="Business Address *"
-          placeholder="City, Country"
-          value={formData.address}
-          onChange={updateFormField("address")}
-          error={errors.address}
-        />
       </div>
     </div>
   );
 }
 
-// You'll need to implement the other section components similarly...
+// Basic Info Section (Step 0 - additional fields)
 function BasicInfoSection({ formData, updateFormField, errors }: SectionProps) {
   return (
     <div className="space-y-4">
+      <h3 className="text-lg font-semibold text-[#F1F5F9]">
+        Additional Information
+      </h3>
+
       <FormField
-        label="Company Slogan"
-        placeholder="Your company's tagline or slogan"
+        label="Slogan"
+        placeholder="Your inspiring tagline"
         value={formData.slogan || ""}
         onChange={updateFormField("slogan")}
         error={errors.slogan}
+      />
+
+      <FormField
+        label="Social Media & Website Links"
+        placeholder="https://website.com, https://facebook.com/page, https://twitter.com/handle"
+        value={arrayFieldToString(formData.links)}
+        onChange={(value) => updateFormField("links")(value)}
+        error={errors.links}
+        multiline
+        rows={2}
+      />
+
+      <FormField
+        label="Core Products/Services"
+        placeholder="Product A, Service B, Solution C"
+        value={arrayFieldToString(formData.coreProducts)}
+        onChange={(value) => updateFormField("coreProducts")(value)}
+        error={errors.coreProducts}
+        multiline
+        rows={2}
       />
     </div>
   );
 }
 
+// Business Details Section (Step 1)
 function BusinessDetailsSection({
   formData,
   updateFormField,
   errors,
 }: SectionProps) {
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-[#F1F5F9]">Business Details</h3>
+    <div className="space-y-6">
+      <h3 className="text-lg font-semibold text-[#F1F5F9]">
+        Business Strategy & Goals
+      </h3>
 
-      <FormField
-        label="Core Products/Services"
-        placeholder="List your main products or services"
-        value={arrayFieldToString(formData.coreProducts)}
-        onChange={updateFormField("coreProducts")}
-        error={errors.coreProducts}
-        multiline
-        rows={3}
-      />
+      <div className="grid grid-cols-1 gap-4">
+        <FormField
+          label="Ideal Customers"
+          placeholder="Describe your target audience and ideal customers"
+          value={formData.idealCustomers || ""}
+          onChange={updateFormField("idealCustomers")}
+          error={errors.idealCustomers}
+          multiline
+          rows={3}
+        />
+
+        <FormField
+          label="Brand Emotion"
+          placeholder="What feeling or emotion should your brand evoke?"
+          value={formData.brandEmotion || ""}
+          onChange={updateFormField("brandEmotion")}
+          error={errors.brandEmotion}
+        />
+
+        <FormField
+          label="Unique Value Proposition"
+          placeholder="What makes your business unique and valuable?"
+          value={formData.uniqueProposition || ""}
+          onChange={updateFormField("uniqueProposition")}
+          error={errors.uniqueProposition}
+          multiline
+          rows={3}
+        />
+
+        <FormField
+          label="Why Choose Us"
+          placeholder="Why should customers choose your business over competitors?"
+          value={formData.whyChooseUs || ""}
+          onChange={updateFormField("whyChooseUs")}
+          error={errors.whyChooseUs}
+          multiline
+          rows={3}
+        />
+      </div>
+
+      <h4 className="text-md font-semibold text-[#F1F5F9] mt-6">
+        Business Goals
+      </h4>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <FormField
+          label="Main Goal"
+          placeholder="Primary business objective"
+          value={formData.mainGoal || ""}
+          onChange={updateFormField("mainGoal")}
+          error={errors.mainGoal}
+          multiline
+          rows={2}
+        />
+
+        <FormField
+          label="Short Term Goal"
+          placeholder="Goals for next 6-12 months"
+          value={formData.shortTermGoal || ""}
+          onChange={updateFormField("shortTermGoal")}
+          error={errors.shortTermGoal}
+          multiline
+          rows={2}
+        />
+
+        <FormField
+          label="Long Term Goal"
+          placeholder="Goals for next 2-5 years"
+          value={formData.longTermGoal || ""}
+          onChange={updateFormField("longTermGoal")}
+          error={errors.longTermGoal}
+          multiline
+          rows={2}
+        />
+      </div>
     </div>
   );
 }
 
+// Competition Section (Step 2)
 function CompetitionSection({
   formData,
   updateFormField,
@@ -499,30 +589,63 @@ function CompetitionSection({
         Competition Analysis
       </h3>
 
-      <FormField
-        label="Direct Competitors"
-        placeholder="List your main competitors"
-        value={arrayFieldToString(formData.competitors)}
-        onChange={updateFormField("competitors")}
-        error={errors.competitors}
-        multiline
-        rows={3}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormField
+          label="Direct Competitors"
+          placeholder="Company A, Company B, Company C"
+          value={arrayFieldToString(formData.competitors)}
+          onChange={(value) => updateFormField("competitors")(value)}
+          error={errors.competitors}
+          multiline
+          rows={3}
+        />
+
+        <FormField
+          label="Indirect Competitors"
+          placeholder="Alternative solutions or substitutes"
+          value={arrayFieldToString(formData.indirectCompetitors)}
+          onChange={(value) => updateFormField("indirectCompetitors")(value)}
+          error={errors.indirectCompetitors}
+          multiline
+          rows={3}
+        />
+      </div>
     </div>
   );
 }
 
+// Branding Section (Step 2)
 function BrandingSection({ formData, updateFormField, errors }: SectionProps) {
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-[#F1F5F9]">Brand Assets</h3>
+      <h3 className="text-lg font-semibold text-[#F1F5F9]">
+        Branding & Assets
+      </h3>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormField
+          label="Fonts Used"
+          placeholder="Arial, Roboto, Open Sans"
+          value={arrayFieldToString(formData.fontUsed)}
+          onChange={(value) => updateFormField("fontUsed")(value)}
+          error={errors.fontUsed}
+        />
+
+        <FormField
+          label="SMM Drive Link"
+          placeholder="https://drive.google.com/..."
+          value={formData.smmDriveLink || ""}
+          onChange={updateFormField("smmDriveLink")}
+          error={errors.smmDriveLink}
+        />
+      </div>
 
       <FormField
-        label="Brand Assets URLs"
-        placeholder="Links to brand assets, logos, etc."
-        value={arrayFieldToString(formData.brandAssets)}
-        onChange={updateFormField("brandAssets")}
-        error={errors.brandAssets}
+        label="Contract Deliverables"
+        placeholder="Monthly posts, weekly reports, etc."
+        value={formData.contractDeliverables || ""}
+        onChange={updateFormField("contractDeliverables")}
+        error={errors.contractDeliverables}
         multiline
         rows={3}
       />
