@@ -148,6 +148,26 @@ export class DatabaseUtils {
     });
   }
 
+  static async deleteUser(userId: number) {
+    try {
+      // First, unassign the user from any clients
+      await prisma.client.updateMany({
+        where: { assignedUserId: userId },
+        data: { assignedUserId: null }
+      });
+
+      // Then delete the user
+      await prisma.user.delete({
+        where: { id: userId }
+      });
+
+      console.log(`User with ID ${userId} deleted successfully`);
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      throw error;
+    }
+  }
+
   // Client operations
   static async createClient(data: {
     name: string;
@@ -404,22 +424,21 @@ export class DatabaseUtils {
     return stats;
   }
 
-static async deleteUser(userId: number) {
-  try {
-    // First, unassign the user from any clients
-    await prisma.client.updateMany({
-      where: { assignedUserId: userId },
-      data: { assignedUserId: null }
+  // Get all users (for admin/super admin)
+  static async getAllUsers() {
+    return prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        avatar: true,
+        isActive: true,
+        lastLogin: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: { createdAt: 'desc' }
     });
-
-    // Then delete the user
-    await prisma.user.delete({
-      where: { id: userId }
-    });
-
-    console.log(`User with ID ${userId} deleted successfully`);
-  } catch (error) {
-    console.error('Error deleting user:', error);
-    throw error;
   }
 }
