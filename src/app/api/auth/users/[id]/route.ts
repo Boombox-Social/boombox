@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthUtils } from '../../../../utils/auth.utils';
 import { DatabaseUtils } from '../../../../utils/db.utils';
-import { UserRole } from '../../../../../generated/prisma';
+import { UserRole } from '@prisma/client';
 
 export async function DELETE(
   request: NextRequest,

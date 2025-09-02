@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthUtils } from '../../../utils/auth.utils';
 import { DatabaseUtils } from '../../../utils/db.utils';
-import { UserRole } from '../../../../../generated/prisma';
-
+import { UserRole } from '@prisma/client';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const clientId = parseInt(params.id);
+    // Await params for Next.js 15 compatibility
+    const { id } = await params;
+    const clientId = parseInt(id);
+    
     if (isNaN(clientId)) {
       return NextResponse.json({ error: "Invalid client ID" }, { status: 400 });
     }
@@ -83,10 +85,13 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const clientId = parseInt(params.id);
+    // Await params for Next.js 15 compatibility
+    const { id } = await params;
+    const clientId = parseInt(id);
+    
     if (isNaN(clientId)) {
       return NextResponse.json({ error: "Invalid client ID" }, { status: 400 });
     }
@@ -192,10 +197,13 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const clientId = parseInt(params.id);
+    // Await params for Next.js 15 compatibility
+    const { id } = await params;
+    const clientId = parseInt(id);
+    
     if (isNaN(clientId)) {
       return NextResponse.json({ error: "Invalid client ID" }, { status: 400 });
     }

@@ -9,3 +9,6 @@ public
 .env*
 generated
 prisma/migrations
+.next/types
+.next/static
+.next/server

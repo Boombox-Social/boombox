@@ -18,13 +18,34 @@ const eslintConfig = [
       // Allow unused vars with underscore prefix
       "@typescript-eslint/no-unused-vars": [
         "error",
-        { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
+        { 
+          "argsIgnorePattern": "^_", 
+          "varsIgnorePattern": "^_",
+          "destructuredArrayIgnorePattern": "^_"
+        }
       ],
       // Allow explicit any when needed
       "@typescript-eslint/no-explicit-any": "warn",
       // Allow empty interfaces for extending
       "@typescript-eslint/no-empty-interface": "warn",
+      // Disable prefer-const for destructuring
+      "prefer-const": ["error", { "destructuring": "all" }],
+      // Allow non-null assertions when necessary
+      "@typescript-eslint/no-non-null-assertion": "warn",
     },
+  },
+  {
+    ignores: [
+      ".next/**/*",
+      "out/**/*",
+      "build/**/*",
+      "dist/**/*",
+      "generated/**/*",
+      "prisma/migrations/**/*",
+      "node_modules/**/*",
+      "*.config.js",
+      "*.config.mjs",
+    ],
   },
 ];
 
