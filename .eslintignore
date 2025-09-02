@@ -5,10 +5,13 @@ build
 dist
 *.config.js
 *.config.mjs
+*.config.ts
 public
 .env*
 generated
+src/generated
 prisma/migrations
 .next/types
 .next/static
 .next/server
+.next/cache

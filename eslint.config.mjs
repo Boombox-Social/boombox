@@ -37,10 +37,11 @@ const eslintConfig = [
   {
     ignores: [
       ".next/**/*",
-      "out/**/*",
+      "out/**/*", 
       "build/**/*",
       "dist/**/*",
       "generated/**/*",
+      "src/generated/**/*",
       "prisma/migrations/**/*",
       "node_modules/**/*",
       "*.config.js",
