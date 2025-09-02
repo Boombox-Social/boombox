@@ -312,6 +312,69 @@ export class DatabaseUtils {
     }
   }
 
+  static async getClientsByUser(user: { id: number; role: UserRole }) {
+    try {
+      let clients;
+      
+      if (user.role === UserRole.SUPER_ADMIN || user.role === UserRole.ADMIN) {
+        // Super admins and admins can see all clients
+        clients = await prisma.client.findMany({
+          orderBy: { createdAt: 'desc' },
+          include: {
+            assignedUser: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              }
+            },
+            createdBy: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              }
+            }
+          }
+        });
+      } else {
+        // SMMs can only see clients assigned to them or created by them
+        clients = await prisma.client.findMany({
+          where: {
+            OR: [
+              { assignedUserId: user.id },
+              { createdById: user.id }
+            ]
+          },
+          orderBy: { createdAt: 'desc' },
+          include: {
+            assignedUser: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              }
+            },
+            createdBy: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              }
+            }
+          }
+        });
+      }
+      
+      return clients;
+    } catch (error) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('Error fetching clients by user:', error);
+      }
+      throw new Error('Failed to fetch clients');
+    }
+  }
+
   static async updateClient(id: number, data: {
     name?: string;
     logo?: string | null;
