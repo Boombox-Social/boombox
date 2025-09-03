@@ -58,9 +58,8 @@ export default function Home() {
 
   // Event Handlers
   const handleAddClientSubmit = (formData: any) => {
-    const newClient = createClientFromForm(formData);
-    addClient(formData);
-    addClientModal.close();
+  addClient(formData);   // ✅ send raw formData
+  addClientModal.close();
   };
 
   const toggleSidebar = () => setCollapsed((prev) => !prev);

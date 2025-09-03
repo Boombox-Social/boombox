@@ -9,7 +9,7 @@ export interface NewClientForm {
   niche: string;
   businessAge: string;
   description: string;
-  coreProducts: string;
+  coreProducts: string;   
   idealCustomer: string;
   brandEmotion: string;
   uniqueSelling: string;

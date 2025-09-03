@@ -1,15 +1,16 @@
-// components/sidebar/ClientItem.tsx
 import React from "react";
 import { UserIcon } from "@heroicons/react/24/solid";
-import { ClientItemProps } from "../../types";
+import { Client } from "../../types/client.types";
 import { COLORS } from "../../constants";
 
-export function ClientItem({
-  client,
-  isSelected,
-  collapsed,
-  onClick,
-}: ClientItemProps) {
+interface ClientItemProps {
+  client: Client;
+  isSelected: boolean;
+  collapsed: boolean;
+  onClick: () => void;
+}
+
+export function ClientItem({ client, isSelected, collapsed, onClick }: ClientItemProps) {
   return (
     <button
       onClick={onClick}
@@ -47,11 +48,7 @@ export function ClientItem({
           <img
             src={client.logo}
             alt={`${client.name} logo`}
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-            }}
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         ) : (
           <UserIcon width={16} height={16} color={COLORS.text} />

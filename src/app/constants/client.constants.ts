@@ -70,17 +70,17 @@ export const INITIAL_FORM_STATE: NewClientForm = {
   logo: null,
   logoUrl: '',
   industry: '',
-  links: '',
+  links: '',              // string (not array anymore)
   niche: '',
   businessAge: '',
   description: '',
-  coreProducts: '',
+  coreProducts: '',       // string
   idealCustomer: '',
   brandEmotion: '',
   uniqueSelling: '',
   mainGoal: '',
-  competitors: '',
-  inspo: '',
+  competitors: '',        // string
+  inspo: '',              // string
   brandColors: '',
   brandColorsFile: null,
   brandColorsFileUrl: '',

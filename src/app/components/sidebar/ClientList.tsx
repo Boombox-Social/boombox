@@ -1,6 +1,5 @@
-// components/sidebar/ClientList.tsx
 import React from "react";
-import { Client } from "../../types";
+import { Client } from "../../types/client.types";
 import { ClientItem } from "./ClientItem";
 
 interface ClientListProps {
@@ -28,15 +27,21 @@ export function ClientList({
         gap: collapsed ? 8 : 0,
       }}
     >
-      {clients.map((client) => (
-        <ClientItem
-          key={client.id}
-          client={client}
-          isSelected={selectedClient?.id === client.id}
-          collapsed={collapsed}
-          onClick={() => setSelectedClient(client)}
-        />
-      ))}
+      {clients.length === 0 ? (
+        <div style={{ textAlign: "center", color: "#999", padding: 12 }}>
+          No clients found
+        </div>
+      ) : (
+        clients.map((client) => (
+          <ClientItem
+            key={client.id}
+            client={client}
+            isSelected={selectedClient?.id === client.id}
+            collapsed={collapsed}
+            onClick={() => setSelectedClient(client)}
+          />
+        ))
+      )}
     </div>
   );
 }
