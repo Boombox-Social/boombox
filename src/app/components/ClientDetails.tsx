@@ -94,6 +94,66 @@ export default function ClientDetails({ client }: ClientDetailsProps) {
     setFontUsed(client.fontUsed || "");
     setGeneratedPrompt("");
   }, [client]);
+
+  const handleSave = async () => {
+  try {
+    const payload = {
+      id: client.id, // must be included for update
+      name: client.name,
+      info: client.info,
+      logoUrl: client.logo ?? null,
+      industry,
+      links,
+      niche,
+      businessAge,
+      description,
+      coreProducts,
+      idealCustomer,
+      brandEmotion,
+      uniqueSelling,
+      mainGoal,
+      competitors,
+      inspo,
+      brandColors,
+      fontUsed,
+    };
+
+    const res = await fetch("/api/clients", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to update client");
+    }
+
+    const updated = await res.json();
+    console.log("✅ Client updated:", updated);
+
+    // sync UI with DB response
+    // (so it doesn’t look stale)
+    setIndustry(updated.industry || "");
+    setLinks(updated.links || []);
+    setNiche(updated.niche || "");
+    setBusinessAge(updated.businessAge || "");
+    setDescription(updated.description || "");
+    setCoreProducts(updated.coreProducts || []);
+    setIdealCustomer(updated.idealCustomer || "");
+    setBrandEmotion(updated.brandEmotion || "");
+    setUniqueSelling(updated.uniqueSelling || "");
+    setMainGoal(updated.mainGoal || "");
+    setCompetitors(updated.competitors || []);
+    setInspo(updated.inspo || []);
+    setBrandColors(updated.brandColors || "");
+    setFontUsed(updated.fontUsed || "");
+
+    setEditing(false);
+    } catch (err) {
+      console.error("❌ Update failed:", err);
+    }
+  };
+
   // File input refs
   const brandGuideInput = useRef<HTMLInputElement>(null);
   const brandColorsInput = useRef<HTMLInputElement>(null);
@@ -485,7 +545,13 @@ export default function ClientDetails({ client }: ClientDetailsProps) {
               justifyContent: 'center',
               transition: 'background 0.2s',
             }}
-            onClick={() => setEditing((e) => !e)}
+           onClick={() => {
+              if (editing) {
+                handleSave(); // 🟢 save to DB
+              } else {
+                setEditing(true); // 🟠 switch to edit mode
+              }
+            }}
             title={editing ? "Save" : "Edit"}
           >
             {editing ? (

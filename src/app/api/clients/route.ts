@@ -90,7 +90,6 @@ export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // Validate required fields
     if (!body.id) {
       return NextResponse.json(
         { error: "Missing client id" },
@@ -99,12 +98,12 @@ export async function PUT(request: NextRequest) {
     }
 
     const updated = await prisma.client.update({
-      where: { id: BigInt(body.id) },
+      where: { id: BigInt(body.id) }, // must cast to BigInt
       data: {
-        name: body.name ?? undefined,
-        info: body.info ?? undefined,
+        name: body.name,
+        info: body.info,
         logoUrl: body.logoUrl ?? null,
-        industry: body.industry ?? undefined,
+        industry: body.industry,
         links: Array.isArray(body.links)
           ? body.links
           : body.links
@@ -137,11 +136,7 @@ export async function PUT(request: NextRequest) {
       },
     });
 
-    // Serialize BigInt for JSON response
-    const serialized = {
-      ...updated,
-      id: updated.id.toString(),
-    };
+    const serialized = { ...updated, id: updated.id.toString() };
 
     return NextResponse.json(serialized);
   } catch (error: any) {
@@ -149,6 +144,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
 
 // DELETE a client
 export async function DELETE(request: NextRequest) {
