@@ -1,7 +1,9 @@
-import { JWTPayload, User } from '../types/auth.types';
-import { UserRole } from '../../generated/prisma';
+// utils/auth.utils.ts
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { NextRequest } from 'next/server';
+import { JWTPayload, User } from '../types/auth.types';
+import { UserRole } from '../../generated/prisma';
 import { DatabaseUtils } from './db.utils';
 
 const TOKEN_KEY = 'auth-token';
@@ -9,7 +11,110 @@ const REFRESH_TOKEN_KEY = 'refresh-token';
 const USER_KEY = 'user-data';
 
 export class AuthUtils {
-  // Token management
+  // JWT Token management
+  static generateAccessToken(user: User): string {
+    const payload: JWTPayload = {
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + (60 * 60), // 1 hour
+    };
+
+    return jwt.sign(payload, process.env.JWT_SECRET || 'your-secret-key');
+  }
+
+  static generateRefreshToken(user: User): string {
+    const payload: JWTPayload = {
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 7), // 7 days
+    };
+
+    return jwt.sign(payload, process.env.JWT_REFRESH_SECRET || 'your-refresh-secret-key');
+  }
+
+  static generateTokens(user: User): { accessToken: string; refreshToken: string } {
+    return {
+      accessToken: this.generateAccessToken(user),
+      refreshToken: this.generateRefreshToken(user),
+    };
+  }
+
+  static verifyToken(token: string): JWTPayload | null {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as JWTPayload;
+      return decoded;
+    } catch (error) {
+      console.error('Token verification failed:', error);
+      return null;
+    }
+  }
+
+  static verifyRefreshToken(token: string): JWTPayload | null {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET || 'your-refresh-secret-key') as JWTPayload;
+      return decoded;
+    } catch (error) {
+      console.error('Refresh token verification failed:', error);
+      return null;
+    }
+  }
+
+  static parseJWT(token: string): JWTPayload | null {
+    return this.verifyToken(token);
+  }
+
+  // Add the missing getCurrentUser method
+  static async getCurrentUser(request: NextRequest): Promise<User | null> {
+    try {
+      // Try to get token from cookies first (for SSR)
+      let token = request.cookies.get('auth-token')?.value;
+      
+      // If not in cookies, try Authorization header
+      if (!token) {
+        const authHeader = request.headers.get('authorization');
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+          token = authHeader.substring(7);
+        }
+      }
+
+      if (!token) {
+        return null;
+      }
+
+      // Verify token
+      const payload = this.verifyToken(token);
+      if (!payload) {
+        return null;
+      }
+
+      // Get user from database
+      const user = await DatabaseUtils.findUserById(payload.userId);
+      if (!user || !user.isActive) {
+        return null;
+      }
+
+      return user;
+    } catch (error) {
+      console.error('Error getting current user:', error);
+      return null;
+    }
+  }
+
+  // Password utilities
+  static async hashPassword(password: string): Promise<string> {
+    const saltRounds = 12;
+    return await bcrypt.hash(password, saltRounds);
+  }
+
+  static async comparePassword(password: string, hashedPassword: string): Promise<boolean> {
+    return await bcrypt.compare(password, hashedPassword);
+  }
+
+  // Local storage utilities (client-side only)
   static setToken(token: string): void {
     if (typeof window !== 'undefined') {
       localStorage.setItem(TOKEN_KEY, token);
@@ -29,85 +134,19 @@ export class AuthUtils {
     }
   }
 
-  // Password utilities
-  static async hashPassword(password: string): Promise<string> {
-    return bcrypt.hash(password, 12);
-  }
-
-  static async verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
-    return bcrypt.compare(password, hashedPassword);
-  }
-
-  // JWT utilities
-  static generateTokens(user: User) {
-    const payload = {
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-    };
-
-    const accessToken = jwt.sign(
-      payload,
-      process.env.JWT_SECRET || 'fallback-secret',
-      { expiresIn: '1h' }
-    );
-
-    const refreshToken = jwt.sign(
-      payload,
-      process.env.JWT_REFRESH_SECRET || 'fallback-refresh-secret',
-      { expiresIn: '7d' }
-    );
-
-    return { accessToken, refreshToken };
-  }
-
-  static parseJWT(token: string): JWTPayload | null {
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
-      return decoded as JWTPayload;
-    } catch (error) {
-      console.error('Error parsing JWT:', error);
-      return null;
-    }
-  }
-
-  static verifyRefreshToken(token: string): JWTPayload | null {
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET || 'fallback-refresh-secret');
-      return decoded as JWTPayload;
-    } catch (error) {
-      console.error('Error verifying refresh token:', error);
-      return null;
-    }
-  }
-
-  static isTokenExpired(token: string): boolean {
-    const payload = this.parseJWT(token);
-    if (!payload) return true;
-    
-    const currentTime = Date.now() / 1000;
-    return payload.exp < currentTime;
-  }
-
-  static isTokenExpiringSoon(token: string, thresholdMinutes: number = 5): boolean {
-    const payload = this.parseJWT(token);
-    if (!payload) return true;
-    
-    const currentTime = Date.now() / 1000;
-    const threshold = thresholdMinutes * 60;
-    return (payload.exp - currentTime) < threshold;
-  }
-
-  // Auth state management
   static clearAuthData(): void {
     this.removeToken();
     this.removeRefreshToken();
     this.removeUser();
+    this.removeAuthCookie();
   }
 
   static isAuthenticated(): boolean {
     const token = this.getToken();
-    return !!token && !this.isTokenExpired(token);
+    if (!token) return false;
+
+    const payload = this.verifyToken(token);
+    return !!payload;
   }
 
   // User data management
@@ -120,7 +159,13 @@ export class AuthUtils {
   static getUser(): User | null {
     if (typeof window !== 'undefined') {
       const userData = localStorage.getItem(USER_KEY);
-      return userData ? JSON.parse(userData) : null;
+      if (userData) {
+        try {
+          return JSON.parse(userData);
+        } catch (_error) {
+          return null;
+        }
+      }
     }
     return null;
   }
@@ -181,24 +226,41 @@ export class AuthUtils {
   }
 
   // Authentication flow with proper password verification
-  static async authenticateUser(email: string, password: string) {
-    // Use the new method that verifies password
-    const user = await DatabaseUtils.verifyUserPassword(email, password);
-    
+  static async authenticateUser(email: string, password: string): Promise<{
+    user: User;
+    accessToken: string;
+    refreshToken: string;
+  }> {
+    // Find user by email
+    const user = await DatabaseUtils.findUserByEmail(email);
     if (!user) {
       throw new Error('Invalid credentials');
     }
 
+    // Check if user is active
+    if (!user.isActive) {
+      throw new Error('Account is inactive');
+    }
+
+    // Verify password
+    const isPasswordValid = await this.comparePassword(password, user.password);
+    if (!isPasswordValid) {
+      throw new Error('Invalid credentials');
+    }
+
     // Update last login
-    const updatedUser = await DatabaseUtils.updateUserLastLogin(user.id);
+    await DatabaseUtils.updateUserLastLogin(user.id);
 
     // Generate tokens
-    const { accessToken, refreshToken } = this.generateTokens(updatedUser);
+    const tokens = this.generateTokens(user);
+
+    // Remove password from response
+    const { password: _password, ...userWithoutPassword } = user;
 
     return {
-      user: updatedUser,
-      accessToken,
-      refreshToken
+      user: userWithoutPassword as User,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
     };
   }
 }

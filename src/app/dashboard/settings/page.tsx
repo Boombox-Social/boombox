@@ -44,7 +44,13 @@ const colors = {
 
 export default function SettingsPage() {
   const { authState, logout } = useAuth();
-  const { hasPermission, isSuperAdmin, isAdmin, currentUser } = usePermission();
+  const {
+    hasPermission: _hasPermission,
+    isSuperAdmin,
+    isAdmin: _isAdmin,
+    currentUser: _currentUser,
+  } = usePermission(); // Add underscore prefixes to unused variables
+
   const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
   const [users, setUsers] = useState<User[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);

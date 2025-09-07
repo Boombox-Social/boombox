@@ -1,10 +1,11 @@
-// File Structure: src/app/components/client/ClientProfile.tsx - Client profile component with Super Admin delete functionality
+// components/client/ClientProfile.tsx
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { TrashIcon } from "@heroicons/react/24/solid";
-import { Client, UserRole } from "../../types";
-import { useAuth } from "../../contexts/AuthContext"; // FIXED: Correct import path
+import { Client } from "../../types";
+import { UserRole } from "../../../generated/prisma"; // Import directly from Prisma
+import { useAuth } from "../../hooks/useAuth";
 import { useClientManagement } from "../../hooks";
 import { Modal } from "../ui/Modal";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
@@ -27,7 +28,7 @@ interface ClientProfileProps {
 }
 
 export function ClientProfile({ client }: ClientProfileProps) {
-  const { authState } = useAuth(); // This should now work correctly
+  const { authState } = useAuth();
   const { deleteClient } = useClientManagement();
   const router = useRouter();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -57,8 +58,13 @@ export function ClientProfile({ client }: ClientProfileProps) {
       // Navigate back to dashboard after successful deletion
       router.push("/dashboard");
     } catch (error) {
+      if (process.env.NODE_ENV !== "production") {
+        console.error("Error deleting client:", error);
+      }
       setDeleteError(
-        error instanceof Error ? error.message : "Failed to delete client"
+        error instanceof Error
+          ? error.message
+          : "Failed to delete client. Please try again."
       );
     } finally {
       setIsDeleting(false);
@@ -76,18 +82,13 @@ export function ClientProfile({ client }: ClientProfileProps) {
         style={{
           background: colors.card,
           borderRadius: 16,
-          padding: "32px 40px",
-          gridColumn: 1,
-          gridRow: 1,
-          minWidth: 0,
-          minHeight: 0,
-          display: "flex",
-          alignItems: "center",
-          gap: 36,
+          padding: 24,
           position: "relative",
+          marginBottom: 24,
+          border: `1px solid ${colors.border}`,
         }}
       >
-        {/* Super Admin Delete Button */}
+        {/* Delete Button (Super Admin Only) */}
         {isSuperAdmin && (
           <button
             onClick={handleDeleteClick}
@@ -236,7 +237,7 @@ export function ClientProfile({ client }: ClientProfileProps) {
                   marginBottom: 8,
                 }}
               >
-                Permanent Deletion Warning
+                Permanent Client Deletion
               </h3>
               <p
                 style={{
@@ -247,8 +248,9 @@ export function ClientProfile({ client }: ClientProfileProps) {
                 }}
               >
                 You are about to permanently delete{" "}
-                <strong>{client.name}</strong> and all associated data. This
-                action cannot be undone.
+                <strong>{client.name}</strong>. This action cannot be undone and
+                will remove all client data, including business information,
+                strategies, and prompt templates.
               </p>
             </div>
           </div>
@@ -269,11 +271,12 @@ export function ClientProfile({ client }: ClientProfileProps) {
                 fontSize: 14,
                 fontWeight: 600,
                 margin: 0,
-                marginBottom: 12,
+                marginBottom: 16,
               }}
             >
               Client Details:
             </h4>
+
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <span style={{ color: colors.muted, fontSize: 13 }}>Name:</span>
@@ -382,6 +385,7 @@ export function ClientProfile({ client }: ClientProfileProps) {
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
+                opacity: isDeleting ? 0.6 : 1,
                 transition: "background 0.2s",
               }}
               onMouseEnter={(e) => {

@@ -1,24 +1,24 @@
 // File Structure: src/app/types/client.types.ts - Updated client type definitions
 export interface Client {
-  id: number;
-  logo?: string | null; // Logo link
-  name: string; // Business Name
+ id: number;
+  logo?: string | null;
+  name: string;
   address?: string | null;
   industry?: string | null;
   slogan?: string | null;
-  links?: string[]; // Social media and website links - ARRAY of URLs
-  coreProducts?: string[]; // Core products/services - ARRAY of strings
+  links?: string[]; // Always array in stored client
+  coreProducts?: string[]; // Always array in stored client
   idealCustomers?: string | null;
-  brandEmotion?: string | null; // Specific feeling or emotion brand wants to evoke
+  brandEmotion?: string | null;
   uniqueProposition?: string | null;
   whyChooseUs?: string | null;
   mainGoal?: string | null;
   shortTermGoal?: string | null;
   longTermGoal?: string | null;
-  competitors?: string[]; // Direct competitors - ARRAY of names
-  indirectCompetitors?: string[]; // Indirect competitors - ARRAY of names
-  brandAssets?: string[]; // Brand assets LINKS - ARRAY of URLs, not files
-  fontUsed?: string[]; // Array of font NAMES - ARRAY of strings
+  competitors?: string[]; // Always array in stored client
+  indirectCompetitors?: string[]; // Always array in stored client
+  brandAssets?: string[]; // Always array in stored client
+  fontUsed?: string[]; // Always array in stored client
   smmDriveLink?: string | null;
   contractDeliverables?: string | null;
   createdAt: string;

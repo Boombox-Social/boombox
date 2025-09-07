@@ -1,9 +1,11 @@
+// components/modals/AddUserModal.tsx
 "use client";
 import React, { useState } from "react";
 import { UserIcon, CloudArrowUpIcon } from "@heroicons/react/24/solid";
-import { UserRole } from "../../types";
+import { UserRole } from "../../../generated/prisma"; // Import directly from Prisma
 import { Modal, FormField } from "../ui";
 
+// Rest of the file remains the same...
 const colors = {
   bg: "#181A20",
   side: "#23262F",
@@ -340,27 +342,27 @@ export function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModalProps) {
                         animation: "spin 1s linear infinite",
                       }}
                     />
-                    Creating...
+                    <span>Creating...</span>
                   </>
                 ) : (
                   <>
                     <CloudArrowUpIcon style={{ width: 16, height: 16 }} />
-                    Create User
+                    <span>Create User</span>
                   </>
                 )}
               </button>
             </div>
           </div>
         </form>
-
-        {/* Add spinning animation */}
-        <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
       </div>
+
+      {/* Add spinning animation */}
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </Modal>
   );
 }
