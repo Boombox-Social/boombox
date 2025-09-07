@@ -1,20 +1,22 @@
-// File Structure: src/app/contexts/AuthContext.tsx - Authentication context with proper exports
+// contexts/AuthContext.tsx
 "use client";
 import React, {
   createContext,
   useContext,
   useState,
   useEffect,
+  useCallback,
   ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
-import { User, LoginFormData, AuthState, UserRole } from "../types/auth.types";
+import { LoginFormData, AuthState, UserRole } from "../types/auth.types";
 
 interface AuthContextType {
   authState: AuthState;
-  login: (formData: LoginFormData) => Promise<void>;
-  logout: () => Promise<void>;
+  login: (credentials: LoginFormData) => Promise<void>;
+  logout: () => void;
   refreshAuth: () => Promise<void>;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,26 +27,108 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const router = useRouter();
+
+  // Fix: Use proper AuthState type with isAuthenticated property
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
-    token: null,
+    isAuthenticated: false, // This should now work
     isLoading: true,
-    error: null,
   });
+  const [isLoading, setIsLoading] = useState(true);
 
-  const login = async (credentials: LoginFormData) => {
+  // Create logout function first to avoid circular dependency
+  const logout = useCallback(() => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+    }
+
+    setAuthState({
+      user: null,
+      isAuthenticated: false,
+      isLoading: false,
+    });
+    setIsLoading(false);
+
+    router.push("/signin");
+  }, [router]);
+
+  // Now create refreshAuth that can safely call logout
+  const refreshAuth = useCallback(async (): Promise<void> => {
     try {
-      setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
+      if (typeof window === "undefined") {
+        return;
+      }
+
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        logout();
+        return;
+      }
+
+      const response = await fetch("/api/auth/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.user) {
+          setAuthState({
+            user: data.user,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+          setIsLoading(false);
+        } else {
+          throw new Error("Invalid user data");
+        }
+      } else {
+        throw new Error("Auth refresh failed");
+      }
+    } catch (error) {
+      console.error("Auth refresh error:", error);
+      logout();
+      throw error;
+    }
+  }, [logout]);
+
+  // Initialize auth state
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        if (typeof window === "undefined") {
+          setIsLoading(false);
+          return;
+        }
+
+        const token = localStorage.getItem("accessToken");
+        if (!token) {
+          setAuthState((prev) => ({ ...prev, isLoading: false }));
+          setIsLoading(false);
+          return;
+        }
+
+        await refreshAuth();
+      } catch (error) {
+        console.error("Auth initialization error:", error);
+        setAuthState({ user: null, isAuthenticated: false, isLoading: false });
+        setIsLoading(false);
+      }
+    };
+
+    initAuth();
+  }, [refreshAuth]);
+
+  const login = async (credentials: LoginFormData): Promise<void> => {
+    try {
+      setIsLoading(true);
 
       const response = await fetch("/api/auth/signin", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: credentials.email,
-          password: credentials.password,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(credentials),
       });
 
       const data = await response.json();
@@ -53,109 +137,44 @@ export function AuthProvider({ children }: AuthProviderProps) {
         throw new Error(data.error || "Login failed");
       }
 
-      setAuthState({
-        user: data.user,
-        token: data.token,
-        isLoading: false,
-        error: null,
-      });
-
-      // Redirect to dashboard
-      const redirectTo =
-        new URLSearchParams(window.location.search).get("redirect") ||
-        "/dashboard";
-      router.push(redirectTo);
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Login failed";
-      setAuthState((prev) => ({
-        ...prev,
-        isLoading: false,
-        error: errorMessage,
-      }));
-      throw error;
-    }
-  };
-
-  const logout = async () => {
-    try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-      });
-    } catch (error) {
-      console.error("Logout error:", error);
-    } finally {
-      setAuthState({
-        user: null,
-        token: null,
-        isLoading: false,
-        error: null,
-      });
-      router.push("/signin");
-    }
-  };
-
-  const refreshAuth = async () => {
-    try {
-      const response = await fetch("/api/auth/refresh", {
-        method: "POST",
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setAuthState((prev) => ({
-          ...prev,
-          user: data.user,
-          token: data.token,
-          error: null,
-        }));
-      } else {
-        throw new Error("Failed to refresh token");
-      }
-    } catch (error) {
-      console.error("Token refresh error:", error);
-      await logout();
-    }
-  };
-
-  // Initialize auth state
-  useEffect(() => {
-    const initAuth = async () => {
-      try {
-        const response = await fetch("/api/auth/me");
-
-        if (response.ok) {
-          const data = await response.json();
-          setAuthState({
-            user: data.user,
-            token: "authenticated", // We don't expose the actual token to client
-            isLoading: false,
-            error: null,
-          });
-        } else {
-          setAuthState((prev) => ({ ...prev, isLoading: false }));
+      if (data.success && data.user && data.accessToken) {
+        if (typeof window !== "undefined") {
+          localStorage.setItem("accessToken", data.accessToken);
+          if (data.refreshToken) {
+            localStorage.setItem("refreshToken", data.refreshToken);
+          }
         }
-      } catch (error) {
-        console.error("Auth initialization error:", error);
-        setAuthState((prev) => ({
-          ...prev,
+
+        setAuthState({
+          user: data.user,
+          isAuthenticated: true,
           isLoading: false,
-          error: "Failed to initialize authentication",
-        }));
+        });
+
+        router.push("/dashboard");
+      } else {
+        throw new Error("Invalid response format");
       }
-    };
-
-    initAuth();
-  }, []);
-
-  const value = {
-    authState,
-    login,
-    logout,
-    refreshAuth,
+    } catch (error) {
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        authState,
+        login,
+        logout,
+        refreshAuth,
+        isLoading,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
@@ -178,21 +197,18 @@ export function usePermission() {
       [UserRole.SUPER_ADMIN]: 3,
     };
 
-    const userLevel = roleHierarchy[authState.user.role] || 0;
-    const requiredLevel = roleHierarchy[requiredRole] || 0;
+    const userLevel = roleHierarchy[authState.user.role];
+    const requiredLevel = roleHierarchy[requiredRole];
 
     return userLevel >= requiredLevel;
   };
 
-  const isSuperAdmin = authState.user?.role === UserRole.SUPER_ADMIN;
-  const isAdmin = authState.user?.role === UserRole.ADMIN || isSuperAdmin;
-  const isSMM = authState.user?.role === UserRole.SMM || isAdmin;
-
   return {
     hasPermission,
-    isSuperAdmin,
-    isAdmin,
-    isSMM,
+    isSuperAdmin: authState.user?.role === UserRole.SUPER_ADMIN,
+    isAdmin:
+      authState.user?.role === UserRole.ADMIN ||
+      authState.user?.role === UserRole.SUPER_ADMIN,
     currentUser: authState.user,
   };
 }

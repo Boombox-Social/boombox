@@ -1,42 +1,34 @@
-import { Client, NewClientForm } from '../types';
+// File Structure: src/app/utils/client.utils.ts - Client utility functions with proper type handling
+import { NewClientForm, Client } from '../types';
 
-export const createClientFromForm = (formData: NewClientForm): Client => ({
-  ...formData,
-  id: Date.now(),
-  links: formData.links ? formData.links.split(',').map(s => s.trim()).filter(Boolean) : [],
-  coreProducts: formData.coreProducts ? formData.coreProducts.split(',').map(s => s.trim()).filter(Boolean) : [],
-  competitors: formData.competitors ? formData.competitors.split(',').map(s => s.trim()).filter(Boolean) : [],
-  indirectCompetitors: formData.indirectCompetitors ? formData.indirectCompetitors.split(',').map(s => s.trim()).filter(Boolean) : [],
-  fontUsed: formData.fontUsed ? formData.fontUsed.split(',').map(s => s.trim()).filter(Boolean) : [],
-  brandAssets: formData.brandAssets || [],
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString()
-});
+export const transformFormDataToClient = (formData: NewClientForm): Client => {
+  // Helper function to safely convert form fields to arrays
+  const safeStringToArray = (value: string | string[] | undefined): string[] => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string') {
+      return value.split(',').map(s => s.trim()).filter(Boolean);
+    }
+    return [];
+  };
 
-export const filterClients = (clients: Client[], searchTerm: string): Client[] => {
-  if (!searchTerm.trim()) return clients;
-  
-  const term = searchTerm.toLowerCase();
-  return clients.filter(client =>
-    client.name?.toLowerCase().includes(term) ||
-    client.industry?.toLowerCase().includes(term) ||
-    client.address?.toLowerCase().includes(term)
-  );
+  return {
+    ...formData,
+    id: Date.now(),
+    links: safeStringToArray(formData.links),
+    coreProducts: safeStringToArray(formData.coreProducts),
+    competitors: safeStringToArray(formData.competitors),
+    indirectCompetitors: safeStringToArray(formData.indirectCompetitors),
+    brandAssets: safeStringToArray(formData.brandAssets),
+    fontUsed: safeStringToArray(formData.fontUsed),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
 };
 
-export const sortClients = (clients: Client[], sortBy: 'name' | 'industry' | 'createdAt' = 'name'): Client[] => {
-  return [...clients].sort((a, b) => {
-    if (sortBy === 'name') {
-      return (a.name || '').localeCompare(b.name || '');
-    }
-    if (sortBy === 'industry') {
-      return (a.industry || '').localeCompare(b.industry || '');
-    }
-    if (sortBy === 'createdAt') {
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    }
-    return 0;
-  });
+// Add the missing function that useClientManagement is trying to import
+export const createClientFromForm = (formData: NewClientForm): Client => {
+  return transformFormDataToClient(formData);
 };
 
 export const validateClient = (client: Partial<NewClientForm>): string[] => {
@@ -54,9 +46,9 @@ export const validateClient = (client: Partial<NewClientForm>): string[] => {
     errors.push('Industry is required');
   }
   
-  // Validate email format in links if provided
+  // Validate URL format in links if provided
   if (client.links) {
-    const linkArray = client.links.split(',').map(s => s.trim()).filter(Boolean);
+    const linkArray = safeStringToArray(client.links);
     const urlPattern = /^https?:\/\/.+/;
     const invalidLinks = linkArray.filter(link => !urlPattern.test(link));
     
@@ -66,4 +58,19 @@ export const validateClient = (client: Partial<NewClientForm>): string[] => {
   }
   
   return errors;
+};
+
+// Helper function to safely convert values to arrays (exported for reuse)
+export const safeStringToArray = (value: string | string[] | undefined): string[] => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string') {
+    return value.split(',').map(s => s.trim()).filter(Boolean);
+  }
+  return [];
+};
+
+// Helper function to convert arrays to display strings
+export const arrayToDisplayString = (value: string[] | undefined): string => {
+  return value ? value.join(', ') : '';
 };

@@ -1,3 +1,4 @@
+// api/auth/me/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthUtils } from '../../../utils/auth.utils';
 import { DatabaseUtils } from '../../../utils/db.utils';
@@ -31,10 +32,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get user stats
+    // Get user stats - THIS SHOULD NOW WORK
     const stats = await DatabaseUtils.getUserStats(user.id, user.role);
 
     return NextResponse.json({
+      success: true,
       user,
       stats
     });

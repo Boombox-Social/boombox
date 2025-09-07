@@ -1,7 +1,9 @@
+// types/auth.types.ts
 import { UserRole } from '../../generated/prisma';
+export { UserRole } from '../../generated/prisma';
 
 export interface User {
-  id: number; // Changed from string to number to match Prisma schema
+  id: number;
   email: string;
   name: string;
   role: UserRole;
@@ -10,9 +12,23 @@ export interface User {
   lastLogin?: Date | null;
   createdAt: Date;
   updatedAt: Date;
+  // Password should not be included in the User type for security
 }
 
-export { UserRole };
+export interface JWTPayload {
+  userId: number;
+  email: string;
+  role: UserRole;
+  iat: number;
+  exp: number;
+}
+
+// Fix: Add missing isAuthenticated property
+export interface AuthState {
+  user: User | null;
+  isAuthenticated: boolean; // ADD THIS MISSING PROPERTY
+  isLoading: boolean;
+}
 
 export interface LoginFormData {
   email: string;
@@ -20,44 +36,21 @@ export interface LoginFormData {
   rememberMe?: boolean;
 }
 
-export interface RegisterFormData {
-  name: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  role?: UserRole;
-}
-
 export interface AuthResponse {
+  success: boolean;
+  message: string;
   user: User;
-  token: string;
+  accessToken: string;
   refreshToken: string;
 }
 
-export interface AuthState {
-  user: User | null;
-  token: string | null;
-  isLoading: boolean;
-  error: string | null;
-}
-
-export interface JWTPayload {
-  userId: number; // Changed from string to number
-  email: string;
-  role: UserRole;
-  iat: number;
-  exp: number;
-}
-
-export interface RefreshTokenResponse {
-  token: string;
-  refreshToken: string;
-}
-
-export interface CreateUserData {
-  email: string;
-  name: string;
-  password: string;
-  role?: UserRole;
-  avatar?: string;
+export interface UserStats {
+  totalClients?: number;
+  totalUsers?: number;
+  assignedClients: number;
+  recentClients: Array<{
+    id: number;
+    name: string;
+    createdAt: Date;
+  }>;
 }

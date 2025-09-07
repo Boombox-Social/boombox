@@ -4,8 +4,9 @@ export interface NewClientForm {
   address: string;
   industry: string;
   slogan?: string;
-  links?: string[];
-  coreProducts?: string[];
+  // These can be either string (from form input) or string[] (processed)
+  links?: string | string[];
+  coreProducts?: string | string[];
   idealCustomers?: string;
   brandEmotion?: string;
   uniqueProposition?: string;
@@ -13,10 +14,10 @@ export interface NewClientForm {
   mainGoal?: string;
   shortTermGoal?: string;
   longTermGoal?: string;
-  competitors?: string[];
-  indirectCompetitors?: string[];
-  brandAssets?: string[];
-  fontUsed?: string[];
+  competitors?: string | string[];
+  indirectCompetitors?: string | string[];
+  brandAssets?: string | string[];
+  fontUsed?: string | string[];
   smmDriveLink?: string;
   contractDeliverables?: string;
   logo?: string | null;

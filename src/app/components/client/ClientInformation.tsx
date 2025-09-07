@@ -1,11 +1,11 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import { Client } from "../../types";
+import { useClientManagement } from "../../hooks";
+import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { EditableField } from "./EditableField";
 import { EditableTagField } from "./EditableTagField";
 import { BrandAssetsSection } from "./BrandAssetsSection";
-import { useClientManagement } from "../../hooks";
-import { LoadingSpinner } from "../ui/LoadingSpinner";
 
 const colors = {
   bg: "#181A20",
@@ -50,13 +50,13 @@ export function ClientInformation({ client }: ClientInformationProps) {
       smmDriveLink: client?.smmDriveLink ?? "",
       contractDeliverables: client?.contractDeliverables ?? "",
     }),
-    [client]
+    [client] // Add client to dependency array
   );
 
   const [originalFormData, setOriginalFormData] = useState(getInitialFormData);
   const [formData, setFormData] = useState(getInitialFormData);
 
-  // Update form data when client changes
+  // Update form data when client changes - add client to dependency array
   useEffect(() => {
     if (client) {
       const newFormData = getInitialFormData();
@@ -65,7 +65,7 @@ export function ClientInformation({ client }: ClientInformationProps) {
       setEditing(false);
       setError("");
     }
-  }, [client?.id, client?.name, getInitialFormData]);
+  }, [client, getInitialFormData]); // Add client and getInitialFormData
 
   const handleSave = useCallback(async () => {
     if (!client?.id) return;

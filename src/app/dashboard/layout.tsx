@@ -1,4 +1,4 @@
-// File Structure: src/app/dashboard/layout.tsx - Main dashboard layout with sidebar and client management
+// dashboard/layout.tsx
 "use client";
 import React, { useState } from "react";
 import { useClientManagement, useModal } from "../hooks";
@@ -19,15 +19,13 @@ function ExpandButton({ onClick }: { onClick: () => void }) {
         color: "white",
         border: "none",
         borderRadius: "50%",
-        width: 44,
-        height: 44,
+        width: 40,
+        height: 40,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         cursor: "pointer",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-        fontSize: 18,
-        fontWeight: "bold",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
       }}
     >
       ☰
@@ -40,61 +38,59 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // State Management
-  const [collapsed, setCollapsed] = useState(false);
   const { clients, addClient, isLoading, error } = useClientManagement();
-  const addClientModal = useModal();
+  const {
+    isOpen: isModalOpen,
+    open: openModal,
+    close: closeModal,
+  } = useModal();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // Event Handlers
-  const handleAddClientSubmit = async (formData: NewClientForm) => {
+  const handleAddClient = async (clientData: NewClientForm) => {
     try {
-      const newClient = await addClient(formData);
+      const _newClient = await addClient(clientData); // Add underscore prefix
+      closeModal();
     } catch (error) {
-      throw error; // Re-throw so the modal can catch it
+      console.error("Failed to add client:", error);
+      throw error;
     }
   };
 
-  const toggleSidebar = () => setCollapsed((prev) => !prev);
-
-  // Styles
-  const containerStyle: React.CSSProperties = {
-    display: "flex",
-    height: "100vh",
-    background: "#181A20",
-    overflow: "hidden",
-  };
-
-  const mainContentStyle: React.CSSProperties = {
-    flex: 1,
-    marginLeft: collapsed ? 80 : 280,
-    transition: "margin-left 0.3s ease",
-    overflow: "auto",
-    position: "relative",
-  };
-
   return (
-    <div style={containerStyle}>
+    <div style={{ display: "flex", minHeight: "100vh" }}>
       {/* Sidebar */}
-      <SidePanel
-        collapsed={collapsed}
-        onCollapse={toggleSidebar}
-        clients={clients}
-        onAddClientClick={addClientModal.open}
-        isLoading={isLoading}
-        error={error}
-      />
-
-      {/* Main Content */}
-      <main style={mainContentStyle}>{children}</main>
+      {!sidebarCollapsed && (
+        <SidePanel
+          collapsed={false}
+          onCollapse={() => setSidebarCollapsed(true)}
+          clients={clients}
+          onAddClientClick={openModal}
+          isLoading={isLoading}
+          error={error}
+        />
+      )}
 
       {/* Expand Button (shown when sidebar is collapsed) */}
-      {collapsed && <ExpandButton onClick={toggleSidebar} />}
+      {sidebarCollapsed && (
+        <ExpandButton onClick={() => setSidebarCollapsed(false)} />
+      )}
+
+      {/* Main Content */}
+      <main
+        style={{
+          flex: 1,
+          marginLeft: sidebarCollapsed ? 0 : 0,
+          transition: "margin-left 0.3s ease",
+        }}
+      >
+        {children}
+      </main>
 
       {/* Add Client Modal */}
       <AddClientModal
-        isOpen={addClientModal.isOpen}
-        onClose={addClientModal.close}
-        onSubmit={handleAddClientSubmit}
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onSubmit={handleAddClient}
       />
     </div>
   );

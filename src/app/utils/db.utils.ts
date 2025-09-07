@@ -1,174 +1,142 @@
-// File Structure: src/app/utils/db.utils.ts - Database utility class with user and client operations
-import { prisma } from '../lib/prisma';
-import { User, Client, UserRole, Prisma } from '../../generated/prisma';
-import bcrypt from 'bcryptjs';
+// utils/db.utils.ts
+import { PrismaClient, UserRole } from '../../generated/prisma';
+
+const prisma = new PrismaClient();
 
 export class DatabaseUtils {
-  // User operations
+  // User management
   static async createUser(data: {
-    email: string;
-    name: string;
-    password: string;
-    role?: UserRole;
-    avatar?: string;
-  }) {
-    const hashedPassword = await bcrypt.hash(data.password, 12);
-    
-    return prisma.user.create({
-      data: {
-        email: data.email,
-        name: data.name,
-        password: hashedPassword,
-        role: data.role || UserRole.SMM,
-        avatar: data.avatar,
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        avatar: true,
-        isActive: true,
-        lastLogin: true,
-        createdAt: true,
-        updatedAt: true,
-      }
-    });
-  }
-
-  static async verifyUserPassword(email: string, password: string): Promise<User | null> {
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        password: true,
-        role: true,
-        avatar: true,
-        isActive: true,
-        lastLogin: true,
-        createdAt: true,
-        updatedAt: true,
-      }
-    });
-
-    if (!user || !user.isActive) {
-      return null;
-    }
-
-    const isValidPassword = await bcrypt.compare(password, user.password);
-    if (!isValidPassword) {
-      return null;
-    }
-
-    const { password: _, ...userWithoutPassword } = user;
-    return userWithoutPassword as User;
-  }
-
-  static async findUserByEmail(email: string) {
-    return prisma.user.findUnique({
-      where: { email },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        avatar: true,
-        isActive: true,
-        lastLogin: true,
-        createdAt: true,
-        updatedAt: true,
-      }
-    });
-  }
-
-  static async findUserById(id: number) {
-    return prisma.user.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        avatar: true,
-        isActive: true,
-        lastLogin: true,
-        createdAt: true,
-        updatedAt: true,
-      }
-    });
-  }
-
-  static async updateUserLastLogin(userId: number) {
-    return prisma.user.update({
-      where: { id: userId },
-      data: { lastLogin: new Date() },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        avatar: true,
-        isActive: true,
-        lastLogin: true,
-        createdAt: true,
-        updatedAt: true,
-      }
-    });
-  }
-
-  static async updateUser(userId: number, data: Partial<{
     name: string;
     email: string;
     password: string;
     role: UserRole;
-    avatar: string;
-    isActive: boolean;
-  }>) {
-    const updateData: any = { ...data };
-    if (data.password) {
-      updateData.password = await bcrypt.hash(data.password, 12);
-    }
-
-    return prisma.user.update({
-      where: { id: userId },
-      data: updateData,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        avatar: true,
-        isActive: true,
-        lastLogin: true,
-        createdAt: true,
-        updatedAt: true,
-      }
+    avatar?: string;
+  }) {
+    return await prisma.user.create({
+      data: {
+        ...data,
+        lastLogin: new Date(),
+      },
     });
   }
 
-  static async deleteUser(userId: number) {
+  static async findUserByEmail(email: string) {
+    return await prisma.user.findUnique({
+      where: { email },
+    });
+  }
+
+  static async findUserById(id: number) {
+    return await prisma.user.findUnique({
+      where: { id },
+    });
+  }
+
+  static async updateUser(id: number, data: Record<string, unknown>) {
+    return await prisma.user.update({
+      where: { id },
+      data,
+    });
+  }
+
+  static async deleteUser(id: number) {
+    return await prisma.user.delete({
+      where: { id },
+    });
+  }
+
+  static async getAllUsers() {
+    return await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        avatar: true,
+        createdAt: true,
+        lastLogin: true,
+      },
+    });
+  }
+
+  // ADD THE MISSING getUserStats METHOD
+  static async getUserStats(userId: number, role: UserRole) {
     try {
-      // First, unassign the user from any clients
-      await prisma.client.updateMany({
-        where: { assignedUserId: userId },
-        data: { assignedUserId: null }
-      });
+      if (role === 'SUPER_ADMIN' || role === 'ADMIN') {
+        // Admin users can see all stats
+        const [totalClients, totalUsers, recentClients] = await Promise.all([
+          prisma.client.count(),
+          prisma.user.count(),
+          prisma.client.findMany({
+            take: 5,
+            orderBy: { createdAt: 'desc' },
+            select: {
+              id: true,
+              name: true,
+              createdAt: true,
+            },
+          }),
+        ]);
 
-      // Then delete the user
-      await prisma.user.delete({
-        where: { id: userId }
-      });
+        return {
+          totalClients,
+          totalUsers,
+          recentClients,
+          assignedClients: await prisma.client.count({
+            where: {
+              OR: [
+                { assignedUserId: userId },
+                { createdById: userId },
+              ],
+            },
+          }),
+        };
+      } else {
+        // SMM users can only see their own stats
+        const [assignedClients, recentClients] = await Promise.all([
+          prisma.client.count({
+            where: {
+              OR: [
+                { assignedUserId: userId },
+                { createdById: userId },
+              ],
+            },
+          }),
+          prisma.client.findMany({
+            where: {
+              OR: [
+                { assignedUserId: userId },
+                { createdById: userId },
+              ],
+            },
+            take: 5,
+            orderBy: { createdAt: 'desc' },
+            select: {
+              id: true,
+              name: true,
+              createdAt: true,
+            },
+          }),
+        ]);
 
-      console.log(`User with ID ${userId} deleted successfully`);
+        return {
+          assignedClients,
+          recentClients,
+          totalClients: assignedClients, // For SMM, total = assigned
+        };
+      }
     } catch (error) {
-      console.error('Error deleting user:', error);
-      throw error;
+      console.error('Error fetching user stats:', error);
+      return {
+        totalClients: 0,
+        totalUsers: 0,
+        assignedClients: 0,
+        recentClients: [],
+      };
     }
   }
 
-  // Client operations
+  // Client management
   static async createClient(data: {
     name: string;
     logo?: string | null;
@@ -193,186 +161,37 @@ export class DatabaseUtils {
     createdById: number;
     assignedUserId?: number | null;
   }) {
-    return prisma.client.create({
-      data: {
-        name: data.name,
-        logo: data.logo,
-        address: data.address,
-        industry: data.industry,
-        slogan: data.slogan,
-        links: data.links || [],
-        coreProducts: data.coreProducts || [],
-        idealCustomers: data.idealCustomers,
-        brandEmotion: data.brandEmotion,
-        uniqueProposition: data.uniqueProposition,
-        whyChooseUs: data.whyChooseUs,
-        mainGoal: data.mainGoal,
-        shortTermGoal: data.shortTermGoal,
-        longTermGoal: data.longTermGoal,
-        competitors: data.competitors || [],
-        indirectCompetitors: data.indirectCompetitors || [],
-        brandAssets: data.brandAssets || [],
-        fontUsed: data.fontUsed || [],
-        smmDriveLink: data.smmDriveLink,
-        contractDeliverables: data.contractDeliverables,
-        createdById: data.createdById,
-        assignedUserId: data.assignedUserId,
-      },
-      include: {
-        assignedUser: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            role: true,
-          }
-        },
-        createdBy: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            role: true,
-          }
-        }
-      }
+    return await prisma.client.create({
+      data,
     });
   }
 
   static async findClientById(id: number) {
-    return prisma.client.findUnique({
+    return await prisma.client.findUnique({
       where: { id },
-      include: {
-        assignedUser: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            role: true,
-          }
-        },
-        createdBy: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            role: true,
-          }
-        }
-      }
     });
   }
 
   static async findClientsByUser(userId: number, role: UserRole) {
-    if (role === UserRole.SMM) {
-      return prisma.client.findMany({
-        where: { assignedUserId: userId },
-        include: {
-          assignedUser: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              role: true,
-            }
-          },
-          createdBy: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              role: true,
-            }
-          }
-        },
-        orderBy: { createdAt: 'desc' }
-      });
-    } else {
-      return prisma.client.findMany({
-        include: {
-          assignedUser: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              role: true,
-            }
-          },
-          createdBy: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              role: true,
-            }
-          }
-        },
-        orderBy: { createdAt: 'desc' }
+    if (role === 'SUPER_ADMIN' || role === 'ADMIN') {
+      return await prisma.client.findMany({
+        orderBy: { createdAt: 'desc' },
       });
     }
+    
+    return await prisma.client.findMany({
+      where: {
+        OR: [
+          { assignedUserId: userId },
+          { createdById: userId },
+        ],
+      },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   static async getClientsByUser(user: { id: number; role: UserRole }) {
-    try {
-      let clients;
-      
-      if (user.role === UserRole.SUPER_ADMIN || user.role === UserRole.ADMIN) {
-        // Super admins and admins can see all clients
-        clients = await prisma.client.findMany({
-          orderBy: { createdAt: 'desc' },
-          include: {
-            assignedUser: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-              }
-            },
-            createdBy: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-              }
-            }
-          }
-        });
-      } else {
-        // SMMs can only see clients assigned to them or created by them
-        clients = await prisma.client.findMany({
-          where: {
-            OR: [
-              { assignedUserId: user.id },
-              { createdById: user.id }
-            ]
-          },
-          orderBy: { createdAt: 'desc' },
-          include: {
-            assignedUser: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-              }
-            },
-            createdBy: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-              }
-            }
-          }
-        });
-      }
-      
-      return clients;
-    } catch (error) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.error('Error fetching clients by user:', error);
-      }
-      throw new Error('Failed to fetch clients');
-    }
+    return await this.findClientsByUser(user.id, user.role);
   }
 
   static async updateClient(id: number, data: {
@@ -398,110 +217,61 @@ export class DatabaseUtils {
     contractDeliverables?: string | null;
     assignedUserId?: number | null;
   }) {
-    return prisma.client.update({
+    return await prisma.client.update({
       where: { id },
       data: {
         ...data,
         updatedAt: new Date(),
       },
-      include: {
-        assignedUser: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            role: true,
-          }
-        },
-        createdBy: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            role: true,
-          }
-        }
-      }
     });
   }
 
   static async deleteClient(id: number) {
-    return prisma.client.delete({
-      where: { id }
+    return await prisma.client.delete({
+      where: { id },
     });
   }
 
-  // Search functionality
-  static async searchClients(query: string, userId: number, role: UserRole) {
-    const whereCondition = role === UserRole.SMM 
-      ? { assignedUserId: userId } 
-      : {};
-
-    return prisma.client.findMany({
-      where: {
-        ...whereCondition,
-        OR: [
-          { name: { contains: query, mode: 'insensitive' } },
-          { industry: { contains: query, mode: 'insensitive' } },
-          { address: { contains: query, mode: 'insensitive' } },
-        ]
-      },
-      include: {
-        assignedUser: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            role: true,
-          }
-        },
-        createdBy: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            role: true,
-          }
-        }
-      },
-      orderBy: { createdAt: 'desc' }
+  // Authentication helpers
+  static async updateUserLastLogin(userId: number) {
+    return await prisma.user.update({
+      where: { id: userId },
+      data: { lastLogin: new Date() },
     });
   }
 
-  // Get user statistics
-  static async getUserStats(userId: number, role: UserRole) {
-    const stats: any = {};
+  // Seeding
+  static async seedSuperAdmin() {
+    const existingAdmin = await prisma.user.findFirst({
+      where: { role: 'SUPER_ADMIN' },
+    });
 
-    if (role === UserRole.SMM) {
-      const clientCount = await prisma.client.count({
-        where: { assignedUserId: userId }
-      });
-      stats.assignedClients = clientCount;
-    } else {
-      const totalClients = await prisma.client.count();
-      const totalUsers = await prisma.user.count();
-      stats.totalClients = totalClients;
-      stats.totalUsers = totalUsers;
+    if (existingAdmin) {
+      return existingAdmin;
     }
 
-    return stats;
+    return await prisma.user.create({
+      data: {
+        name: 'Super Admin',
+        email: 'admin@boombox.com',
+        password: '$2b$10$K8QVdBVVZ1YtO5Y5Y5Y5YOK8QVdBVVZ1YtO5Y5Y5Y5YOK8QVdBVVZ1', // hashed "admin123"
+        role: 'SUPER_ADMIN',
+        lastLogin: new Date(),
+      },
+    });
   }
 
-  // Get all users (for admin/super admin)
-  static async getAllUsers() {
-    return prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        avatar: true,
-        isActive: true,
-        lastLogin: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-      orderBy: { createdAt: 'desc' }
-    });
+  // Database connection management
+  static async disconnect() {
+    await prisma.$disconnect();
+  }
+
+  static async testConnection(): Promise<boolean> {
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      return true;
+    } catch (_error) {
+      return false;
+    }
   }
 }

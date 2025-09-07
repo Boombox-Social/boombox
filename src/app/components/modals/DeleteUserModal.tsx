@@ -1,8 +1,8 @@
-// File Structure: src/app/components/modals/DeleteUserModal.tsx - Delete user confirmation modal
+// components/modals/DeleteUserModal.tsx
 "use client";
 import React, { useState } from "react";
 import { TrashIcon, ExclamationTriangleIcon } from "@heroicons/react/24/solid";
-import { UserRole } from "../../types";
+import { UserRole } from "../../../generated/prisma"; // Import directly from Prisma
 import { Modal } from "../ui";
 
 const colors = {
@@ -80,25 +80,20 @@ export function DeleteUserModal({
       case UserRole.SMM:
         return colors.accent;
       default:
-        return colors.muted;
+        return colors.border;
     }
   };
 
-  const formatDate = (date: Date | string | null | undefined) => {
+  const formatDate = (date: Date | null | undefined) => {
     if (!date) return "Never";
-    const d = new Date(date);
-    return (
-      d.toLocaleDateString() +
-      " " +
-      d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    );
+    return new Date(date).toLocaleDateString();
   };
 
   if (!user) return null;
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="Delete User">
-      <div style={{ width: "100%", maxWidth: 500 }}>
+      <div style={{ width: "auto", minWidth: "400px" }}>
         {/* Warning Message */}
         <div
           style={{
@@ -298,9 +293,7 @@ export function DeleteUserModal({
             display: "flex",
             justifyContent: "flex-end",
             gap: 12,
-            marginTop: 24,
-            paddingTop: 20,
-            borderTop: `1px solid ${colors.border}`,
+            marginTop: 20,
           }}
         >
           <button
@@ -317,6 +310,16 @@ export function DeleteUserModal({
               cursor: isDeleting ? "not-allowed" : "pointer",
               opacity: isDeleting ? 0.6 : 1,
               transition: "background 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              if (!isDeleting) {
+                e.currentTarget.style.background = colors.hover;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isDeleting) {
+                e.currentTarget.style.background = colors.border;
+              }
             }}
           >
             Cancel
@@ -337,7 +340,18 @@ export function DeleteUserModal({
               display: "flex",
               alignItems: "center",
               gap: 8,
+              opacity: isDeleting ? 0.6 : 1,
               transition: "background 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              if (!isDeleting) {
+                e.currentTarget.style.background = "#DC2626";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isDeleting) {
+                e.currentTarget.style.background = colors.danger;
+              }
             }}
           >
             {isDeleting ? (
@@ -352,25 +366,25 @@ export function DeleteUserModal({
                     animation: "spin 1s linear infinite",
                   }}
                 />
-                Deleting...
+                <span>Deleting...</span>
               </>
             ) : (
               <>
                 <TrashIcon style={{ width: 16, height: 16 }} />
-                Delete Permanently
+                <span>Delete Permanently</span>
               </>
             )}
           </button>
         </div>
-
-        {/* Add spinning animation */}
-        <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
       </div>
+
+      {/* Add spinning animation */}
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </Modal>
   );
 }
