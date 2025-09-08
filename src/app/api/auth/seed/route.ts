@@ -1,7 +1,6 @@
 // api/auth/seed/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { DatabaseUtils } from '../../../utils/db.utils';
-import { request } from 'https';
 
 export async function POST(_request: NextRequest) { // Add underscore prefix
   try {
