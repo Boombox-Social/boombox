@@ -1,5 +1,6 @@
 // utils/db.utils.ts
 import { PrismaClient, UserRole } from '../../generated/prisma';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -242,23 +243,20 @@ export class DatabaseUtils {
 
   // Seeding
   static async seedSuperAdmin() {
-    const existingAdmin = await prisma.user.findFirst({
-      where: { role: 'SUPER_ADMIN' },
-    });
+    const plainPassword = "admin123"; // 👈 change this to whatever password you want
+  const saltRounds = 10;
 
-    if (existingAdmin) {
-      return existingAdmin;
-    }
+  const hashedPassword = await bcrypt.hash(plainPassword, saltRounds);
 
-    return await prisma.user.create({
-      data: {
-        name: 'Super Admin',
-        email: 'admin@boombox.com',
-        password: '$2b$10$K8QVdBVVZ1YtO5Y5Y5Y5YOK8QVdBVVZ1YtO5Y5Y5Y5YOK8QVdBVVZ1', // hashed "admin123"
-        role: 'SUPER_ADMIN',
-        lastLogin: new Date(),
-      },
-    });
+  return await prisma.user.create({
+    data: {
+      name: "Super Admin",
+      email: "admin@boombox.com",
+      password: hashedPassword, // 👈 now uses generated hash
+      role: "SUPER_ADMIN",
+      lastLogin: new Date(),
+    },
+  });
   }
 
   // Database connection management
