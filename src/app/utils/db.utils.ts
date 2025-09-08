@@ -218,23 +218,164 @@ export class DatabaseUtils {
     fontUsed?: string[];
     smmDriveLink?: string | null;
     contractDeliverables?: string | null;
-    assignedUserId?: number | null;
+    assignedUserIds?: number[]; // CHANGED: Now accepts array of user IDs
     createdById: number;
   }) {
     try {
-      return await prisma.client.create({
+      const client = await prisma.client.create({
         data: {
           ...data,
+          assignedUserIds: data.assignedUserIds || [], // Store array of user IDs
+          assignedUserId: data.assignedUserIds?.[0] || null, // Set primary SMM as first one for backward compatibility
           createdAt: new Date(),
           updatedAt: new Date(),
         },
       });
+
+      return client;
     } catch (error) {
       console.error('Error creating client:', error);
       throw error;
     }
   }
 
+  // NEW: Get all SMM users (for assignment dropdown)
+  static async getAllSMMUsers() {
+    try {
+      return await prisma.user.findMany({
+        where: {
+          role: UserRole.SMM,
+          isActive: true,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          avatar: true,
+        },
+        orderBy: {
+          name: 'asc',
+        }
+      });
+    } catch (error) {
+      console.error('Error getting SMM users:', error);
+      throw error;
+    }
+  }
+
+ // NEW: Assign multiple users to a client
+static async assignUsersToClient(clientId: number, userIds: number[]) {
+  try {
+    return await prisma.client.update({
+      where: { id: clientId },
+      data: {
+        assignedUserIds: userIds,
+        assignedUserId: userIds[0] || null, // Set primary SMM
+        updatedAt: new Date(),
+      },
+    });
+  } catch (error) {
+    console.error('Error assigning users to client:', error);
+    throw error;
+  }
+}
+
+  // NEW: Add user to client assignments
+  static async addUserToClient(clientId: number, userId: number) {
+    try {
+      const client = await prisma.client.findUnique({
+        where: { id: clientId },
+        select: { assignedUserIds: true },
+      });
+
+      if (!client) {
+        throw new Error('Client not found');
+      }
+
+      const currentUserIds = client.assignedUserIds || [];
+      if (currentUserIds.includes(userId)) {
+        return client; // User already assigned
+      }
+
+      const newUserIds = [...currentUserIds, userId];
+      
+      return await prisma.client.update({
+        where: { id: clientId },
+        data: {
+          assignedUserIds: newUserIds,
+          assignedUserId: newUserIds[0], // Update primary SMM if this is the first assignment
+          updatedAt: new Date(),
+        },
+      });
+    } catch (error) {
+      console.error('Error adding user to client:', error);
+      throw error;
+    }
+  }
+
+  
+  // NEW: Remove user from client assignments
+  static async removeUserFromClient(clientId: number, userId: number) {
+    try {
+      const client = await prisma.client.findUnique({
+        where: { id: clientId },
+        select: { assignedUserIds: true },
+      });
+
+      if (!client) {
+        throw new Error('Client not found');
+      }
+
+      const currentUserIds = client.assignedUserIds || [];
+      const newUserIds = currentUserIds.filter(id => id !== userId);
+      
+      return await prisma.client.update({
+        where: { id: clientId },
+        data: {
+          assignedUserIds: newUserIds,
+          assignedUserId: newUserIds[0] || null, // Update primary SMM
+          updatedAt: new Date(),
+        },
+      });
+    } catch (error) {
+      console.error('Error removing user from client:', error);
+      throw error;
+    }
+  }
+
+  // NEW: Get all users assigned to a client
+static async getClientAssignedUsers(clientId: number) {
+  try {
+    const client = await prisma.client.findUnique({
+      where: { id: clientId },
+      select: { assignedUserIds: true },
+    });
+
+    if (!client || !client.assignedUserIds?.length) {
+      return [];
+    }
+
+    return await prisma.user.findMany({
+      where: {
+        id: { in: client.assignedUserIds },
+        isActive: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        avatar: true,
+      },
+      orderBy: { name: 'asc' },
+    });
+  } catch (error) {
+    console.error('Error getting client assigned users:', error);
+    throw error;
+  }
+}
+
+  // UPDATED: Get clients by user (supports multiple assignments)
   static async getClientsByUser(user: { id: number; role: UserRole }) {
     try {
       if (user.role === UserRole.SUPER_ADMIN || user.role === UserRole.ADMIN) {
@@ -247,7 +388,8 @@ export class DatabaseUtils {
         return await prisma.client.findMany({
           where: {
             OR: [
-              { assignedUserId: user.id },
+              { assignedUserIds: { has: user.id } }, // NEW: Check if user ID is in the array
+              { assignedUserId: user.id }, // Keep backward compatibility
               { createdById: user.id },
             ],
           },

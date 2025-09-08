@@ -193,7 +193,7 @@ export function ClientProfile({ client }: ClientProfileProps) {
               marginTop: 4,
             }}
           >
-            {client.industry}
+            Industry: {client.industry}
           </div>
         </div>
       </div>

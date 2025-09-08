@@ -140,7 +140,7 @@ export class AuthUtils {
     return await bcrypt.compare(password, hashedPassword);
   }
 
-  // Role-based access control
+  // Permission checking method
   static hasPermission(userRole: UserRole, requiredRole: UserRole): boolean {
     const roleHierarchy = {
       [UserRole.SMM]: 1,
@@ -148,11 +148,9 @@ export class AuthUtils {
       [UserRole.SUPER_ADMIN]: 3,
     };
 
-    const userLevel = roleHierarchy[userRole] || 0;
-    const requiredLevel = roleHierarchy[requiredRole] || 0;
-
-    return userLevel >= requiredLevel;
+    return roleHierarchy[userRole] >= roleHierarchy[requiredRole];
   }
+
 
   // Enhanced authentication flow
   static async authenticateUser(email: string, password: string): Promise<{

@@ -65,10 +65,11 @@ model Client {
   updatedAt            DateTime @updatedAt
 
   // Relations
-  assignedUserId Int? // SMM user assigned to this client
-  assignedUser   User? @relation(fields: [assignedUserId], references: [id])
-  createdById    Int // User who created this client
-  createdBy      User  @relation("ClientCreator", fields: [createdById], references: [id])
+  assignedUserId  Int? // Keep existing field
+  assignedUser    User? @relation(fields: [assignedUserId], references: [id])
+  assignedUserIds Int[] @default([]) // NEW: Array of all assigned SMM user IDs
+  createdById     Int // User who created this client
+  createdBy       User  @relation("ClientCreator", fields: [createdById], references: [id])
 
   @@map("clients")
 }

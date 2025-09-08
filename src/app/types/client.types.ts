@@ -1,13 +1,13 @@
-// File Structure: src/app/types/client.types.ts - Updated client type definitions
+// types/client.types.ts
 export interface Client {
- id: number;
+  id?: number;
   logo?: string | null;
   name: string;
   address?: string | null;
   industry?: string | null;
   slogan?: string | null;
-  links?: string[]; // Always array in stored client
-  coreProducts?: string[]; // Always array in stored client
+  links?: string[];
+  coreProducts?: string[];
   idealCustomers?: string | null;
   brandEmotion?: string | null;
   uniqueProposition?: string | null;
@@ -15,14 +15,34 @@ export interface Client {
   mainGoal?: string | null;
   shortTermGoal?: string | null;
   longTermGoal?: string | null;
-  competitors?: string[]; // Always array in stored client
-  indirectCompetitors?: string[]; // Always array in stored client
-  brandAssets?: string[]; // Always array in stored client
-  fontUsed?: string[]; // Always array in stored client
+  competitors?: string[];
+  indirectCompetitors?: string[];
+  brandAssets?: string[];
+  fontUsed?: string[];
   smmDriveLink?: string | null;
   contractDeliverables?: string | null;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+  
+  // UPDATED: Multiple assigned users
+  assignedUserId?: number | null; // Keep for backward compatibility
+  assignedUserIds?: number[]; // NEW: Array of assigned user IDs
+  assignedUsers?: AssignedUser[]; // Populated array of user details
+  createdById?: number;
+  createdBy?: {
+    id: number;
+    name: string;
+    email: string;
+    role: string;
+  };
+}
+
+export interface AssignedUser {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  avatar?: string | null;
 }
 
 export interface NewClientForm {
@@ -30,8 +50,8 @@ export interface NewClientForm {
   address: string;
   industry: string;
   slogan?: string;
-  links?: string[]; // Array of URLs
-  coreProducts?: string[]; // Array of product names
+  links?: string | string[];
+  coreProducts?: string | string[];
   idealCustomers?: string;
   brandEmotion?: string;
   uniqueProposition?: string;
@@ -39,11 +59,14 @@ export interface NewClientForm {
   mainGoal?: string;
   shortTermGoal?: string;
   longTermGoal?: string;
-  competitors?: string[]; // Array of competitor names
-  indirectCompetitors?: string[]; // Array of competitor names
-  brandAssets?: string[]; // Array of URLs, not files
-  fontUsed?: string[]; // Array of font names
+  competitors?: string | string[];
+  indirectCompetitors?: string | string[];
+  brandAssets?: string | string[];
+  fontUsed?: string | string[];
   smmDriveLink?: string;
   contractDeliverables?: string;
   logo?: string | null;
+  
+  // NEW: Multiple user assignment
+  assignedUserIds?: number[];
 }
