@@ -1,4 +1,3 @@
-// api/users/smm/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthUtils } from '../../../utils/auth.utils';
 import { DatabaseUtils } from '../../../utils/db.utils';
