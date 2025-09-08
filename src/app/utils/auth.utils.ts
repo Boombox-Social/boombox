@@ -140,7 +140,7 @@ export class AuthUtils {
     return await bcrypt.compare(password, hashedPassword);
   }
 
-  // Permission checking method
+  // NEW: Permission checking method
   static hasPermission(userRole: UserRole, requiredRole: UserRole): boolean {
     const roleHierarchy = {
       [UserRole.SMM]: 1,
