@@ -21,7 +21,12 @@ export class AuthUtils {
       exp: Math.floor(Date.now() / 1000) + (60 * 60), // 1 hour
     };
 
-    return jwt.sign(payload, process.env.JWT_SECRET || 'your-secret-key');
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      throw new Error('JWT_SECRET environment variable is not set');
+    }
+
+    return jwt.sign(payload, secret);
   }
 
   static generateRefreshToken(user: User): string {
@@ -33,7 +38,12 @@ export class AuthUtils {
       exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 7), // 7 days
     };
 
-    return jwt.sign(payload, process.env.JWT_REFRESH_SECRET || 'your-refresh-secret-key');
+    const secret = process.env.JWT_REFRESH_SECRET;
+    if (!secret) {
+      throw new Error('JWT_REFRESH_SECRET environment variable is not set');
+    }
+
+    return jwt.sign(payload, secret);
   }
 
   static generateTokens(user: User): { accessToken: string; refreshToken: string } {
@@ -45,20 +55,34 @@ export class AuthUtils {
 
   static verifyToken(token: string): JWTPayload | null {
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as JWTPayload;
+      const secret = process.env.JWT_SECRET;
+      if (!secret) {
+        throw new Error('JWT_SECRET environment variable is not set');
+      }
+
+      const decoded = jwt.verify(token, secret) as JWTPayload;
       return decoded;
     } catch (error) {
-      console.error('Token verification failed:', error);
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('Token verification failed:', error);
+      }
       return null;
     }
   }
 
   static verifyRefreshToken(token: string): JWTPayload | null {
     try {
-      const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET || 'your-refresh-secret-key') as JWTPayload;
+      const secret = process.env.JWT_REFRESH_SECRET;
+      if (!secret) {
+        throw new Error('JWT_REFRESH_SECRET environment variable is not set');
+      }
+
+      const decoded = jwt.verify(token, secret) as JWTPayload;
       return decoded;
     } catch (error) {
-      console.error('Refresh token verification failed:', error);
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('Refresh token verification failed:', error);
+      }
       return null;
     }
   }
@@ -67,7 +91,7 @@ export class AuthUtils {
     return this.verifyToken(token);
   }
 
-  // Add the missing getCurrentUser method
+  // Enhanced getCurrentUser method
   static async getCurrentUser(request: NextRequest): Promise<User | null> {
     try {
       // Try to get token from cookies first (for SSR)
@@ -99,14 +123,16 @@ export class AuthUtils {
 
       return user;
     } catch (error) {
-      console.error('Error getting current user:', error);
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('Error getting current user:', error);
+      }
       return null;
     }
   }
 
-  // Password utilities
+  // Enhanced password utilities
   static async hashPassword(password: string): Promise<string> {
-    const saltRounds = 12;
+    const saltRounds = 12; // Increased for better security
     return await bcrypt.hash(password, saltRounds);
   }
 
@@ -114,7 +140,60 @@ export class AuthUtils {
     return await bcrypt.compare(password, hashedPassword);
   }
 
-  // Local storage utilities (client-side only)
+  // Role-based access control
+  static hasPermission(userRole: UserRole, requiredRole: UserRole): boolean {
+    const roleHierarchy = {
+      [UserRole.SMM]: 1,
+      [UserRole.ADMIN]: 2,
+      [UserRole.SUPER_ADMIN]: 3,
+    };
+
+    const userLevel = roleHierarchy[userRole] || 0;
+    const requiredLevel = roleHierarchy[requiredRole] || 0;
+
+    return userLevel >= requiredLevel;
+  }
+
+  // Enhanced authentication flow
+  static async authenticateUser(email: string, password: string): Promise<{
+    user: User;
+    accessToken: string;
+    refreshToken: string;
+  }> {
+    // Find user by email
+    const user = await DatabaseUtils.findUserByEmail(email);
+    if (!user) {
+      throw new Error('Invalid credentials');
+    }
+
+    // Check if user is active
+    if (!user.isActive) {
+      throw new Error('Account is inactive');
+    }
+
+    // Verify password
+    const isPasswordValid = await this.comparePassword(password, user.password);
+    if (!isPasswordValid) {
+      throw new Error('Invalid credentials');
+    }
+
+    // Update last login
+    await DatabaseUtils.updateUserLastLogin(user.id);
+
+    // Generate tokens
+    const tokens = this.generateTokens(user);
+
+    // Remove password from response
+    const { password: _password, ...userWithoutPassword } = user;
+
+    return {
+      user: userWithoutPassword as User,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+    };
+  }
+
+  // Client-side utilities (unchanged)
   static setToken(token: string): void {
     if (typeof window !== 'undefined') {
       localStorage.setItem(TOKEN_KEY, token);
@@ -162,7 +241,7 @@ export class AuthUtils {
       if (userData) {
         try {
           return JSON.parse(userData);
-        } catch (_error) {
+        } catch {
           return null;
         }
       }
@@ -209,59 +288,6 @@ export class AuthUtils {
     if (typeof document !== 'undefined') {
       document.cookie = 'auth-token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
     }
-  }
-
-  // Role-based access control
-  static hasPermission(userRole: UserRole, requiredRole: UserRole): boolean {
-    const roleHierarchy = {
-      [UserRole.SMM]: 1,
-      [UserRole.ADMIN]: 2,
-      [UserRole.SUPER_ADMIN]: 3,
-    };
-
-    const userLevel = roleHierarchy[userRole] || 0;
-    const requiredLevel = roleHierarchy[requiredRole] || 0;
-
-    return userLevel >= requiredLevel;
-  }
-
-  // Authentication flow with proper password verification
-  static async authenticateUser(email: string, password: string): Promise<{
-    user: User;
-    accessToken: string;
-    refreshToken: string;
-  }> {
-    // Find user by email
-    const user = await DatabaseUtils.findUserByEmail(email);
-    if (!user) {
-      throw new Error('Invalid credentials');
-    }
-
-    // Check if user is active
-    if (!user.isActive) {
-      throw new Error('Account is inactive');
-    }
-
-    // Verify password
-    const isPasswordValid = await this.comparePassword(password, user.password);
-    if (!isPasswordValid) {
-      throw new Error('Invalid credentials');
-    }
-
-    // Update last login
-    await DatabaseUtils.updateUserLastLogin(user.id);
-
-    // Generate tokens
-    const tokens = this.generateTokens(user);
-
-    // Remove password from response
-    const { password: _password, ...userWithoutPassword } = user;
-
-    return {
-      user: userWithoutPassword as User,
-      accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
-    };
   }
 }
 

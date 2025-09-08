@@ -1,8 +1,8 @@
+// api/auth/users/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthUtils } from '../../../utils/auth.utils';
 import { DatabaseUtils } from '../../../utils/db.utils';
 import { UserRole } from '../../../../generated/prisma';
-import { prisma } from '../../../lib/prisma';
 
 export async function POST(request: NextRequest) {
   try {
@@ -59,10 +59,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate password strength
-    if (password.length < 6) {
+    // Enhanced password validation
+    const passwordErrors = validatePassword(password);
+    if (passwordErrors.length > 0) {
       return NextResponse.json(
-        { error: 'Password must be at least 6 characters long' },
+        { error: passwordErrors.join(', ') },
         { status: 400 }
       );
     }
@@ -93,28 +94,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create user
+    // Create user with hashed password (DatabaseUtils.createUser handles hashing)
     const newUser = await DatabaseUtils.createUser({
-      email,
-      name,
-      password,
+      email: email.toLowerCase().trim(),
+      name: name.trim(),
+      password, // This will be hashed in DatabaseUtils.createUser
       role: role || UserRole.SMM,
-      avatar
+      avatar: avatar?.trim() || undefined,
     });
 
+    // Remove password from response for security
+    const { password: _password, ...userResponse } = newUser;
+
     return NextResponse.json({
+      success: true,
       message: 'User created successfully',
-      user: newUser
+      user: userResponse,
     }, { status: 201 });
 
   } catch (error) {
     console.error('Create user error:', error);
     
-    if (error instanceof Error && error.message.includes('Unique constraint')) {
-      return NextResponse.json(
-        { error: 'User with this email already exists' },
-        { status: 409 }
-      );
+    if (error instanceof Error) {
+      if (error.message.includes('Unique constraint')) {
+        return NextResponse.json(
+          { error: 'User with this email already exists' },
+          { status: 409 }
+        );
+      }
+      
+      if (error.message.includes('validation')) {
+        return NextResponse.json(
+          { error: error.message },
+          { status: 400 }
+        );
+      }
     }
     
     return NextResponse.json(
@@ -160,25 +174,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get all users
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        avatar: true,
-        isActive: true,
-        lastLogin: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-      orderBy: { createdAt: 'desc' }
-    });
+    // Get all users with safe selection (excluding password)
+    const users = await DatabaseUtils.getAllUsers();
 
     return NextResponse.json({
+      success: true,
       users,
-      total: users.length
+      total: users.length,
     });
 
   } catch (error) {
@@ -188,4 +190,31 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+// Password validation helper function
+function validatePassword(password: string): string[] {
+  const errors: string[] = [];
+  
+  if (password.length < 8) {
+    errors.push('Password must be at least 8 characters long');
+  }
+  
+  if (!/(?=.*[a-z])/.test(password)) {
+    errors.push('Password must contain at least one lowercase letter');
+  }
+  
+  if (!/(?=.*[A-Z])/.test(password)) {
+    errors.push('Password must contain at least one uppercase letter');
+  }
+  
+  if (!/(?=.*\d)/.test(password)) {
+    errors.push('Password must contain at least one number');
+  }
+  
+  if (!/(?=.*[@$!%*?&])/.test(password)) {
+    errors.push('Password must contain at least one special character (@$!%*?&)');
+  }
+  
+  return errors;
 }
