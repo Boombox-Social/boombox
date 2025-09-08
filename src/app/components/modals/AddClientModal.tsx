@@ -14,6 +14,7 @@ import {
 import { INITIAL_FORM_STATE } from "../../constants";
 import { Modal, FormField } from "../ui";
 import { useAuth } from "../../hooks/useAuth";
+import { UserAssignmentSelector } from "../client/UserAssignmentSelector";
 
 interface AddClientModalProps {
   isOpen: boolean;
@@ -26,12 +27,13 @@ export function AddClientModal({
   onClose,
   onSubmit,
 }: AddClientModalProps) {
-  const { authState: _authState } = useAuth();
+  const { authState } = useAuth();
   const [formData, setFormData] = useState<NewClientForm>(INITIAL_FORM_STATE);
   const [logoPreview, setLogoPreview] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [currentStep, setCurrentStep] = useState(0);
+  const [assignedUserIds, setAssignedUserIds] = useState<number[]>([]);
 
   const steps = [
     { title: "Basic Information", description: "Company details and logo" },
@@ -44,6 +46,10 @@ export function AddClientModal({
       description: "Competitors and brand assets",
     },
   ];
+
+  // Check if current user can assign SMMs (only ADMIN and SUPER_ADMIN)
+  const canAssignSMMs =
+    authState.user?.role === "ADMIN" || authState.user?.role === "SUPER_ADMIN";
 
   const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
@@ -102,6 +108,8 @@ export function AddClientModal({
         brandAssets: Array.isArray(formData.brandAssets)
           ? formData.brandAssets
           : [],
+        // UPDATED: Include assignedUserIds
+        assignedUserIds: assignedUserIds,
       };
 
       // Call the onSubmit callback which will use useClientManagement's addClient
@@ -111,6 +119,7 @@ export function AddClientModal({
       setFormData(INITIAL_FORM_STATE);
       setLogoPreview("");
       setCurrentStep(0);
+      setAssignedUserIds([]); // Reset assigned users
       setErrors({});
       onClose();
     } catch (error) {
@@ -139,6 +148,7 @@ export function AddClientModal({
     setFormData(INITIAL_FORM_STATE);
     setLogoPreview("");
     setCurrentStep(0);
+    setAssignedUserIds([]); // Reset assigned users
     setErrors({});
     onClose();
   };
@@ -255,6 +265,14 @@ export function AddClientModal({
                 updateFormField={updateFormField}
                 errors={errors}
               />
+
+              {/* NEW: SMM Assignment Section - Only for ADMIN/SUPER_ADMIN */}
+              {canAssignSMMs && (
+                <AssignmentSection
+                  assignedUserIds={assignedUserIds}
+                  setAssignedUserIds={setAssignedUserIds}
+                />
+              )}
             </div>
           )}
 
@@ -334,6 +352,35 @@ export function AddClientModal({
         </form>
       </div>
     </Modal>
+  );
+}
+
+// NEW: SMM Assignment Section Component
+interface AssignmentSectionProps {
+  assignedUserIds: number[];
+  setAssignedUserIds: React.Dispatch<React.SetStateAction<number[]>>;
+}
+
+function AssignmentSection({
+  assignedUserIds,
+  setAssignedUserIds,
+}: AssignmentSectionProps) {
+  return (
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold text-[#F1F5F9]">SMM Assignment</h3>
+      <p className="text-sm text-[#94A3B8]">
+        Select which Social Media Managers should be assigned to this client.
+        Leave empty to assign later.
+      </p>
+
+      <div className="bg-[#23262F] rounded-lg p-4 border border-[#2D3142]">
+        <UserAssignmentSelector
+          initialAssignedUserIds={assignedUserIds}
+          onChange={setAssignedUserIds}
+          canEdit={true}
+        />
+      </div>
+    </div>
   );
 }
 
