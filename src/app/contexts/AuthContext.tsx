@@ -28,15 +28,13 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const router = useRouter();
 
-  // Fix: Use proper AuthState type with isAuthenticated property
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
-    isAuthenticated: false, // This should now work
+    isAuthenticated: false,
     isLoading: true,
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  // Create logout function first to avoid circular dependency
   const logout = useCallback(() => {
     if (typeof window !== "undefined") {
       localStorage.removeItem("accessToken");
@@ -53,7 +51,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     router.push("/signin");
   }, [router]);
 
-  // Now create refreshAuth that can safely call logout
   const refreshAuth = useCallback(async (): Promise<void> => {
     try {
       if (typeof window === "undefined") {
@@ -74,6 +71,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (response.ok) {
         const data = await response.json();
+        console.log("🔍 Auth refresh response:", data); // DEBUG
+
         if (data.success && data.user) {
           setAuthState({
             user: data.user,
@@ -82,9 +81,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
           });
           setIsLoading(false);
         } else {
+          console.error("❌ Invalid auth refresh response:", data);
           throw new Error("Invalid user data");
         }
       } else {
+        console.error("❌ Auth refresh failed with status:", response.status);
         throw new Error("Auth refresh failed");
       }
     } catch (error) {
@@ -124,6 +125,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async (credentials: LoginFormData): Promise<void> => {
     try {
       setIsLoading(true);
+      console.log("🔐 Attempting login for:", credentials.email); // DEBUG
 
       const response = await fetch("/api/auth/signin", {
         method: "POST",
@@ -132,30 +134,48 @@ export function AuthProvider({ children }: AuthProviderProps) {
       });
 
       const data = await response.json();
+      console.log("📨 Login response:", data); // DEBUG
 
       if (!response.ok) {
+        console.error("❌ Login failed with status:", response.status, data);
         throw new Error(data.error || "Login failed");
       }
 
-      if (data.success && data.user && data.accessToken) {
-        if (typeof window !== "undefined") {
-          localStorage.setItem("accessToken", data.accessToken);
-          if (data.refreshToken) {
-            localStorage.setItem("refreshToken", data.refreshToken);
-          }
-        }
-
-        setAuthState({
-          user: data.user,
-          isAuthenticated: true,
-          isLoading: false,
-        });
-
-        router.push("/dashboard");
-      } else {
-        throw new Error("Invalid response format");
+      // Check for expected response format
+      if (!data.success) {
+        console.error("❌ Login response missing success flag:", data);
+        throw new Error(data.error || "Invalid response format");
       }
+
+      if (!data.user) {
+        console.error("❌ Login response missing user:", data);
+        throw new Error("No user data received");
+      }
+
+      if (!data.accessToken) {
+        console.error("❌ Login response missing accessToken:", data);
+        throw new Error("No access token received");
+      }
+
+      console.log("✅ Login successful, storing tokens"); // DEBUG
+
+      if (typeof window !== "undefined") {
+        localStorage.setItem("accessToken", data.accessToken);
+        if (data.refreshToken) {
+          localStorage.setItem("refreshToken", data.refreshToken);
+        }
+      }
+
+      setAuthState({
+        user: data.user,
+        isAuthenticated: true,
+        isLoading: false,
+      });
+
+      console.log("✅ Redirecting to dashboard"); // DEBUG
+      router.push("/dashboard");
     } catch (error) {
+      console.error("❌ Login error:", error);
       throw error;
     } finally {
       setIsLoading(false);

@@ -14,21 +14,22 @@ function ExpandButton({ onClick }: { onClick: () => void }) {
         position: "fixed",
         top: 20,
         left: 20,
-        zIndex: 1000,
-        background: "#2563eb",
-        color: "white",
-        border: "none",
-        borderRadius: "50%",
         width: 40,
         height: 40,
+        borderRadius: "50%",
+        background: "#2563eb",
+        color: "#F1F5F9",
+        border: "none",
+        cursor: "pointer",
+        zIndex: 20,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        cursor: "pointer",
+        fontSize: 20,
         boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
       }}
     >
-      ☰
+      →
     </button>
   );
 }
@@ -48,7 +49,7 @@ export default function DashboardLayout({
 
   const handleAddClient = async (clientData: NewClientForm) => {
     try {
-      const _newClient = await addClient(clientData); // Add underscore prefix
+      const _newClient = await addClient(clientData);
       closeModal();
     } catch (error) {
       console.error("Failed to add client:", error);
@@ -56,31 +57,35 @@ export default function DashboardLayout({
     }
   };
 
+  // Calculate sidebar width based on collapsed state
+  const sidebarWidth = sidebarCollapsed ? 80 : 280; // Match your UI_CONFIG values
+
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
-      {/* Sidebar */}
-      {!sidebarCollapsed && (
-        <SidePanel
-          collapsed={false}
-          onCollapse={() => setSidebarCollapsed(true)}
-          clients={clients}
-          onAddClientClick={openModal}
-          isLoading={isLoading}
-          error={error}
-        />
-      )}
+    <div style={{ display: "flex", minHeight: "100vh", position: "relative" }}>
+      {/* Sidebar - Always rendered but conditionally visible */}
+      <SidePanel
+        collapsed={sidebarCollapsed}
+        onCollapse={() => setSidebarCollapsed(true)}
+        clients={clients}
+        onAddClientClick={openModal}
+        isLoading={isLoading}
+        error={error}
+      />
 
       {/* Expand Button (shown when sidebar is collapsed) */}
       {sidebarCollapsed && (
         <ExpandButton onClick={() => setSidebarCollapsed(false)} />
       )}
 
-      {/* Main Content */}
+      {/* Main Content - FIXED: Add proper margin to account for sidebar */}
       <main
         style={{
           flex: 1,
-          marginLeft: sidebarCollapsed ? 0 : 0,
+          marginLeft: sidebarWidth, // This is the key fix
           transition: "margin-left 0.3s ease",
+          minHeight: "100vh",
+          background: "#181A20", // Match your app background
+          position: "relative",
         }}
       >
         {children}
