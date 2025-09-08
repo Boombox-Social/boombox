@@ -4,7 +4,7 @@ import { DatabaseUtils } from '../../../utils/db.utils';
 
 export async function POST(_request: NextRequest) { // Add underscore prefix
   try {
-     const authHeader = request.headers.get("authorization");
+     const authHeader = _request.headers.get("authorization");
     if (authHeader !== `Bearer ${process.env.SEED_SECRET}`) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
