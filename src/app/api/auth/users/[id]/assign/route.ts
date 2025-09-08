@@ -1,19 +1,10 @@
-// api/clients/[id]/assign/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { AuthUtils } from '../../../../utils/auth.utils';
-import { DatabaseUtils } from '../../../../utils/db.utils';
-import { UserRole } from '../../../../../generated/prisma';
+import { AuthUtils } from '../../../utils/auth.utils';
+import { DatabaseUtils } from '../../../utils/db.utils';
+import { UserRole } from '../../../../generated/prisma';
 
-// PUT - Update client assignments
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest) {
   try {
-    const { id } = await params;
-    const clientId = parseInt(id);
-    const { userIds } = await request.json();
-
     // Check authentication
     const currentUser = await AuthUtils.getCurrentUser(request);
     if (!currentUser) {
@@ -23,7 +14,7 @@ export async function PUT(
       );
     }
 
-    // Check permissions
+    // Check permissions - only ADMIN and SUPER_ADMIN can view SMM users for assignment
     if (!AuthUtils.hasPermission(currentUser.role, UserRole.ADMIN)) {
       return NextResponse.json(
         { error: 'Insufficient permissions' },
@@ -31,21 +22,18 @@ export async function PUT(
       );
     }
 
-    // Update assignments
-    await DatabaseUtils.assignUsersToClient(clientId, userIds);
-
-    // Get updated assignments
-    const assignedUsers = await DatabaseUtils.getClientAssignedUsers(clientId);
+    // Get all SMM users using the method from DatabaseUtils
+    const users = await DatabaseUtils.getAllSMMUsers();
 
     return NextResponse.json({
       success: true,
-      assignedUsers,
+      users,
     });
 
   } catch (error) {
-    console.error('Error updating client assignments:', error);
+    console.error('Error getting SMM users:', error);
     return NextResponse.json(
-      { error: 'Failed to update assignments' },
+      { error: 'Failed to get SMM users' },
       { status: 500 }
     );
   }

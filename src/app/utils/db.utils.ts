@@ -239,7 +239,7 @@ export class DatabaseUtils {
     }
   }
 
-  // NEW: Get all SMM users (for assignment dropdown)
+   // NEW: Get all SMM users (for assignment dropdown)
   static async getAllSMMUsers() {
     try {
       return await prisma.user.findMany({
@@ -343,37 +343,37 @@ static async assignUsersToClient(clientId: number, userIds: number[]) {
     }
   }
 
-  // NEW: Get all users assigned to a client
-static async getClientAssignedUsers(clientId: number) {
-  try {
-    const client = await prisma.client.findUnique({
-      where: { id: clientId },
-      select: { assignedUserIds: true },
-    });
+ // NEW: Get all users assigned to a client
+  static async getClientAssignedUsers(clientId: number) {
+    try {
+      const client = await prisma.client.findUnique({
+        where: { id: clientId },
+        select: { assignedUserIds: true },
+      });
 
-    if (!client || !client.assignedUserIds?.length) {
-      return [];
+      if (!client || !client.assignedUserIds?.length) {
+        return [];
+      }
+
+      return await prisma.user.findMany({
+        where: {
+          id: { in: client.assignedUserIds },
+          isActive: true,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          avatar: true,
+        },
+        orderBy: { name: 'asc' },
+      });
+    } catch (error) {
+      console.error('Error getting client assigned users:', error);
+      throw error;
     }
-
-    return await prisma.user.findMany({
-      where: {
-        id: { in: client.assignedUserIds },
-        isActive: true,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        avatar: true,
-      },
-      orderBy: { name: 'asc' },
-    });
-  } catch (error) {
-    console.error('Error getting client assigned users:', error);
-    throw error;
   }
-}
 
   // UPDATED: Get clients by user (supports multiple assignments)
   static async getClientsByUser(user: { id: number; role: UserRole }) {
