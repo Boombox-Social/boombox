@@ -27,11 +27,30 @@ export type FileUploadField = 'logo' | 'brandAssets';
 
 export type FormArrayField = string | string[] | undefined;
 
-// Helper functions
-export const arrayFieldToString = (field: string[] | undefined): string => {
-  return field ? field.join(', ') : '';
+// FIXED: Helper functions that handle both string and string[] types
+export const arrayFieldToString = (field: string | string[] | undefined): string => {
+  if (!field) return '';
+  if (typeof field === 'string') return field;
+  if (Array.isArray(field)) return field.join(', ');
+  return '';
 };
 
 export const stringToArrayField = (value: string): string[] => {
   return value.split(',').map(item => item.trim()).filter(Boolean);
+};
+
+// Additional helper for safer conversion
+export const ensureStringArray = (field: string | string[] | undefined): string[] => {
+  if (!field) return [];
+  if (typeof field === 'string') return stringToArrayField(field);
+  if (Array.isArray(field)) return field;
+  return [];
+};
+
+// Helper to ensure string format for form inputs
+export const ensureString = (field: string | string[] | undefined): string => {
+  if (!field) return '';
+  if (typeof field === 'string') return field;
+  if (Array.isArray(field)) return field.join(', ');
+  return '';
 };

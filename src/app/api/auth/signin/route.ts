@@ -1,3 +1,4 @@
+// api/auth/signin/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthUtils } from '../../../utils/auth.utils';
 import { DatabaseUtils } from '../../../utils/db.utils';
@@ -11,7 +12,10 @@ export async function POST(request: NextRequest) {
     if (!email || !password) {
       console.log('❌ Missing email or password');
       return NextResponse.json(
-        { error: 'Email and password are required' },
+        { 
+          success: false,
+          error: 'Email and password are required' 
+        },
         { status: 400 }
       );
     }
@@ -21,7 +25,10 @@ export async function POST(request: NextRequest) {
     if (!emailRegex.test(email)) {
       console.log('❌ Invalid email format:', email);
       return NextResponse.json(
-        { error: 'Invalid email format' },
+        { 
+          success: false,
+          error: 'Invalid email format' 
+        },
         { status: 400 }
       );
     }
@@ -32,7 +39,10 @@ export async function POST(request: NextRequest) {
     if (!user) {
       console.log('❌ User not found:', email);
       return NextResponse.json(
-        { error: 'Invalid email or password' },
+        { 
+          success: false,
+          error: 'Invalid email or password' 
+        },
         { status: 401 }
       );
     }
@@ -47,7 +57,10 @@ export async function POST(request: NextRequest) {
     if (!user.isActive) {
       console.log('❌ User is inactive:', email);
       return NextResponse.json(
-        { error: 'Account is inactive. Please contact an administrator.' },
+        { 
+          success: false,
+          error: 'Account is inactive. Please contact an administrator.' 
+        },
         { status: 403 }
       );
     }
@@ -57,12 +70,14 @@ export async function POST(request: NextRequest) {
     const authResult = await AuthUtils.authenticateUser(email, password);
     console.log('✅ Authentication successful for:', email);
 
-    // Create response with user data and tokens
+    // Create response with CONSISTENT field names that match frontend expectations
     const response = NextResponse.json({
+      success: true, // Frontend expects this
       message: 'Sign in successful',
       user: authResult.user,
-      token: authResult.accessToken,
-      refreshToken: authResult.refreshToken
+      accessToken: authResult.accessToken, // Frontend expects accessToken
+      refreshToken: authResult.refreshToken, // Frontend expects refreshToken
+      // Remove the old 'token' field to avoid confusion
     });
 
     // Set HTTP-only cookies for security
@@ -94,14 +109,20 @@ export async function POST(request: NextRequest) {
       
       if (error.message === 'Invalid credentials') {
         return NextResponse.json(
-          { error: 'Invalid email or password' },
+          { 
+            success: false,
+            error: 'Invalid email or password' 
+          },
           { status: 401 }
         );
       }
       
       if (error.message.includes('inactive')) {
         return NextResponse.json(
-          { error: 'Account is inactive. Please contact an administrator.' },
+          { 
+            success: false,
+            error: 'Account is inactive. Please contact an administrator.' 
+          },
           { status: 403 }
         );
       }
@@ -110,14 +131,20 @@ export async function POST(request: NextRequest) {
       if (error.message.includes('JWT') || error.message.includes('secret')) {
         console.log('❌ JWT configuration error - check your JWT_SECRET');
         return NextResponse.json(
-          { error: 'Authentication configuration error' },
+          { 
+            success: false,
+            error: 'Authentication configuration error' 
+          },
           { status: 500 }
         );
       }
     }
     
     return NextResponse.json(
-      { error: 'Authentication failed. Please try again.' },
+      { 
+        success: false,
+        error: 'Authentication failed. Please try again.' 
+      },
       { status: 500 }
     );
   }
