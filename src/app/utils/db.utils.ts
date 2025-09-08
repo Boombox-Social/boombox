@@ -242,21 +242,37 @@ export class DatabaseUtils {
   }
 
   // Seeding
-  static async seedSuperAdmin() {
-    const plainPassword = "admin123"; // 👈 change this to whatever password you want
-  const saltRounds = 10;
+ static async seedSuperAdmin() {
+    const email = 'admin@boombox.com';
+    const plainPassword = 'SuperAdmin123!';
 
-  const hashedPassword = await bcrypt.hash(plainPassword, saltRounds);
+    // Check if super admin already exists
+    let user = await prisma.user.findUnique({
+      where: { email },
+    });
 
-  return await prisma.user.create({
-    data: {
-      name: "Super Admin",
-      email: "admin@boombox.com",
-      password: hashedPassword, // 👈 now uses generated hash
-      role: "SUPER_ADMIN",
-      lastLogin: new Date(),
-    },
-  });
+    if (user) {
+      console.log('⚠️ Super admin already exists');
+      return user;
+    }
+
+    // Hash password before saving
+    const hashedPassword = await bcrypt.hash(plainPassword, 10);
+
+    // Create super admin
+    user = await prisma.user.create({
+      data: {
+        name: 'Super Admin',
+        email,
+        password: hashedPassword,
+        role: 'SUPER_ADMIN',
+        isActive: true,
+        lastLogin: new Date(),
+      },
+    });
+
+    console.log('✅ Super admin created:', user.email);
+    return user;
   }
 
   // Database connection management
