@@ -14,6 +14,13 @@ import { useClientManagement } from "../../hooks";
 import { Modal } from "../ui/Modal";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
 
+
+// Define the interface for component props
+interface ClientProfileProps {
+  client: Client;
+}
+
+
 // Dummy assigned SMM data for UI (replace with real data later)
 const assignedSMMs = [
   {
