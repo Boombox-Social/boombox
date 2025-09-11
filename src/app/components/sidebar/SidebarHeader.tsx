@@ -2,6 +2,7 @@
 import React from "react";
 import { ChevronLeftIcon } from "@heroicons/react/24/solid";
 import { COLORS } from "../../constants";
+import Image from "next/image";
 
 interface SidebarHeaderProps {
   collapsed: boolean;
@@ -20,15 +21,9 @@ export function SidebarHeader({ collapsed, onCollapse }: SidebarHeaderProps) {
         position: "relative",
       }}
     >
-      <div
-        style={{
-          width: 32,
-          height: 32,
-          borderRadius: "50%",
-          background: COLORS.accent,
-        }}
-      />
-      {!collapsed && <span style={{ fontWeight: 600 }}>Boombox Marketing</span>}
+      <Image src="/assets/images/boombox-icon.webp" alt="Logo" width={50} height={50} style={{"borderRadius":"50px"}} />
+   
+      {!collapsed && <span>Boombox Marketing</span>}
       {!collapsed && (
         <button
           onClick={onCollapse}
