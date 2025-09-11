@@ -12,7 +12,7 @@ import { UserRole } from "../../../generated/prisma";
 import { useAuth } from "../../hooks/useAuth";
 import { useClientManagement } from "../../hooks";
 import { Modal } from "../ui/Modal";
-import { UserAssignmentSelector } from "./UserAssignmentSelector";
+import { LoadingSpinner } from "../ui/LoadingSpinner";
 
 // Dummy assigned SMM data for UI (replace with real data later)
 const assignedSMMs = [
@@ -36,7 +36,6 @@ export function ClientProfile({ client }: ClientProfileProps) {
   const { deleteClient } = useClientManagement();
   const router = useRouter();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showAssignModal, setShowAssignModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string>("");
 
@@ -80,22 +79,6 @@ export function ClientProfile({ client }: ClientProfileProps) {
     setDeleteError("");
   };
 
-   const handleSMMAssignmentSave = async (userIds: number[]) => {
-    try {
-      const response = await fetch(`/api/clients/${client.id}/assign`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userIds }),
-      });
-
-      if (!response.ok) throw new Error("Failed to update assignments");
-      
-      setShowAssignModal(false);
-      // Optionally refresh the page or client data
-    } catch (error) {
-      console.error("Error updating assignments:", error);
-    }
-  };
 
   return (
     <>
