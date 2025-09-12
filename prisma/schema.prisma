@@ -66,10 +66,26 @@ model Client {
 
   // Relations
   assignedUserId  Int? // Keep existing field
-  assignedUser    User? @relation(fields: [assignedUserId], references: [id])
-  assignedUserIds Int[] @default([]) // NEW: Array of all assigned SMM user IDs
+  assignedUser    User?        @relation(fields: [assignedUserId], references: [id])
+  assignedUserIds Int[]        @default([]) // NEW: Array of all assigned SMM user IDs
   createdById     Int // User who created this client
-  createdBy       User  @relation("ClientCreator", fields: [createdById], references: [id])
+  createdBy       User         @relation("ClientCreator", fields: [createdById], references: [id])
+  ClientLinks     ClientLinks? @relation(fields: [clientLinksId], references: [id])
+  clientLinksId   Int?
 
   @@map("clients")
+}
+
+//Links for the cards on client info dashboard
+model ClientLinks {
+  id                  Int      @id @default(autoincrement())
+  clientId            Int
+  strategyAiLink      String?
+  businessSummaryLink String?
+  basecampLink        String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  Client              Client[]
+
+  @@map("client_links")
 }
