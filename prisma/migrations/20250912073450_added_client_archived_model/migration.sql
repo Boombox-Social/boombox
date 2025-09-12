@@ -1,0 +1,31 @@
+-- CreateTable
+CREATE TABLE "public"."archived_clients" (
+    "id" SERIAL NOT NULL,
+    "originalClientId" INTEGER NOT NULL,
+    "logo" TEXT,
+    "name" TEXT NOT NULL,
+    "address" TEXT,
+    "industry" TEXT,
+    "slogan" TEXT,
+    "links" TEXT[],
+    "coreProducts" TEXT[],
+    "idealCustomers" TEXT,
+    "brandEmotion" TEXT,
+    "uniqueProposition" TEXT,
+    "whyChooseUs" TEXT,
+    "mainGoal" TEXT,
+    "shortTermGoal" TEXT,
+    "longTermGoal" TEXT,
+    "competitors" TEXT[],
+    "indirectCompetitors" TEXT[],
+    "brandAssets" TEXT[],
+    "fontUsed" TEXT[],
+    "smmDriveLink" TEXT,
+    "contractDeliverables" TEXT,
+    "archivedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "assignedUserIds" INTEGER[],
+    "createdById" INTEGER NOT NULL,
+    "clientLinksId" INTEGER,
+
+    CONSTRAINT "archived_clients_pkey" PRIMARY KEY ("id")
+);
