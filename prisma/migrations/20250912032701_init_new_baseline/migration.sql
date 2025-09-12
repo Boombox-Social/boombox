@@ -12,6 +12,7 @@ CREATE TABLE "public"."users" (
     "lastLogin" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "password" TEXT NOT NULL,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -42,9 +43,24 @@ CREATE TABLE "public"."clients" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "assignedUserId" INTEGER,
+    "assignedUserIds" INTEGER[] DEFAULT ARRAY[]::INTEGER[],
     "createdById" INTEGER NOT NULL,
+    "clientLinksId" INTEGER,
 
     CONSTRAINT "clients_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."client_links" (
+    "id" SERIAL NOT NULL,
+    "clientId" INTEGER NOT NULL,
+    "strategyAiLink" TEXT,
+    "businessSummaryLink" TEXT,
+    "basecampLink" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "client_links_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -55,3 +71,6 @@ ALTER TABLE "public"."clients" ADD CONSTRAINT "clients_assignedUserId_fkey" FORE
 
 -- AddForeignKey
 ALTER TABLE "public"."clients" ADD CONSTRAINT "clients_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "public"."users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."clients" ADD CONSTRAINT "clients_clientLinksId_fkey" FOREIGN KEY ("clientLinksId") REFERENCES "public"."client_links"("id") ON DELETE SET NULL ON UPDATE CASCADE;
