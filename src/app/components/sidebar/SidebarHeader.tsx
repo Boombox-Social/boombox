@@ -21,7 +21,7 @@ export function SidebarHeader({ collapsed, onCollapse }: SidebarHeaderProps) {
         position: "relative",
       }}
     >
-      <Image src="/assets/images/boombox-icon.webp" alt="Logo" width={50} height={50} style={{"borderRadius":"50px"}} />
+      <Image src="/assets/images/boombox-logo.webp" alt="Logo" width={50} height={50} style={{"borderRadius":"50px"}} />
    
       {!collapsed && <span>Boombox Marketing</span>}
       {!collapsed && (
