@@ -20,6 +20,9 @@ export function ClientInformation({ client }: ClientInformationProps) {
   const getOverview = () =>
     `Business: ${client.name}\nIndustry: ${client.industry}\nAddress: ${client.address}\nSlogan: ${client.slogan}`;
 
+  const [overviewLink, setOverviewLink] = useState(getOverview());
+  const [editingOverview, setEditingOverview] = useState(false);
+
   return (
     <div className="bg-[#23262F] rounded-2xl p-6 min-w-0 min-h-0 overflow-y-auto relative">
       <div className="font-extrabold text-2xl text-[#F1F5F9]">
@@ -32,7 +35,12 @@ export function ClientInformation({ client }: ClientInformationProps) {
         setAiLink={setAiLink}
         setEditingAiLink={setEditingAiLink}
       />
-      <OverviewButton onClick={() => alert(getOverview())} />
+      <OverviewButton
+        overviewLink={overviewLink}
+        editingOverview={editingOverview}
+        setOverviewLink={setOverviewLink}
+        setEditingOverview={setEditingOverview}
+      />
 
       {/* Modal for Client Information */}
       <Modal
