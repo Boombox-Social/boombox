@@ -23,6 +23,8 @@ export interface Client {
   contractDeliverables?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  aiLink?: string;
+  basecampLink?: string;
   
   // UPDATED: Multiple assigned users
   assignedUserId?: number | null; // Keep for backward compatibility

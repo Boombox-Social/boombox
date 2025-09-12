@@ -13,13 +13,11 @@ import { useAuth } from "../../hooks/useAuth";
 import { useClientManagement } from "../../hooks";
 import { Modal } from "../ui/Modal";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
+import { Client } from "../../types/client.types";
 
-
-// Define the interface for component props
 interface ClientProfileProps {
   client: Client;
 }
-
 
 // Dummy assigned SMM data for UI (replace with real data later)
 const assignedSMMs = [
@@ -45,6 +43,7 @@ export function ClientProfile({ client }: ClientProfileProps) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string>("");
+  const [showAssignModal, setShowAssignModal] = useState(false);
 
   const isSuperAdmin = authState.user?.role === UserRole.SUPER_ADMIN;
 
@@ -89,7 +88,7 @@ export function ClientProfile({ client }: ClientProfileProps) {
 
   return (
     <>
-      <div className="bg-[#23262F] rounded-xl border border-[#2D3142] p-6 mb-6 relative">
+      <div className="bg-[#23262F] rounded-xl border border-[#2D3142] p-6 relative">
         {/* Delete Button */}
         {isSuperAdmin && (
           <button
@@ -237,6 +236,46 @@ export function ClientProfile({ client }: ClientProfileProps) {
                   <span>Delete Permanently</span>
                 </>
               )}
+            </button>
+          </div>
+
+
+        </div>
+      </Modal>
+
+      {/* Assign SMM Modal */}
+      <Modal
+        isOpen={showAssignModal}
+        onClose={() => setShowAssignModal(false)}
+        title="Assign Social Media Managers"
+      >
+        <div className="py-5">
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-[#F1F5F9] mb-2">
+              Select SMMs to assign (dummy data)
+            </label>
+            <ul>
+              {assignedSMMs.map((smm) => (
+                <li key={smm.id} className="flex items-center gap-2 mb-2">
+                  <UserIcon className="w-4 h-4 text-[#2563eb]" />
+                  <span className="text-[#F1F5F9]">{smm.name}</span>
+                  <span className="text-[#94A3B8] text-xs">{smm.email}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="flex justify-end gap-3 mt-6">
+            <button
+              onClick={() => setShowAssignModal(false)}
+              className="px-6 py-2 bg-[#2D3142] text-[#F1F5F9] rounded-lg font-medium hover:bg-[#374151] transition-colors"
+            >
+              Close
+            </button>
+            <button
+              onClick={() => setShowAssignModal(false)}
+              className="px-6 py-2 bg-[#2563eb] text-white rounded-lg font-medium hover:bg-[#1E40AF] transition-colors"
+            >
+              Save
             </button>
           </div>
         </div>

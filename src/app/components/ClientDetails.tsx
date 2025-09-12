@@ -4,6 +4,7 @@ import { Client } from "../types";
 import { ClientProfile } from "./client/ClientProfile";
 import { ClientInformation } from "./client/ClientInformation";
 import { SMMPromptPlaybook } from "./client/SMMPromptPlaybook";
+import { Basecamp } from "./client/Basecamp";
 
 const colors = {
   bg: "#181A20",
@@ -43,7 +44,7 @@ export default function ClientDetails({ client }: ClientDetailsProps) {
     display: "grid",
     gridTemplateColumns: "60% 40%",
     gridTemplateRows: "auto 1fr",
-    gap: 24,
+    gap: 15,
     padding: "min(5vw, 32px)",
     margin: "0 auto",
     maxWidth: 1200,
@@ -59,8 +60,15 @@ export default function ClientDetails({ client }: ClientDetailsProps) {
       {/* Top right: SMM Prompt Playbook (spans 2 rows, 40% width) */}
       <SMMPromptPlaybook client={client} />
 
-      {/* Bottom left: Info container */}
-      <ClientInformation client={client} />
+      {/* Bottom left: Info and Basecamp side by side */}
+      <div style={{ display: "flex", gap: 10, height: 320 }}>
+        <div style={{ flex: 1, minWidth: 0, height: "100%" }}>
+          <ClientInformation client={client} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0, height: "100%" }}>
+          <Basecamp link={client.basecampLink} />
+        </div>
+      </div>
     </div>
   );
 }

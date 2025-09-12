@@ -4,7 +4,7 @@ export const UI_CONFIG = {
     EXPANDED: 260,
     COLLAPSED: 72
   },
-  MODAL_MAX_WIDTH: '85em',
+  MODAL_MAX_WIDTH: '45em',
   FORM_GAP: 24,
   TRANSITION_DURATION: '0.2s',
   BORDER_RADIUS: {
