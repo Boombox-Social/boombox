@@ -6,7 +6,8 @@ import {
   TrashIcon, 
   UserIcon, 
   UsersIcon, 
-  PencilSquareIcon 
+  PencilSquareIcon,
+  ArchiveBoxIcon 
 } from "@heroicons/react/24/solid";
 import { UserRole } from "../../../generated/prisma";
 import { useAuth } from "../../hooks/useAuth";
@@ -14,7 +15,6 @@ import { useClientManagement } from "../../hooks";
 import { Modal } from "../ui/Modal";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { Client } from "../../types/client.types";
-import { ArchiveBoxIcon } from "@heroicons/react/24/solid";
 
 interface ClientProfileProps {
   client: Client;

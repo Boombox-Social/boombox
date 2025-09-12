@@ -5,14 +5,6 @@ import { Modal } from "../ui/Modal";
 import { ClientInfoModal } from "../modals/ClientInfoModal";
 import { PencilSquareIcon, CheckCircleIcon } from "@heroicons/react/24/solid";
 
-const colors = {
-  card: "#23262F",
-  accent: "#2563eb",
-  text: "#F1F5F9",
-  border: "#2D3142",
-  hover: "#1E40AF",
-};
-
 interface ClientInformationProps {
   client: Client;
 }

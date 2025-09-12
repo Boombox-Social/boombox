@@ -1,11 +1,10 @@
 // File Structure: src/app/dashboard/settings/page.tsx - Settings page with user management modals
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { PlusIcon, TrashIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 import { useAuth, usePermission } from "../../hooks/useAuth";
 import { UserRole } from "../../../generated/prisma";
 import { AddUserModal, DeleteUserModal } from "../../components/modals";
-import { ArchiveBoxIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 
 interface User {
   id: number;

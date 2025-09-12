@@ -8,19 +8,6 @@ import { EditableTagField } from "../client/EditableTagField";
 import { BrandAssetsSection } from "../client/BrandAssetsSection";
 import { PencilSquareIcon, CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
 
-const colors = {
-  bg: "#181A20",
-  side: "#23262F",
-  card: "#23262F",
-  accent: "#2563eb",
-  text: "#F1F5F9",
-  muted: "#94A3B8",
-  border: "#2D3142",
-  hover: "#1E40AF",
-  success: "#10b981",
-  error: "#ef4444",
-};
-
 interface ClientInfoModalProps {
   client: Client;
 }

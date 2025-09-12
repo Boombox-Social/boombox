@@ -6,17 +6,6 @@ import { ClientInformation } from "./client/ClientInformation";
 import { SMMPromptPlaybook } from "./client/SMMPromptPlaybook";
 import { Basecamp } from "./client/Basecamp";
 
-const colors = {
-  bg: "#181A20",
-  side: "#23262F",
-  card: "#23262F",
-  accent: "#2563eb",
-  text: "#F1F5F9",
-  muted: "#94A3B8",
-  border: "#2D3142",
-  hover: "#1E40AF",
-};
-
 type ClientDetailsProps = {
   client: Client;
 };
@@ -30,19 +19,6 @@ export default function ClientDetails({ client }: ClientDetailsProps) {
       </div>
     );
   }
-
-  // Bento grid layout with 60%-40% ratio
-  const gridStyle: React.CSSProperties = {
-    display: "grid",
-    gridTemplateColumns: "60% 40%",
-    gridTemplateRows: "auto 1fr",
-    gap: 15,
-    padding: "min(5vw, 32px)",
-    margin: "0 auto",
-    maxWidth: 1200,
-    boxSizing: "border-box",
-    minHeight: 600,
-  };
 
   return (
     <div className="grid grid-cols-[60%_40%] grid-rows-[auto_1fr] gap-[15px] p-[min(5vw,32px)] mx-auto max-w-[1200px] min-h-[600px] box-border">

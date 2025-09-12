@@ -1,14 +1,6 @@
 "use client";
-import { useState } from "react";
-import React from "react";
+import React, { useState } from "react";
 import { PencilSquareIcon, CheckCircleIcon } from "@heroicons/react/24/solid";
-
-const colors = {
-  card: "#23262F",
-  accent: "#2563eb",
-  text: "#F1F5F9",
-  border: "#2D3142",
-};
 
 interface BasecampProps {
   link?: string;
