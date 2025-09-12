@@ -23,7 +23,14 @@ export interface Client {
   contractDeliverables?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  aiLink?: string;
+  basecampLink?: string;
+  archived?: boolean;
   
+  //Client links for various platforms
+  clientLinksId?: number;
+  clientLinks?: ClientLinks;
+
   // UPDATED: Multiple assigned users
   assignedUserId?: number | null; // Keep for backward compatibility
   assignedUserIds?: number[]; // NEW: Array of assigned user IDs
@@ -69,4 +76,14 @@ export interface NewClientForm {
   
   // NEW: Multiple user assignment
   assignedUserIds?: number[];
+}
+
+export interface ClientLinks {
+  id: number;
+  clientId: number;
+  strategyAiLink?: string;
+  businessSummaryLink?: string;
+  basecampLink?: string;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 }

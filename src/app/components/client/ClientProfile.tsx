@@ -2,41 +2,71 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { TrashIcon } from "@heroicons/react/24/solid";
-import { Client } from "../../types";
-import { UserRole } from "../../../generated/prisma"; // Import directly from Prisma
+import { 
+  TrashIcon, 
+  UserIcon, 
+  UsersIcon, 
+  PencilSquareIcon,
+  ArchiveBoxIcon 
+} from "@heroicons/react/24/solid";
+import { UserRole } from "../../../generated/prisma";
 import { useAuth } from "../../hooks/useAuth";
 import { useClientManagement } from "../../hooks";
 import { Modal } from "../ui/Modal";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
-
-const colors = {
-  bg: "#181A20",
-  side: "#23262F",
-  card: "#23262F",
-  accent: "#2563eb",
-  text: "#F1F5F9",
-  muted: "#94A3B8",
-  border: "#2D3142",
-  hover: "#1E40AF",
-  danger: "#EF4444",
-  dangerHover: "#DC2626",
-};
+import { Client } from "../../types/client.types";
 
 interface ClientProfileProps {
   client: Client;
 }
 
+// Dummy assigned SMM data for UI (replace with real data later)
+const assignedSMMs = [
+  {
+    id: 1,
+    name: "John Doe",
+    avatar: null,
+    email: "john@example.com"
+  },
+  {
+    id: 2,
+    name: "Jane Smith",
+    avatar: null,
+    email: "jane@example.com"
+  }
+];
+
+
 export function ClientProfile({ client }: ClientProfileProps) {
   const { authState } = useAuth();
-  const { deleteClient } = useClientManagement();
+  const { deleteClient, archiveClient } = useClientManagement();
   const router = useRouter();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string>("");
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
+  const [archiveError, setArchiveError] = useState<string>("");
 
-  // Check if current user is Super Admin
   const isSuperAdmin = authState.user?.role === UserRole.SUPER_ADMIN;
+
+    const handleArchiveClick = async () => {
+      if (typeof client.id !== "number") return; // Prevent undefined
+      setIsArchiving(true);
+      setArchiveError("");
+      try {
+        await archiveClient(client.id);
+        setIsArchiving(false);
+        // Optionally show a toast or update UI
+      } catch (error) {
+        setArchiveError(
+          error instanceof Error
+            ? error.message
+            : "Failed to archive client. Please try again."
+        );
+        setIsArchiving(false);
+      }
+    };
 
   const handleDeleteClick = () => {
     setShowDeleteModal(true);
@@ -76,328 +106,161 @@ export function ClientProfile({ client }: ClientProfileProps) {
     setDeleteError("");
   };
 
+
   return (
     <>
-      <div
-        style={{
-          background: colors.card,
-          borderRadius: 16,
-          padding: 24,
-          position: "relative",
-          marginBottom: 24,
-          border: `1px solid ${colors.border}`,
-        }}
-      >
-        {/* Delete Button (Super Admin Only) */}
+      <div className="bg-[#23262F] rounded-xl border border-[#2D3142] p-6 relative">
+        {/* Delete & Archive Buttons */}
         {isSuperAdmin && (
-          <button
-            onClick={handleDeleteClick}
-            style={{
-              position: "absolute",
-              top: 20,
-              right: 20,
-              background: colors.danger,
-              color: colors.text,
-              border: "none",
-              borderRadius: 8,
-              padding: "8px 12px",
-              fontSize: 12,
-              fontWeight: 600,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              transition: "background 0.2s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = colors.dangerHover;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = colors.danger;
-            }}
-            title="Delete Client (Super Admin Only)"
-          >
-            <TrashIcon className="w-4 h-4" />
-            Delete
-          </button>
+          <div className="absolute top-5 right-5 flex gap-2">
+            <button
+              onClick={handleArchiveClick}
+              disabled={isArchiving}
+              className="bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              title="Archive"
+            >
+              <ArchiveBoxIcon className="w-4 h-4" />
+              {isArchiving ? "Archiving..." : "Archive"}
+            </button>
+            <button
+              onClick={handleDeleteClick}
+              className="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-2 transition-colors cursor-pointer"
+            >
+              <TrashIcon className="w-4 h-4" />
+              Delete
+            </button>
+          </div>
         )}
 
-        {/* Client Logo/Avatar */}
-        <div
-          style={{ position: "relative", width: 64, height: 64, flexShrink: 0 }}
-        >
-          {client.logo ? (
-            <img
-              src={client.logo}
-              alt="Logo"
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: "50%",
-                objectFit: "cover",
-                background: colors.muted,
-              }}
-            />
-          ) : (
-            <div
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: "50%",
-                background: colors.accent,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: colors.text,
-                fontSize: 24,
-                fontWeight: "bold",
-              }}
-            >
-              {client.name?.charAt(0)?.toUpperCase() || "?"}
-            </div>
-          )}
-        </div>
+        <div className="flex items-start gap-6">
+          {/* Client Logo/Avatar */}
+          <div className="flex-shrink-0">
+            {client.logo ? (
+              <img
+                src={client.logo}
+                alt="Logo"
+                className="w-16 h-16 rounded-full object-cover bg-[#94A3B8]"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-[#2563eb] flex items-center justify-center text-white text-2xl font-bold">
+                {client.name?.charAt(0)?.toUpperCase() || "?"}
+              </div>
+            )}
+          </div>
 
-        {/* Client Information */}
-        <div
-          style={{
-            flex: 1,
-            minWidth: 0,
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          <div
-            style={{
-              fontWeight: 700,
-              fontSize: 20,
-              wordBreak: "break-word",
-              color: colors.text,
-            }}
-          >
-            {client.name}
-          </div>
-          <div
-            style={{
-              color: colors.muted,
-              fontSize: 15,
-              wordBreak: "break-word",
-            }}
-          >
-            {client.address}
-          </div>
-          <div
-            style={{
-              color: colors.muted,
-              fontSize: 14,
-              marginTop: 4,
-            }}
-          >
-            Industry: {client.industry}
+          {/* Client Info */}
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl font-bold text-[#F1F5F9] break-words">
+              {client.name}
+            </h2>
+            <p className="text-[#94A3B8] text-sm break-words mt-1">
+              {client.address}
+            </p>
+            <p className="text-[#94A3B8] text-sm mt-2">
+              Industry: {client.industry}
+            </p>
+
+             {/* Assigned SMMs Section with Edit Button */}
+            <div className="mt-4 p-3 bg-[#181A20] rounded-lg border border-[#2D3142]">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <UsersIcon className="w-4 h-4 text-[#2563eb]" />
+                  <span className="text-[#94A3B8] text-xs font-medium">
+                    Assigned Social Media Managers
+                  </span>
+                </div>
+                {isSuperAdmin && (
+                  <button
+                    onClick={() => setShowAssignModal(true)}
+                    className="p-1 hover:bg-[#2D3142] rounded-md transition-colors"
+                    title="Edit Assignments"
+                  >
+                    <PencilSquareIcon className="w-4 h-4 text-[#2563eb]" />
+                  </button>
+                )}
+              </div>
+              
+              <div className="flex flex-wrap gap-2">
+                {assignedSMMs.map((smm) => (
+                  <div
+                    key={smm.id}
+                    className="flex items-center gap-2 px-2 py-1 bg-[#23262F] rounded-full border border-[#2D3142] hover:border-[#2563eb] transition-colors"
+                  >
+                    <div className="w-6 h-6 rounded-full bg-[#2563eb]/10 flex items-center justify-center">
+                      {smm.avatar ? (
+                        <img
+                          src={smm.avatar}
+                          alt={smm.name}
+                          className="w-6 h-6 rounded-full"
+                        />
+                      ) : (
+                        <UserIcon className="w-3 h-3 text-[#2563eb]" />
+                      )}
+                    </div>
+                    <span className="text-xs font-medium text-[#F1F5F9] truncate max-w-[120px]">
+                      {smm.name}
+                    </span>
+                  </div>
+                ))}
+                {assignedSMMs.length === 0 && (
+                  <p className="text-[#94A3B8] text-xs italic">
+                    No SMMs assigned
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
+
+      {/* Delete Modal - Update with Tailwind */}
       <Modal
         isOpen={showDeleteModal}
         onClose={handleDeleteCancel}
         title="Delete Client"
       >
-        <div style={{ padding: "20px 0" }}>
+        <div className="py-5">
           {/* Warning Message */}
-          <div
-            style={{
-              background: `${colors.danger}20`,
-              border: `1px solid ${colors.danger}40`,
-              borderRadius: 8,
-              padding: 16,
-              marginBottom: 20,
-              display: "flex",
-              alignItems: "flex-start",
-              gap: 12,
-            }}
-          >
-            <TrashIcon
-              style={{
-                width: 20,
-                height: 20,
-                color: colors.danger,
-                flexShrink: 0,
-                marginTop: 2,
-              }}
-            />
+          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-5 flex items-start gap-3">
+            <TrashIcon className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
             <div>
-              <h3
-                style={{
-                  color: colors.danger,
-                  fontSize: 16,
-                  fontWeight: 600,
-                  margin: 0,
-                  marginBottom: 8,
-                }}
-              >
+              <h3 className="text-red-500 text-base font-semibold mb-2">
                 Permanent Client Deletion
               </h3>
-              <p
-                style={{
-                  color: colors.text,
-                  fontSize: 14,
-                  margin: 0,
-                  lineHeight: 1.5,
-                }}
-              >
+              <p className="text-[#F1F5F9] text-sm leading-relaxed">
                 You are about to permanently delete{" "}
                 <strong>{client.name}</strong>. This action cannot be undone and
-                will remove all client data, including business information,
-                strategies, and prompt templates.
+                will remove all client data.
               </p>
             </div>
           </div>
 
-          {/* Client Summary */}
-          <div
-            style={{
-              background: colors.bg,
-              borderRadius: 8,
-              padding: 16,
-              marginBottom: 20,
-              border: `1px solid ${colors.border}`,
-            }}
-          >
-            <h4
-              style={{
-                color: colors.text,
-                fontSize: 14,
-                fontWeight: 600,
-                margin: 0,
-                marginBottom: 16,
-              }}
-            >
-              Client Details:
-            </h4>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: colors.muted, fontSize: 13 }}>Name:</span>
-                <span style={{ color: colors.text, fontSize: 13 }}>
-                  {client.name}
-                </span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: colors.muted, fontSize: 13 }}>
-                  Industry:
-                </span>
-                <span style={{ color: colors.text, fontSize: 13 }}>
-                  {client.industry}
-                </span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: colors.muted, fontSize: 13 }}>
-                  Address:
-                </span>
-                <span style={{ color: colors.text, fontSize: 13 }}>
-                  {client.address}
-                </span>
-              </div>
-              {client.createdAt && (
-                <div
-                  style={{ display: "flex", justifyContent: "space-between" }}
-                >
-                  <span style={{ color: colors.muted, fontSize: 13 }}>
-                    Created:
-                  </span>
-                  <span style={{ color: colors.text, fontSize: 13 }}>
-                    {new Date(client.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-              )}
+          {archiveError && (
+            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 mb-2 text-yellow-600 text-sm">
+              {archiveError}
             </div>
-          </div>
-
+          )}
           {/* Error Display */}
           {deleteError && (
-            <div
-              style={{
-                background: `${colors.danger}20`,
-                border: `1px solid ${colors.danger}40`,
-                borderRadius: 8,
-                padding: 12,
-                marginBottom: 20,
-                color: colors.danger,
-                fontSize: 14,
-              }}
-            >
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 mb-5 text-red-500 text-sm">
               {deleteError}
             </div>
           )}
 
           {/* Action Buttons */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: 12,
-              marginTop: 24,
-            }}
-          >
+          <div className="flex justify-end gap-3">
             <button
               onClick={handleDeleteCancel}
               disabled={isDeleting}
-              style={{
-                background: colors.border,
-                color: colors.text,
-                border: "none",
-                borderRadius: 8,
-                padding: "12px 24px",
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: isDeleting ? "not-allowed" : "pointer",
-                opacity: isDeleting ? 0.6 : 1,
-                transition: "background 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                if (!isDeleting) {
-                  e.currentTarget.style.background = colors.hover;
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isDeleting) {
-                  e.currentTarget.style.background = colors.border;
-                }
-              }}
+              className="px-6 py-3 bg-[#2D3142] text-[#F1F5F9] rounded-lg font-medium hover:bg-[#374151] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Cancel
             </button>
-
             <button
               onClick={handleDeleteConfirm}
               disabled={isDeleting}
-              style={{
-                background: isDeleting ? colors.muted : colors.danger,
-                color: colors.text,
-                border: "none",
-                borderRadius: 8,
-                padding: "12px 24px",
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: isDeleting ? "not-allowed" : "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                opacity: isDeleting ? 0.6 : 1,
-                transition: "background 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                if (!isDeleting) {
-                  e.currentTarget.style.background = colors.dangerHover;
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isDeleting) {
-                  e.currentTarget.style.background = colors.danger;
-                }
-              }}
+              className="px-6 py-3 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
             >
               {isDeleting ? (
                 <>
@@ -410,6 +273,46 @@ export function ClientProfile({ client }: ClientProfileProps) {
                   <span>Delete Permanently</span>
                 </>
               )}
+            </button>
+          </div>
+
+
+        </div>
+      </Modal>
+
+      {/* Assign SMM Modal */}
+      <Modal
+        isOpen={showAssignModal}
+        onClose={() => setShowAssignModal(false)}
+        title="Assign Social Media Managers"
+      >
+        <div className="py-5">
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-[#F1F5F9] mb-2">
+              Select SMMs to assign (dummy data)
+            </label>
+            <ul>
+              {assignedSMMs.map((smm) => (
+                <li key={smm.id} className="flex items-center gap-2 mb-2">
+                  <UserIcon className="w-4 h-4 text-[#2563eb]" />
+                  <span className="text-[#F1F5F9]">{smm.name}</span>
+                  <span className="text-[#94A3B8] text-xs">{smm.email}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="flex justify-end gap-3 mt-6">
+            <button
+              onClick={() => setShowAssignModal(false)}
+              className="px-6 py-2 bg-[#2D3142] text-[#F1F5F9] rounded-lg font-medium hover:bg-[#374151] transition-colors"
+            >
+              Close
+            </button>
+            <button
+              onClick={() => setShowAssignModal(false)}
+              className="px-6 py-2 bg-[#2563eb] text-white rounded-lg font-medium hover:bg-[#1E40AF] transition-colors"
+            >
+              Save
             </button>
           </div>
         </div>

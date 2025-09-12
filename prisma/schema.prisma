@@ -1,64 +1,51 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-enum UserRole {
-  SUPER_ADMIN
-  ADMIN
-  SMM
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique
-  name      String
-  password  String
-  role      UserRole  @default(SMM)
-  avatar    String? // Profile picture URL
-  isActive  Boolean   @default(true)
-  lastLogin DateTime?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
-  // Relations
-  clients        Client[] // Clients assigned to this user (for SMM role)
-  createdClients Client[] @relation("ClientCreator") // Clients created by this user
+  id             Int       @id @default(autoincrement())
+  email          String    @unique
+  name           String
+  role           UserRole  @default(SMM)
+  avatar         String?
+  isActive       Boolean   @default(true)
+  lastLogin      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  password       String
+  clients        Client[]
+  createdClients Client[]  @relation("ClientCreator")
 
   @@map("users")
 }
 
 model Client {
   id                   Int      @id @default(autoincrement())
-  logo                 String? // Logo image link
-  name                 String // Business Name
+  logo                 String?
+  name                 String
   address              String?
   industry             String?
   slogan               String?
-  links                String[] // Social media and website links
-  coreProducts         String[] // Core products/services
+  links                String[]
+  coreProducts         String[]
   idealCustomers       String?
-  brandEmotion         String? // Specific feeling or emotion brand wants to evoke
+  brandEmotion         String?
   uniqueProposition    String?
   whyChooseUs          String?
   mainGoal             String?
   shortTermGoal        String?
   longTermGoal         String?
-  competitors          String[] // Direct competitors (links)
-  indirectCompetitors  String[] // Indirect competitors (links)
-  brandAssets          String[] // Brand assets links
-  fontUsed             String[] // Array of fonts used
+  competitors          String[]
+  indirectCompetitors  String[]
+  brandAssets          String[]
+  fontUsed             String[]
   smmDriveLink         String?
   contractDeliverables String?
   createdAt            DateTime @default(now())
@@ -66,10 +53,32 @@ model Client {
 
   // Relations
   assignedUserId  Int? // Keep existing field
-  assignedUser    User? @relation(fields: [assignedUserId], references: [id])
-  assignedUserIds Int[] @default([]) // NEW: Array of all assigned SMM user IDs
+  assignedUser    User?        @relation(fields: [assignedUserId], references: [id])
+  assignedUserIds Int[]        @default([]) // NEW: Array of all assigned SMM user IDs
   createdById     Int // User who created this client
-  createdBy       User  @relation("ClientCreator", fields: [createdById], references: [id])
+  createdBy       User         @relation("ClientCreator", fields: [createdById], references: [id])
+  ClientLinks     ClientLinks? @relation(fields: [clientLinksId], references: [id])
+  clientLinksId   Int?
 
   @@map("clients")
+}
+
+//Links for the cards on client info dashboard
+model ClientLinks {
+  id                  Int      @id @default(autoincrement())
+  clientId            Int
+  strategyAiLink      String?
+  businessSummaryLink String?
+  basecampLink        String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  Client              Client[]
+
+  @@map("client_links")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  SMM
 }

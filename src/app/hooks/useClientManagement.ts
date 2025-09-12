@@ -78,6 +78,44 @@ export function useClientManagement() {
     }
   }, [authState.user, authState.isLoading, loadClients]);
 
+  // Archive client function
+  const archiveClient = useCallback(async (clientId: number): Promise<void> => {
+    try {
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('Archiving client with ID:', clientId);
+      }
+
+      const response = await fetch(`/api/clients/${clientId}/archive`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (process.env.NODE_ENV !== 'production') {
+          console.error('Archive client error:', errorData);
+        }
+        throw new Error(errorData.error || 'Failed to archive client');
+      }
+
+      const data = await response.json();
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('Client archived successfully:', data);
+      }
+
+      // Update local state
+      setClients(prev =>
+        prev.map(client =>
+          client.id === clientId ? { ...client, archived: true } : client
+        )
+      );
+    } catch (error) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('Error archiving client:', error);
+      }
+      throw error;
+    }
+  }, []);
+
   // Add client function
   const addClient = useCallback(async (formData: NewClientForm): Promise<Client> => {
     if (process.env.NODE_ENV !== 'production') {
@@ -223,6 +261,7 @@ export function useClientManagement() {
 
   return {
     clients,
+    archiveClient,
     addClient,
     updateClient, 
     deleteClient,
