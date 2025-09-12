@@ -184,7 +184,7 @@ export function AddClientModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose}>
+    <Modal isOpen={isOpen} onClose={handleClose} maxWidth="60em">
       <div className="w-full max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#2D3142]">

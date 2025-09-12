@@ -23,6 +23,9 @@ export interface Client {
   contractDeliverables?: string | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+  aiLink?: string;
+  basecampLink?: string;
+  archived?: boolean;
   
   //Client links for various platforms
   clientLinksId?: number;

@@ -7,15 +7,42 @@ interface ModalProps {
   onClose: () => void;
   children: React.ReactNode;
   title?: string;
+  maxWidth?: string;
 }
 
-export function Modal({ isOpen, onClose, children, title }: ModalProps) {
+export function Modal({ isOpen, onClose, children, title, maxWidth }: ModalProps) {
   if (!isOpen) return null;
 
   // Modal component that displays content in a centered dialog with a backdrop
   // It includes a close button and an optional title
   return (
+      <>
+      <style>{`
+        .boombox-scrollbar::-webkit-scrollbar {
+          width: 10px;
+          background: transparent;
+        }
+        .boombox-scrollbar::-webkit-scrollbar-thumb {
+          background: #2563eb;
+          border-radius: 8px;
+          border: 2px solid #181A20;
+          box-shadow: 0 0 6px 2px rgba(37,99,235,0.25);
+          min-height: 40px;
+          transition: background 0.2s;
+        }
+        .boombox-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #3b82f6;
+        }
+        .boombox-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .boombox-scrollbar {
+          scrollbar-color: #2563eb transparent;
+          scrollbar-width: thin;
+        }
+      `}</style>
     <div
+      className="boombox-scrollbar"
       style={{
         position: "fixed",
         top: 0,
@@ -45,7 +72,7 @@ export function Modal({ isOpen, onClose, children, title }: ModalProps) {
           border: `1.5px solid ${COLORS.border}`,
           padding: "clamp(18px, 4vw, 36px)",
           width: "100%",
-          maxWidth: UI_CONFIG.MODAL_MAX_WIDTH,
+          maxWidth: maxWidth || UI_CONFIG.MODAL_MAX_WIDTH,
           maxHeight: "90vh",
           overflowY: "auto",
           boxShadow: "0 8px 40px 0 rgba(0,0,0,0.30)",
@@ -65,9 +92,10 @@ export function Modal({ isOpen, onClose, children, title }: ModalProps) {
           >
             <h2
               style={{
-                fontWeight: 700,
-                fontSize: 22,
+                fontWeight: 800,
+                fontSize: 24,
                 margin: 0,
+                color: COLORS.text,
                 letterSpacing: "-0.5px",
               }}
             >
@@ -92,5 +120,6 @@ export function Modal({ isOpen, onClose, children, title }: ModalProps) {
         {children}
       </div>
     </div>
+  </>
   );
 }

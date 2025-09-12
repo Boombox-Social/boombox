@@ -5,6 +5,7 @@ import { useClientManagement, useModal } from "../hooks";
 import { NewClientForm } from "../types";
 import { AddClientModal } from "../components/modals/AddClientModal";
 import { SidePanel } from "../components/sidebar/SidePanel";
+import { UserNav } from "../components/header/UserNav";
 
 function ExpandButton({ onClick }: { onClick: () => void }) {
   return (
@@ -71,6 +72,9 @@ export default function DashboardLayout({
         isLoading={isLoading}
         error={error}
       />
+
+      {/* Add UserNav component */}
+      <UserNav />
 
       {/* Expand Button (shown when sidebar is collapsed) */}
       {sidebarCollapsed && (

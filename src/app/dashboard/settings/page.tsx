@@ -1,7 +1,7 @@
 // File Structure: src/app/dashboard/settings/page.tsx - Settings page with user management modals
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { PlusIcon, TrashIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 import { useAuth, usePermission } from "../../hooks/useAuth";
 import { UserRole } from "../../../generated/prisma";
 import { AddUserModal, DeleteUserModal } from "../../components/modals";
@@ -26,7 +26,7 @@ interface CreateUserData {
   avatar?: string;
 }
 
-type SettingsTab = "profile" | "users" | "security";
+type SettingsTab = "profile" | "users" | "security" | "archived";
 
 const colors = {
   bg: "#181A20",
@@ -51,11 +51,42 @@ export default function SettingsPage() {
     currentUser: _currentUser,
   } = usePermission(); // Add underscore prefixes to unused variables
 
+  // Dummy data for archived clients
+  const archivedClients = [
+    {
+      id: 1,
+      name: "Acme Corp",
+      industry: "Technology",
+      status: "Archived",
+    },
+    {
+      id: 2,
+      name: "Beta Solutions",
+      industry: "Consulting",
+      status: "Archived",
+    },
+    {
+      id: 3,
+      name: "Gamma Media",
+      industry: "Marketing",
+      status: "Archived",
+    },
+  ];
+
   const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
   const [users, setUsers] = useState<User[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [error, setError] = useState<string>("");
   const [hasLoadedUsers, setHasLoadedUsers] = useState(false);
+
+    // UI-only handlers
+  const handleRestoreClient = (clientId: number) => {
+    alert(`Restore client with ID: ${clientId}`);
+  };
+
+  const handlePermanentDeleteClient = (clientId: number) => {
+    alert(`Permanently delete client with ID: ${clientId}`);
+  };
 
   // Modal states
   const [showAddUserModal, setShowAddUserModal] = useState(false);
@@ -191,6 +222,7 @@ export default function SettingsPage() {
       label: "User Management",
       visible: isSuperAdmin,
     },
+    { key: "archived", label: "Archived Clients", visible: isSuperAdmin },
     { key: "security", label: "Security", visible: true },
   ];
 
@@ -457,6 +489,63 @@ export default function SettingsPage() {
             )}
           </div>
         )}
+
+      {/* Archived Clients Tab (UI only, dummy data) */}
+      {activeTab === "archived" && isSuperAdmin && (
+        <div className="p-6">
+          <h2 className="text-xl font-semibold text-[#F1F5F9] mb-6">
+            Archived Clients
+          </h2>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-[#2D3142]">
+                  <th className="text-left py-3 px-4 font-medium text-[#F1F5F9]">Name</th>
+                  <th className="text-left py-3 px-4 font-medium text-[#F1F5F9]">Industry</th>
+                  <th className="text-left py-3 px-4 font-medium text-[#F1F5F9]">Status</th>
+                  <th className="text-left py-3 px-4 font-medium text-[#F1F5F9]">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {archivedClients.map((client) => (
+                  <tr key={client.id} className="border-b border-[#2D3142] hover:bg-[#2D3142]/30">
+                    <td className="py-4 px-4 font-medium text-[#F1F5F9]">{client.name}</td>
+                    <td className="py-4 px-4 text-[#94A3B8]">{client.industry}</td>
+                    <td className="py-4 px-4">
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-600">
+                        Archived
+                      </span>
+                    </td>
+                    <td className="py-4 px-4 flex gap-2">
+                      <button
+                        onClick={() => handleRestoreClient(client.id)}
+                        className="p-2 bg-green-500/20 text-green-500 rounded hover:bg-green-500/30 transition-colors flex items-center gap-1"
+                        title="Restore Client"
+                      >
+                        <ArrowPathIcon className="w-4 h-4" />
+                        Restore
+                      </button>
+                      <button
+                        onClick={() => handlePermanentDeleteClient(client.id)}
+                        className="p-2 bg-red-500/20 text-red-500 rounded hover:bg-red-500/30 transition-colors flex items-center gap-1"
+                        title="Permanently Delete"
+                      >
+                        <TrashIcon className="w-4 h-4" />
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {archivedClients.length === 0 && (
+              <div className="text-center py-8 text-[#94A3B8]">
+                No archived clients found
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
         {/* Security Tab */}
         {activeTab === "security" && (
