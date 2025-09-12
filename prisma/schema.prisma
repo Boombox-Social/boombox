@@ -82,3 +82,37 @@ enum UserRole {
   ADMIN
   SMM
 }
+
+model ArchivedClient {
+  id                   Int      @id @default(autoincrement())
+  originalClientId     Int // Reference to the original client
+  logo                 String?
+  name                 String
+  address              String?
+  industry             String?
+  slogan               String?
+  links                String[]
+  coreProducts         String[]
+  idealCustomers       String?
+  brandEmotion         String?
+  uniqueProposition    String?
+  whyChooseUs          String?
+  mainGoal             String?
+  shortTermGoal        String?
+  longTermGoal         String?
+  competitors          String[]
+  indirectCompetitors  String[]
+  brandAssets          String[]
+  fontUsed             String[]
+  smmDriveLink         String?
+  contractDeliverables String?
+  archivedAt           DateTime @default(now())
+  assignedUserIds      Int[]
+  createdById          Int
+  clientLinksId        Int?
+  // Optionally, add a relation to User if you want to track who archived
+  // archivedById         Int?
+  // archivedBy           User? @relation(fields: [archivedById], references: [id])
+
+  @@map("archived_clients")
+}
