@@ -1,5 +1,7 @@
 "use client";
+import { useState } from "react";
 import React from "react";
+import { PencilSquareIcon, CheckCircleIcon } from "@heroicons/react/24/solid";
 
 const colors = {
   card: "#23262F",
@@ -13,44 +15,52 @@ interface BasecampProps {
 }
 
 export function Basecamp({ link }: BasecampProps) {
+  const [editing, setEditing] = useState(false);
+  const [basecampLink, setBasecampLink] = useState(link || "");
   return (
-    <div
-      style={{
-        background: colors.card,
-        borderRadius: 16,
-        padding: 24,
-        minWidth: 0,
-        minHeight: 0,
-        overflowY: "auto",
-        position: "relative",
-      }}
-    >
-      <div style={{ fontWeight: 800, fontSize: 24, color: colors.text, textAlign: "center" }}>
+  <>
+    <div className="bg-[#23262F] rounded-2xl p-6 min-w-0 min-h-0 overflow-auto relative">
+      <div className="font-extrabold text-2xl text-[#F1F5F9] text-center">
         Basecamp
       </div>
-      <button
-        style={{
-          marginTop: 20,
-          background: colors.accent,
-          color: colors.text,
-          border: "none",
-          borderRadius: 8,
-          padding: "10px 18px",
-          fontSize: 16,
-          fontWeight: 600,
-          cursor: "pointer",
-          transition: "background 0.2s",
-          width: "100%",
-          maxWidth: "100%",
-          minWidth: 80,
-          display: "block",
-        }}
-        onClick={() =>
-          window.open(link || "https://placeholder-link.com", "_blank")
-        }
-      >
-        Go to Basecamp
-      </button>
+      <div className="flex justify-center gap-2 mt-5">
+        {editing ? (
+          <>
+            <input
+              type="text"
+              value={basecampLink}
+              onChange={e => setBasecampLink(e.target.value)}
+              className="px-4 py-2 rounded-lg border border-[#2D3142] text-base w-[180px] max-w-[220px] focus:outline-none"
+              autoFocus
+              placeholder="Enter Basecamp link"
+            />
+            <button
+              className="bg-[#2563eb] text-[#F1F5F9] rounded-lg px-2 py-2 cursor-pointer transition-colors min-w-[40px] flex items-center justify-center"
+              onClick={() => setEditing(false)}
+              title="Save Basecamp Link"
+            >
+              <CheckCircleIcon className="w-4 h-4 text-[#F1F5F9]" />
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              className="bg-[#2563eb] text-[#F1F5F9] rounded-lg px-4 py-2 cursor-pointer transition-colors w-full max-w-[220px] min-w-[80px] block"
+              onClick={() => window.open(basecampLink || "https://placeholder-link.com", "_blank")}
+            >
+              Go to Basecamp
+            </button>
+            <button
+              className="bg-[#2D3142] text-[#F1F5F9] rounded-lg px-2 py-2 cursor-pointer transition-colors min-w-[40px] flex items-center justify-center"
+              onClick={() => setEditing(true)}
+              title="Edit Basecamp Link"
+            >
+              <PencilSquareIcon className="w-4 h-4 text-[#2563eb]" />
+            </button>
+          </>
+        )}
+      </div>
     </div>
+    </>
   );
 }

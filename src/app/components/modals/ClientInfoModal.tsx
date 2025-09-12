@@ -6,6 +6,7 @@ import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { EditableField } from "../client/EditableField";
 import { EditableTagField } from "../client/EditableTagField";
 import { BrandAssetsSection } from "../client/BrandAssetsSection";
+import { PencilSquareIcon, CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
 
 const colors = {
   bg: "#181A20",
@@ -113,106 +114,48 @@ export function ClientInfoModal({ client }: ClientInfoModalProps) {
   );
 
   return (
-    <div
-      style={{
-        background: colors.card,
-        gridColumn: 1,
-        gridRow: 2,
-        minWidth: 0,
-        minHeight: 0,
-        position: "relative",
-      }}
-    >
+    <div className="bg-[#23262F] min-w-0 min-h-0 relative">
       {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          marginBottom: 10,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      <div className="flex items-center justify-end mb-2">
+        <div className="flex items-center gap-3">
           {editing ? (
             <>
               <button
-                style={{
-                  background: colors.border,
-                  color: colors.text,
-                  border: "none",
-                  borderRadius: 8,
-                  padding: "8px 16px",
-                  fontSize: 14,
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  transition: "background 0.2s",
-                  fontWeight: 600,
-                }}
+                className="bg-[#ff2929] text-[#F1F5F9] border-none rounded-lg px-4 py-2 text-sm font-semibold flex items-center justify-center transition-colors cursor-pointer"
                 onClick={handleCancel}
                 disabled={saving}
               >
-                ❌ Cancel
+                <XCircleIcon className="w-4 h-4 text-[#F1F5F9]" /> Cancel
               </button>
               <button
-                style={{
-                  background: saving ? colors.muted : colors.success,
-                  color: colors.text,
-                  border: "none",
-                  borderRadius: 8,
-                  padding: "8px 16px",
-                  fontSize: 14,
-                  cursor: saving ? "not-allowed" : "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  transition: "background 0.2s",
-                  fontWeight: 600,
-                  opacity: saving ? 0.7 : 1,
-                }}
+                className={`${
+                  saving ? "bg-[#94A3B8] opacity-70 cursor-not-allowed" : "bg-[#10b981] cursor-pointer"
+                } text-[#F1F5F9] border-none rounded-lg px-4 py-2 text-sm font-semibold flex items-center justify-center transition-colors`}
                 onClick={handleSave}
                 disabled={saving}
               >
                 {saving ? (
                   <>
-                    <div
-                      style={{
-                        width: 16,
-                        height: 16,
-                        border: "2px solid white",
-                        borderTop: "2px solid transparent",
-                        borderRadius: "50%",
-                        animation: "spin 1s linear infinite",
-                        marginRight: 8,
-                      }}
+                    <span
+                      className="inline-block mr-2 w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+                      style={{ verticalAlign: "middle" }}
                     />
                     Saving...
                   </>
                 ) : (
-                  "💾 Save Changes"
+                  <>
+                    <CheckCircleIcon className="w-4 h-4 text-[#F1F5F9]" />
+                    <span className="ml-1">Save Changes</span>
+                  </>
                 )}
               </button>
             </>
           ) : (
             <button
-              style={{
-                background: colors.accent,
-                color: colors.text,
-                border: "none",
-                borderRadius: 8,
-                padding: "8px 16px",
-                fontSize: 14,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                transition: "background 0.2s",
-                fontWeight: 600,
-              }}
+              className="bg-[#2563eb] text-[#F1F5F9] border-none rounded-lg px-4 py-2 text-sm font-semibold flex items-center justify-center transition-colors cursor-pointer hover:bg-[#1E40AF]"
               onClick={() => setEditing(true)}
             >
-              ✏️ Edit Info
+              <PencilSquareIcon className="w-4 h-4 text-[#F1F5F9]" /> Edit Info
             </button>
           )}
         </div>
@@ -220,50 +163,20 @@ export function ClientInfoModal({ client }: ClientInfoModalProps) {
 
       {/* Error Display */}
       {error && (
-        <div
-          style={{
-            background: `${colors.error}20`,
-            border: `1px solid ${colors.error}40`,
-            borderRadius: 8,
-            padding: 12,
-            marginBottom: 20,
-            color: colors.error,
-            fontSize: 14,
-          }}
-        >
+        <div className="bg-[#ef444420] border border-[#ef444440] rounded-lg p-3 mb-5 text-[#ef4444] text-sm">
           {error}
         </div>
       )}
 
       {/* Saving Overlay */}
       {saving && (
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(0,0,0,0.5)",
-            borderRadius: 16,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 10,
-          }}
-        >
+        <div className="absolute inset-0 bg-black bg-opacity-50 rounded-2xl flex items-center justify-center z-10">
           <LoadingSpinner size="large" text="Saving changes..." />
         </div>
       )}
 
       {/* Grid Layout */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-          gap: 10,
-        }}
-      >
+      <div className="grid gap-2 grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
         {/* Basic Info */}
         <EditableField
           label="Industry"

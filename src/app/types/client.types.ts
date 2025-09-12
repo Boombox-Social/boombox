@@ -25,6 +25,7 @@ export interface Client {
   updatedAt?: Date | string;
   aiLink?: string;
   basecampLink?: string;
+  archived?: boolean;
   
   // UPDATED: Multiple assigned users
   assignedUserId?: number | null; // Keep for backward compatibility

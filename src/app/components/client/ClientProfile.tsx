@@ -14,6 +14,7 @@ import { useClientManagement } from "../../hooks";
 import { Modal } from "../ui/Modal";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { Client } from "../../types/client.types";
+import { ArchiveBoxIcon } from "@heroicons/react/24/solid";
 
 interface ClientProfileProps {
   client: Client;
@@ -38,14 +39,34 @@ const assignedSMMs = [
 
 export function ClientProfile({ client }: ClientProfileProps) {
   const { authState } = useAuth();
-  const { deleteClient } = useClientManagement();
+  const { deleteClient, archiveClient } = useClientManagement();
   const router = useRouter();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string>("");
   const [showAssignModal, setShowAssignModal] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
+  const [archiveError, setArchiveError] = useState<string>("");
 
   const isSuperAdmin = authState.user?.role === UserRole.SUPER_ADMIN;
+
+    const handleArchiveClick = async () => {
+      if (typeof client.id !== "number") return; // Prevent undefined
+      setIsArchiving(true);
+      setArchiveError("");
+      try {
+        await archiveClient(client.id);
+        setIsArchiving(false);
+        // Optionally show a toast or update UI
+      } catch (error) {
+        setArchiveError(
+          error instanceof Error
+            ? error.message
+            : "Failed to archive client. Please try again."
+        );
+        setIsArchiving(false);
+      }
+    };
 
   const handleDeleteClick = () => {
     setShowDeleteModal(true);
@@ -89,15 +110,26 @@ export function ClientProfile({ client }: ClientProfileProps) {
   return (
     <>
       <div className="bg-[#23262F] rounded-xl border border-[#2D3142] p-6 relative">
-        {/* Delete Button */}
+        {/* Delete & Archive Buttons */}
         {isSuperAdmin && (
-          <button
-            onClick={handleDeleteClick}
-            className="absolute top-5 right-5 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-2 transition-colors"
-          >
-            <TrashIcon className="w-4 h-4" />
-            Delete
-          </button>
+          <div className="absolute top-5 right-5 flex gap-2">
+            <button
+              onClick={handleArchiveClick}
+              disabled={isArchiving}
+              className="bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              title="Archive"
+            >
+              <ArchiveBoxIcon className="w-4 h-4" />
+              {isArchiving ? "Archiving..." : "Archive"}
+            </button>
+            <button
+              onClick={handleDeleteClick}
+              className="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-2 transition-colors cursor-pointer"
+            >
+              <TrashIcon className="w-4 h-4" />
+              Delete
+            </button>
+          </div>
         )}
 
         <div className="flex items-start gap-6">
@@ -204,6 +236,11 @@ export function ClientProfile({ client }: ClientProfileProps) {
             </div>
           </div>
 
+          {archiveError && (
+            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 mb-2 text-yellow-600 text-sm">
+              {archiveError}
+            </div>
+          )}
           {/* Error Display */}
           {deleteError && (
             <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 mb-5 text-red-500 text-sm">
