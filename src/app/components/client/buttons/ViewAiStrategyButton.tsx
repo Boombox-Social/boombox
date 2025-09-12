@@ -15,7 +15,7 @@ export function ViewAiStrategyButton({
   setEditingAiLink,
 }: ViewAiStrategyButtonProps) {
   return (
-    <div className="flex items-center gap-2 mt-4 justify-center">
+    <div className="flex justify-center gap-2 mt-5">
       {editingAiLink ? (
         <>
           <input

@@ -15,7 +15,7 @@ export function OverviewButton({
   setEditingOverview,
 }: OverviewButtonProps) {
   return (
-    <div className="flex items-center gap-2 mt-4 justify-center">
+    <div className="flex justify-center gap-2 mt-5">
       {editingOverview ? (
         <>
           <input
@@ -45,7 +45,7 @@ export function OverviewButton({
             Overview
           </button>
           <button
-            className="bg-[#2D3142] text-[#F1F5F9] border-none rounded-lg px-2 py-2 text-lg cursor-pointer transition-colors min-w-[40px] flex items-center justify-center"
+            className="bg-[#2D3142] text-[#F1F5F9] rounded-lg px-2 py-2 cursor-pointer transition-colors min-w-[40px] flex items-center justify-center hover:bg-[#3c4152] focus:outline-none"
             onClick={() => setEditingOverview(true)}
             title="Edit Overview Link"
           >
