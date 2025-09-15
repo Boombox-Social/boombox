@@ -2,12 +2,12 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { 
-  TrashIcon, 
-  UserIcon, 
-  UsersIcon, 
+import {
+  TrashIcon,
+  UserIcon,
+  UsersIcon,
   PencilSquareIcon,
-  ArchiveBoxIcon 
+  ArchiveBoxIcon,
 } from "@heroicons/react/24/solid";
 import { UserRole } from "../../../generated/prisma";
 import { useAuth } from "../../hooks/useAuth";
@@ -26,16 +26,15 @@ const assignedSMMs = [
     id: 1,
     name: "John Doe",
     avatar: null,
-    email: "john@example.com"
+    email: "john@example.com",
   },
   {
     id: 2,
     name: "Jane Smith",
     avatar: null,
-    email: "jane@example.com"
-  }
+    email: "jane@example.com",
+  },
 ];
-
 
 export function ClientProfile({ client }: ClientProfileProps) {
   const { authState } = useAuth();
@@ -45,28 +44,37 @@ export function ClientProfile({ client }: ClientProfileProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string>("");
   const [showAssignModal, setShowAssignModal] = useState(false);
+
+  // Archive modal state
+  const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [archiveError, setArchiveError] = useState<string>("");
 
   const isSuperAdmin = authState.user?.role === UserRole.SUPER_ADMIN;
 
-    const handleArchiveClick = async () => {
-      if (typeof client.id !== "number") return; // Prevent undefined
-      setIsArchiving(true);
-      setArchiveError("");
-      try {
-        await archiveClient(client.id);
-        setIsArchiving(false);
-        // Optionally show a toast or update UI
-      } catch (error) {
-        setArchiveError(
-          error instanceof Error
-            ? error.message
-            : "Failed to archive client. Please try again."
-        );
-        setIsArchiving(false);
-      }
-    };
+  const handleArchiveClick = () => {
+    setShowArchiveModal(true);
+    setArchiveError("");
+  };
+
+  const handleArchiveConfirm = async () => {
+    if (typeof client.id !== "number") return;
+    setIsArchiving(true);
+    setArchiveError("");
+    try {
+      await archiveClient(client.id);
+      setShowArchiveModal(false);
+      router.push("/dashboard");
+    } catch (error) {
+      setArchiveError(
+        error instanceof Error
+          ? error.message
+          : "Failed to archive client. Please try again."
+      );
+    } finally {
+      setIsArchiving(false);
+    }
+  };
 
   const handleDeleteClick = () => {
     setShowDeleteModal(true);
@@ -106,7 +114,6 @@ export function ClientProfile({ client }: ClientProfileProps) {
     setDeleteError("");
   };
 
-
   return (
     <>
       <div className="bg-[#23262F] rounded-xl border border-[#2D3142] p-6 relative">
@@ -120,7 +127,7 @@ export function ClientProfile({ client }: ClientProfileProps) {
               title="Archive"
             >
               <ArchiveBoxIcon className="w-4 h-4" />
-              {isArchiving ? "Archiving..." : "Archive"}
+              Archive
             </button>
             <button
               onClick={handleDeleteClick}
@@ -160,7 +167,7 @@ export function ClientProfile({ client }: ClientProfileProps) {
               Industry: {client.industry}
             </p>
 
-             {/* Assigned SMMs Section with Edit Button */}
+            {/* Assigned SMMs Section with Edit Button */}
             <div className="mt-4 p-3 bg-[#181A20] rounded-lg border border-[#2D3142]">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
@@ -179,7 +186,7 @@ export function ClientProfile({ client }: ClientProfileProps) {
                   </button>
                 )}
               </div>
-              
+
               <div className="flex flex-wrap gap-2">
                 {assignedSMMs.map((smm) => (
                   <div
@@ -212,7 +219,6 @@ export function ClientProfile({ client }: ClientProfileProps) {
           </div>
         </div>
       </div>
-
 
       {/* Delete Modal - Update with Tailwind */}
       <Modal
@@ -275,8 +281,58 @@ export function ClientProfile({ client }: ClientProfileProps) {
               )}
             </button>
           </div>
+        </div>
+      </Modal>
 
-
+      {/* Archive Confirmation Modal */}
+      <Modal
+        isOpen={showArchiveModal}
+        onClose={() => setShowArchiveModal(false)}
+        title="Archive Client"
+        maxWidth="28em"
+      >
+        <div className="p-4">
+          <h3 className="text-lg font-semibold text-[#F1F5F9] mb-2">
+            Confirm Archive
+          </h3>
+          <p className="text-[#94A3B8] mb-4">
+            Are you sure you want to archive <strong>{client.name}</strong>?
+            This will move the client to the archive and remove it from the
+            active list.
+          </p>
+          {archiveError && (
+            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 mb-2 text-yellow-600 text-sm">
+              {archiveError}
+            </div>
+          )}
+          <div className="flex justify-end gap-3 mt-6">
+            <button
+              onClick={() => setShowArchiveModal(false)}
+              className="px-6 py-2 bg-[#2D3142] text-[#F1F5F9] rounded-lg font-medium hover:bg-[#374151] transition-colors"
+              disabled={isArchiving}
+              type="button"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleArchiveConfirm}
+              className="px-6 py-2 bg-yellow-500 text-white rounded-lg font-medium hover:bg-yellow-600 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isArchiving}
+              type="button"
+            >
+              {isArchiving ? (
+                <>
+                  <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Archiving...
+                </>
+              ) : (
+                <>
+                  <ArchiveBoxIcon className="w-5 h-5" />
+                  Archive
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </Modal>
 
