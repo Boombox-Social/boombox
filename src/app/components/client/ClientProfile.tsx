@@ -38,7 +38,7 @@ const assignedSMMs = [
 
 export function ClientProfile({ client }: ClientProfileProps) {
   const { authState } = useAuth();
-  const { deleteClient, archiveClient } = useClientManagement();
+  const { deleteClient, archiveClient, loadClients } = useClientManagement();
   const router = useRouter();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -63,6 +63,8 @@ export function ClientProfile({ client }: ClientProfileProps) {
     setArchiveError("");
     try {
       await archiveClient(client.id);
+      console.log("loading new client list...");
+      await loadClients();
       setShowArchiveModal(false);
       router.push("/dashboard");
     } catch (error) {
