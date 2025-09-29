@@ -29,12 +29,7 @@ export function ClientInformation({ client }: ClientInformationProps) {
         Business Information
       </div>
       <OpenDetailsButton onClick={() => setShowInfoModal(true)} />
-      <ViewAiStrategyButton
-        aiLink={aiLink}
-        editingAiLink={editingAiLink}
-        setAiLink={setAiLink}
-        setEditingAiLink={setEditingAiLink}
-      />
+      <ViewAiStrategyButton clientId={client.id} />
       <OverviewButton clientId={client.id} />
 
       {/* Modal for Client Information */}
