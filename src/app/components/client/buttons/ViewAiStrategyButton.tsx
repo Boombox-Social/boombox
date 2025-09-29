@@ -14,9 +14,11 @@ export function ViewAiStrategyButton({
   setAiLink,
   setEditingAiLink,
 }: ViewAiStrategyButtonProps) {
+  const shouldShowInput = editingAiLink || !aiLink;
+
   return (
     <div className="flex justify-center gap-2 mt-5">
-      {editingAiLink ? (
+      {shouldShowInput ? (
         <>
           <input
             type="text"
@@ -24,12 +26,13 @@ export function ViewAiStrategyButton({
             onChange={(e) => setAiLink(e.target.value)}
             className="px-5 py-2 rounded-lg border border-[#2D3142] text-base w-full max-w-full min-w-[80px] focus:outline-none"
             autoFocus
-            placeholder="Enter Ai link"
+            placeholder="Enter Docs link"
           />
           <button
             className="bg-[#2563eb] text-[#F1F5F9] border border-[#2D3142] rounded-lg px-5 py-2 text-lg cursor-pointer transition-colors flex items-center min-w-[40px] justify-center"
             onClick={() => setEditingAiLink(false)}
             title="Save Ai Link"
+            disabled={!aiLink}
           >
             <CheckCircleIcon className="w-4 h-4 text-[#F1F5F9]" />
           </button>
