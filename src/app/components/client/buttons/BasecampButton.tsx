@@ -21,7 +21,7 @@ export function BasecampButton({ clientId }: BasecampButtonProps) {
         const res = await fetch(`/api/clients/${clientId}/basecamp-link`);
         const data = await res.json();
         setBasecampLink(data.basecampLink || "");
-      } catch (err) {
+      } catch (_err) {
         setError("Failed to load Basecamp link.");
       }
       setLoading(false);
@@ -41,7 +41,7 @@ export function BasecampButton({ clientId }: BasecampButtonProps) {
       });
       if (!res.ok) throw new Error("Failed to save link");
       setEditing(false);
-    } catch (err) {
+    } catch (_err) {
       setError("Failed to save Basecamp link.");
     }
     setSaving(false);

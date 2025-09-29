@@ -22,7 +22,7 @@ export function OverviewButton({ clientId }: OverviewButtonProps) {
         const res = await fetch(`/api/clients/${clientId}/overview-link`);
         const data = await res.json();
         setOverviewLink(data.businessSummaryLink || "");
-      } catch (err) {
+      } catch (_err) {
         setError("Failed to load overview link.");
       }
       setLoading(false);
@@ -43,7 +43,7 @@ export function OverviewButton({ clientId }: OverviewButtonProps) {
       });
       if (!res.ok) throw new Error("Failed to save link");
       setEditing(false);
-    } catch (err) {
+    } catch (_err) {
       setError("Failed to save overview link.");
     }
     setSaving(false);

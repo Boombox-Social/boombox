@@ -22,7 +22,7 @@ export function ViewAiStrategyButton({ clientId }: ViewAiStrategyButtonProps) {
         const res = await fetch(`/api/clients/${clientId}/ai-strategy-link`);
         const data = await res.json();
         setAiLink(data.strategyAiLink || "");
-      } catch (err) {
+      } catch (_err) {
         setError("Failed to load AI Strategy link.");
       }
       setLoading(false);
@@ -43,7 +43,7 @@ export function ViewAiStrategyButton({ clientId }: ViewAiStrategyButtonProps) {
       });
       if (!res.ok) throw new Error("Failed to save link");
       setEditingAiLink(false);
-    } catch (err) {
+    } catch (_err) {
       setError("Failed to save AI Strategy link.");
     }
     setSaving(false);

@@ -13,15 +13,6 @@ interface ClientInformationProps {
 
 export function ClientInformation({ client }: ClientInformationProps) {
   const [showInfoModal, setShowInfoModal] = useState(false);
-  const [aiLink, setAiLink] = useState(client.aiLink || "");
-  const [editingAiLink, setEditingAiLink] = useState(false);
-
-  // Dummy overview summary function
-  const getOverview = () =>
-    `Business: ${client.name}\nIndustry: ${client.industry}\nAddress: ${client.address}\nSlogan: ${client.slogan}`;
-
-  const [overviewLink, setOverviewLink] = useState(getOverview());
-  const [editingOverview, setEditingOverview] = useState(false);
 
   return (
     <div className="bg-[#23262F] rounded-2xl p-6 min-w-0 min-h-0 overflow-y-auto relative">
