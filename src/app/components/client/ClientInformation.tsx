@@ -35,12 +35,7 @@ export function ClientInformation({ client }: ClientInformationProps) {
         setAiLink={setAiLink}
         setEditingAiLink={setEditingAiLink}
       />
-      <OverviewButton
-        overviewLink={overviewLink}
-        editingOverview={editingOverview}
-        setOverviewLink={setOverviewLink}
-        setEditingOverview={setEditingOverview}
-      />
+      <OverviewButton clientId={client.id} />
 
       {/* Modal for Client Information */}
       <Modal
