@@ -34,7 +34,7 @@ export default function ClientDetails({ client }: ClientDetailsProps) {
           <ClientInformation client={client} />
         </div>
         <div className="flex-1 min-w-0 h-full">
-          <Basecamp link={client.basecampLink} />
+          <Basecamp clientId={client.id} />
         </div>
       </div>
     </div>
