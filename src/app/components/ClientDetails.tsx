@@ -1,4 +1,3 @@
-"use client";
 import React from "react";
 import { Client } from "../types";
 import { ClientProfile } from "./client/ClientProfile";
@@ -21,21 +20,27 @@ export default function ClientDetails({ client }: ClientDetailsProps) {
   }
 
   return (
-    <div className="grid grid-cols-[60%_40%] grid-rows-[auto_1fr] gap-[15px] p-[min(5vw,32px)] mx-auto max-w-[1200px] min-h-[600px] box-border">
+    <div className="
+      flex flex-col gap-6 p-4 sm:p-6 md:p-8 max-w-[1200px] mx-auto min-h-[600px]
+      md:grid md:grid-cols-[60%_40%] md:grid-rows-[auto_1fr] md:gap-6
+    ">
       {/* Top left: Profile container */}
-      <ClientProfile client={client} />
+      <div className="md:row-span-2 md:col-span-1 min-w-0">
+        <ClientProfile client={client} />
+        {/* Info and Basecamp stacked on mobile, side by side on md+ */}
+        <div className="flex flex-col gap-4 mt-4 md:flex-row md:gap-4">
+          <div className="flex-1 min-w-0">
+            <ClientInformation client={client} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <Basecamp link={client.basecampLink} />
+          </div>
+        </div>
+      </div>
 
       {/* Top right: SMM Prompt Playbook (spans 2 rows, 40% width) */}
-      <SMMPromptPlaybook client={client} />
-
-      {/* Bottom left: Info and Basecamp side by side */}
-      <div className="flex gap-[10px] h-[320px]">
-        <div className="flex-1 min-w-0 h-full">
-          <ClientInformation client={client} />
-        </div>
-        <div className="flex-1 min-w-0 h-full">
-          <Basecamp link={client.basecampLink} />
-        </div>
+      <div className="md:col-span-1 md:row-span-2 min-w-0 mt-6 md:mt-0">
+        <SMMPromptPlaybook client={client} />
       </div>
     </div>
   );

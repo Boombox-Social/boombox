@@ -231,7 +231,7 @@ export default function SettingsPage() {
   return (
     <>
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-8 p-6">
         <h1 className="text-3xl font-bold text-[#F1F5F9] mb-2">Settings</h1>
         <p className="text-[#94A3B8]">
           Manage your account and application settings

@@ -1,4 +1,3 @@
-// dashboard/layout.tsx
 "use client";
 import React, { useState } from "react";
 import { useClientManagement, useModal } from "../hooks";
@@ -7,63 +6,34 @@ import { AddClientModal } from "../components/modals/AddClientModal";
 import { SidePanel } from "../components/sidebar/SidePanel";
 import { UserNav } from "../components/header/UserNav";
 
-function ExpandButton({ onClick }: { onClick: () => void }) {
+function BurgerButton({ onClick }: { onClick: () => void }) {
   return (
     <button
+      className="fixed top-4 left-2 z-40 md:hidden text-[#F1F5F9] rounded-full w-10 h-10 flex items-center justify-center shadow-lg"
       onClick={onClick}
-      style={{
-        position: "fixed",
-        top: 20,
-        left: 20,
-        width: 40,
-        height: 40,
-        borderRadius: "50%",
-        background: "#2563eb",
-        color: "#F1F5F9",
-        border: "none",
-        cursor: "pointer",
-        zIndex: 20,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontSize: 20,
-        boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
-      }}
+      aria-label="Open sidebar"
     >
-      →
+      <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" />
+      </svg>
     </button>
   );
 }
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { clients, addClient, isLoading, error } = useClientManagement();
-  const {
-    isOpen: isModalOpen,
-    open: openModal,
-    close: closeModal,
-  } = useModal();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
-  const handleAddClient = async (clientData: NewClientForm) => {
-    try {
-      const _newClient = await addClient(clientData);
-      closeModal();
-    } catch (error) {
-      console.error("Failed to add client:", error);
-      throw error;
-    }
-  };
-
-  // Calculate sidebar width based on collapsed state
-  const sidebarWidth = sidebarCollapsed ? 80 : 280; // Match your UI_CONFIG values
+  const { isOpen: isModalOpen, open: openModal, close: closeModal } = useModal();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // desktop logic
+  const [sidebarMobileOpen, setSidebarMobileOpen] = useState(false); // mobile overlay
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", position: "relative" }}>
-      {/* Sidebar - Always rendered but conditionally visible */}
+    <div className="flex min-h-screen relative">
+      {/* Burger icon for mobile */}
+      {!sidebarMobileOpen && (
+        <BurgerButton onClick={() => setSidebarMobileOpen(true)} />
+      )}
+
+      {/* SidePanel: overlay on mobile, normal on desktop */}
       <SidePanel
         collapsed={sidebarCollapsed}
         onCollapse={() => setSidebarCollapsed(true)}
@@ -71,36 +41,43 @@ export default function DashboardLayout({
         onAddClientClick={openModal}
         isLoading={isLoading}
         error={error}
+        mobileOpen={sidebarMobileOpen}
+        setMobileOpen={setSidebarMobileOpen}
       />
 
-      {/* Add UserNav component */}
-      <UserNav />
-
-      {/* Expand Button (shown when sidebar is collapsed) */}
       {sidebarCollapsed && (
-        <ExpandButton onClick={() => setSidebarCollapsed(false)} />
+        <button
+          onClick={() => setSidebarCollapsed(false)}
+          className="hidden md:flex fixed top-4 left-[80px] z-30 text-[#F1F5F9] rounded-full w-10 h-10 items-center justify-center shadow-lg"
+          aria-label="Expand sidebar"
+          style={{ transition: "left 0.2s" }}
+        >
+          <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M8 5l8 7-8 7" />
+          </svg>
+        </button>
       )}
 
-      {/* Main Content - FIXED: Add proper margin to account for sidebar */}
+      {/* Main content */}
       <main
-        style={{
-          flex: 1,
-          marginLeft: sidebarWidth, // This is the key fix
-          transition: "margin-left 0.3s ease",
-          minHeight: "100vh",
-          background: "#181A20", // Match your app background
-          position: "relative",
-        }}
+        className={`
+          flex-1 bg-[#181A20] min-h-screen transition-all
+          ml-0 [${sidebarCollapsed ? "72px" : "220px"}]
+          p-6
+        `}
       >
         {children}
       </main>
 
-      {/* Add Client Modal */}
       <AddClientModal
         isOpen={isModalOpen}
         onClose={closeModal}
-        onSubmit={handleAddClient}
+        onSubmit={async (clientData: NewClientForm) => {
+          await addClient(clientData);
+          closeModal();
+        }}
       />
+      <UserNav />
     </div>
   );
 }
