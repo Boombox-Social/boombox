@@ -1,19 +1,19 @@
-// components/sidebar/SidePanel.tsx
 import React from "react";
-import { Client } from "../../types";
-import { COLORS, UI_CONFIG } from "../../constants";
 import { SidebarHeader } from "./SidebarHeader";
 import { DashboardSection } from "./DashboardSection";
 import { ClientList } from "./ClientList";
 import { SidebarFooter } from "./SidebarFooter";
+import { Client } from "../../types";
 
 interface SidePanelProps {
   collapsed: boolean;
   onCollapse: () => void;
   clients: Client[];
   onAddClientClick: () => void;
-  isLoading?: boolean; // Add this property
-  error?: string; // Add this property
+  isLoading?: boolean;
+  error?: string;
+  mobileOpen?: boolean;
+  setMobileOpen?: (open: boolean) => void;
 }
 
 export function SidePanel({
@@ -21,106 +21,55 @@ export function SidePanel({
   onCollapse,
   clients,
   onAddClientClick,
-  isLoading = false, // Add default value
-  error, // Add this parameter
+  isLoading = false,
+  error,
+  mobileOpen = false,
+  setMobileOpen,
 }: SidePanelProps) {
-  const sidebarStyle: React.CSSProperties = {
-    background: COLORS.side,
-    color: COLORS.text,
-    width: collapsed
-      ? UI_CONFIG.SIDEBAR_WIDTH.COLLAPSED
-      : UI_CONFIG.SIDEBAR_WIDTH.EXPANDED,
-    transition: `width ${UI_CONFIG.TRANSITION_DURATION}`,
-    borderRight: `1px solid ${COLORS.border}`,
-    display: "flex",
-    flexDirection: "column",
-    height: "100vh",
-    position: "fixed",
-    zIndex: 10,
-  };
 
   return (
-    <aside style={sidebarStyle}>
-      <SidebarHeader collapsed={collapsed} onCollapse={onCollapse} />
-      <DashboardSection collapsed={collapsed} />
-
-      {/* Show loading state, error, or client list */}
-      {isLoading ? (
-        <div
-          style={{
-            padding: collapsed ? "8px" : "16px",
-            color: COLORS.muted,
-            textAlign: "center",
-            fontSize: "14px",
-            flex: 1,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {collapsed ? (
-            <div
-              style={{
-                width: "20px",
-                height: "20px",
-                border: `2px solid ${COLORS.muted}`,
-                borderTop: `2px solid ${COLORS.accent}`,
-                borderRadius: "50%",
-                animation: "spin 1s linear infinite",
-              }}
-            />
-          ) : (
-            <>
-              <div
-                style={{
-                  width: "16px",
-                  height: "16px",
-                  border: `2px solid ${COLORS.muted}`,
-                  borderTop: `2px solid ${COLORS.accent}`,
-                  borderRadius: "50%",
-                  animation: "spin 1s linear infinite",
-                  marginRight: "8px",
-                }}
-              />
-              Loading clients...
-            </>
-          )}
-        </div>
-      ) : error ? (
-        <div
-          style={{
-            padding: collapsed ? "8px" : "16px",
-            color: "#EF4444",
-            textAlign: "center",
-            fontSize: "14px",
-            flex: 1,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {collapsed ? "!" : `Error: ${error}`}
-        </div>
-      ) : (
-        <ClientList clients={clients} collapsed={collapsed} />
-      )}
-
-      <SidebarFooter
-        collapsed={collapsed}
-        onAddClientClick={onAddClientClick}
+    <>
+      {/* Mobile overlay */}
+      <div
+        className={`
+          fixed inset-0 z-30 bg-[rgba(0,0,0,0.18)] transition-opacity duration-200
+          ${mobileOpen ? "block md:hidden" : "hidden"}
+        `}
+        onClick={() => setMobileOpen && setMobileOpen(false)}
       />
-
-      {/* Add spinning animation */}
-      <style jsx>{`
-        @keyframes spin {
-          0% {
-            transform: rotate(0deg);
-          }
-          100% {
-            transform: rotate(360deg);
-          }
-        }
-      `}</style>
-    </aside>
+      <aside
+        className={`
+          flex flex-col bg-[#23262F] text-[#F1F5F9] border-r border-[#2D3142]
+          transition-all duration-200 h-screen z-40
+          fixed top-0 left-0
+          ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
+          md:translate-x-0
+          w-[220px] 
+          ${collapsed ? "md:w-[72px]" : "md:w-[220px]"}
+          md:static
+        `}
+        style={{ minWidth: 0 }}
+      >
+        <SidebarHeader
+          collapsed={mobileOpen ? false : collapsed}
+          onCollapse={onCollapse}
+          mobileOpen={mobileOpen}
+          setMobileOpen={setMobileOpen}
+        />
+        <DashboardSection collapsed={mobileOpen ? false : collapsed} />
+        {isLoading ? (
+          <div className="flex items-center justify-center text-center text-[#94A3B8] text-sm flex-1 py-4 px-2">
+            <div className="w-5 h-5 border-2 border-[#94A3B8] border-t-[#2563eb] rounded-full animate-spin" />
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center text-center text-red-500 text-sm flex-1 py-4 px-2">
+            {collapsed ? "!" : `Error: ${error}`}
+          </div>
+        ) : (
+          <ClientList clients={clients} collapsed={mobileOpen ? false : collapsed} />
+        )}
+        <SidebarFooter collapsed={mobileOpen ? false : collapsed} onAddClientClick={onAddClientClick} />
+      </aside>
+    </>
   );
 }
