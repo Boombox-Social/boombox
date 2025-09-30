@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Client } from "../../types";
 import { PromptCard } from "./PromptCard";
 
@@ -74,15 +74,41 @@ function Accordion({
 export function SMMPromptPlaybook({ client }: SMMPromptPlaybookProps) {
   const [currentStep, setCurrentStep] = useState(0);
 
-  const steps = [
-    {
-      title: "Master Prompt Strategy",
-      description: "Feed AI with client data",
-    },
-    { title: "Business Overview", description: "Generate overview" },
-    { title: "Content Creation", description: "Generate specific content" },
-    { title: "Show all prompts", description: "See all prompt templates" },
-  ];
+  //if the overview and ai strategy has links
+  const [hasAiStrategyLink, setHasAiStrategyLink] = useState<boolean | null>(
+    null
+  );
+  const [hasOverviewLink, setHasOverviewLink] = useState<boolean | null>(null);
+
+  // Fetch if there is an AI Strategy link
+  useEffect(() => {
+    const fetchAiStrategyLink = async () => {
+      if (!client.id) return;
+      try {
+        const res = await fetch(`/api/clients/${client.id}/ai-strategy-link`);
+        const data = await res.json();
+        setHasAiStrategyLink(!!data.strategyAiLink);
+      } catch {
+        setHasAiStrategyLink(false);
+      }
+    };
+    fetchAiStrategyLink();
+  }, [client.id]);
+
+  // Fetch if there is an Overview link
+  useEffect(() => {
+    const fetchOverviewLink = async () => {
+      if (!client.id) return;
+      try {
+        const res = await fetch(`/api/clients/${client.id}/overview-link`);
+        const data = await res.json();
+        setHasOverviewLink(!!data.businessSummaryLink);
+      } catch {
+        setHasOverviewLink(false);
+      }
+    };
+    fetchOverviewLink();
+  }, [client.id]);
 
   // Generate client profile string for prompts
   const generateClientProfile = () => {
@@ -108,6 +134,34 @@ Client Profile:
       client.contractDeliverables || "Not specified"
     }`.trim();
   };
+
+  // Steps, conditionally include Master Prompt and Business Overview tabs
+  const steps = [
+    ...(hasAiStrategyLink
+      ? []
+      : [
+          {
+            title: "Master Prompt Strategy",
+            description: "Feed AI with client data",
+          },
+        ]),
+    ...(hasOverviewLink
+      ? []
+      : [
+          {
+            title: "Business Overview",
+            description: "Generate overview",
+          },
+        ]),
+    { title: "Content Creation", description: "Generate specific content" },
+    { title: "Show all prompts", description: "See all prompt templates" },
+  ];
+
+  // Adjust currentStep if needed when hiding tabs
+  useEffect(() => {
+    if (hasAiStrategyLink === null || hasOverviewLink === null) return;
+    if (currentStep >= steps.length) setCurrentStep(0);
+  }, [hasAiStrategyLink, hasOverviewLink, steps.length]);
 
   // Navigation bar
   const renderStepNav = () => (
@@ -482,6 +536,24 @@ Context: ${client.name} serves ${
     </>
   );
 
+  // Wait for links check before rendering steps
+  if (hasAiStrategyLink === null || hasOverviewLink === null) {
+    return (
+      <div
+        style={{
+          background: colors.card,
+          borderRadius: 16,
+          padding: 24,
+          minWidth: 0,
+          minHeight: 0,
+          color: colors.muted,
+        }}
+      >
+        Loading...
+      </div>
+    );
+  }
+
   return (
     <div
       style={{
@@ -691,28 +763,34 @@ Context: ${client.name} serves ${
       {renderStepNav()}
 
       {/* Step Content */}
-      {currentStep === 0 && (
+      {steps[0]?.title === "Master Prompt Strategy" && currentStep === 0 && (
         <>
           {masterPromptAccordion}
           {renderNextButton()}
         </>
       )}
-      {currentStep === 1 && (
+      {steps.find((s) => s.title === "Business Overview") &&
+        steps.findIndex((s) => s.title === "Business Overview") ===
+          currentStep && (
+          <>
+            {businessOverviewCard}
+            {renderNextButton()}
+          </>
+        )}
+      {steps.find((s) => s.title === "Content Creation") &&
+        steps.findIndex((s) => s.title === "Content Creation") ===
+          currentStep && (
+          <>
+            {contentCreationCard}
+            {renderNextButton()}
+          </>
+        )}
+      {currentStep === steps.length - 1 && (
         <>
-          {businessOverviewCard}
-          {renderNextButton()}
-        </>
-      )}
-      {currentStep === 2 && (
-        <>
-          {contentCreationCard}
-          {renderNextButton()}
-        </>
-      )}
-      {currentStep === 3 && (
-        <>
-          {masterPromptAccordion}
-          {businessOverviewCard}
+          {steps.find((s) => s.title === "Master Prompt Strategy") &&
+            masterPromptAccordion}
+          {steps.find((s) => s.title === "Business Overview") &&
+            businessOverviewCard}
           {contentCreationCard}
           {additionalPromptCards}
         </>
