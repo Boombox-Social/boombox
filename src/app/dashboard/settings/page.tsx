@@ -1,10 +1,19 @@
 // File Structure: src/app/dashboard/settings/page.tsx - Settings page with user management modals
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { PlusIcon, TrashIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
+import {
+  PlusIcon,
+  TrashIcon,
+  ArrowPathIcon,
+  PencilSquareIcon,
+} from "@heroicons/react/24/solid";
 import { useAuth, usePermission } from "../../hooks/useAuth";
 import { UserRole } from "../../../generated/prisma";
-import { AddUserModal, DeleteUserModal } from "../../components/modals";
+import {
+  AddUserModal,
+  DeleteUserModal,
+  EditUserModal,
+} from "../../components/modals";
 
 interface User {
   id: number;
@@ -79,7 +88,12 @@ export default function SettingsPage() {
   const [error, setError] = useState<string>("");
   const [hasLoadedUsers, setHasLoadedUsers] = useState(false);
 
-    // UI-only handlers
+  const [showEditUserModal, setShowEditUserModal] = useState(false);
+  const [userToEdit, setUserToEdit] = useState<User | null>(null);
+  const [editError, setEditError] = useState("");
+  const [isEditingUser, setIsEditingUser] = useState(false);
+
+  // UI-only handlers
   const handleRestoreClient = (clientId: number) => {
     alert(`Restore client with ID: ${clientId}`);
   };
@@ -190,6 +204,41 @@ export default function SettingsPage() {
   const handleDeleteClick = (user: User) => {
     setUserToDelete(user);
     setShowDeleteUserModal(true);
+  };
+
+  //Edit User Modals
+  const handleEditClick = (user: User) => {
+    setUserToEdit(user);
+    setShowEditUserModal(true);
+    setEditError("");
+  };
+
+  const handleEditUser = async (userId: number, data: Partial<User>) => {
+    setIsEditingUser(true);
+    setEditError("");
+    try {
+      const response = await fetch(`/api/auth/users/${userId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update user");
+      }
+      const updatedUser = await response.json();
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, ...updatedUser.user } : u))
+      );
+      setShowEditUserModal(false);
+      setUserToEdit(null);
+    } catch (error) {
+      setEditError(
+        error instanceof Error ? error.message : "Failed to update user"
+      );
+    } finally {
+      setIsEditingUser(false);
+    }
   };
 
   const formatDate = (date: Date | string | null | undefined) => {
@@ -464,7 +513,14 @@ export default function SettingsPage() {
                         <td className="py-4 px-4 text-[#94A3B8] text-sm">
                           {formatDate(user.createdAt)}
                         </td>
-                        <td className="py-4 px-4">
+                        <td className="py-4 px-4 flex gap-2">
+                          <button
+                            onClick={() => handleEditClick(user)}
+                            className="p-1 text-[#94A3B8] hover:text-[#2563eb] hover:bg-[#2563eb]/10 rounded transition-colors"
+                            title="Edit User"
+                          >
+                            <PencilSquareIcon className="w-4 h-4" />
+                          </button>
                           {/* Only show delete button for users other than current user */}
                           {user.id !== authState.user?.id && (
                             <button
@@ -490,62 +546,77 @@ export default function SettingsPage() {
           </div>
         )}
 
-      {/* Archived Clients Tab (UI only, dummy data) */}
-      {activeTab === "archived" && isSuperAdmin && (
-        <div className="p-6">
-          <h2 className="text-xl font-semibold text-[#F1F5F9] mb-6">
-            Archived Clients
-          </h2>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-[#2D3142]">
-                  <th className="text-left py-3 px-4 font-medium text-[#F1F5F9]">Name</th>
-                  <th className="text-left py-3 px-4 font-medium text-[#F1F5F9]">Industry</th>
-                  <th className="text-left py-3 px-4 font-medium text-[#F1F5F9]">Status</th>
-                  <th className="text-left py-3 px-4 font-medium text-[#F1F5F9]">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {archivedClients.map((client) => (
-                  <tr key={client.id} className="border-b border-[#2D3142] hover:bg-[#2D3142]/30">
-                    <td className="py-4 px-4 font-medium text-[#F1F5F9]">{client.name}</td>
-                    <td className="py-4 px-4 text-[#94A3B8]">{client.industry}</td>
-                    <td className="py-4 px-4">
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-600">
-                        Archived
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 flex gap-2">
-                      <button
-                        onClick={() => handleRestoreClient(client.id)}
-                        className="p-2 bg-green-500/20 text-green-500 rounded hover:bg-green-500/30 transition-colors flex items-center gap-1"
-                        title="Restore Client"
-                      >
-                        <ArrowPathIcon className="w-4 h-4" />
-                        Restore
-                      </button>
-                      <button
-                        onClick={() => handlePermanentDeleteClient(client.id)}
-                        className="p-2 bg-red-500/20 text-red-500 rounded hover:bg-red-500/30 transition-colors flex items-center gap-1"
-                        title="Permanently Delete"
-                      >
-                        <TrashIcon className="w-4 h-4" />
-                        Delete
-                      </button>
-                    </td>
+        {/* Archived Clients Tab (UI only, dummy data) */}
+        {activeTab === "archived" && isSuperAdmin && (
+          <div className="p-6">
+            <h2 className="text-xl font-semibold text-[#F1F5F9] mb-6">
+              Archived Clients
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-[#2D3142]">
+                    <th className="text-left py-3 px-4 font-medium text-[#F1F5F9]">
+                      Name
+                    </th>
+                    <th className="text-left py-3 px-4 font-medium text-[#F1F5F9]">
+                      Industry
+                    </th>
+                    <th className="text-left py-3 px-4 font-medium text-[#F1F5F9]">
+                      Status
+                    </th>
+                    <th className="text-left py-3 px-4 font-medium text-[#F1F5F9]">
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            {archivedClients.length === 0 && (
-              <div className="text-center py-8 text-[#94A3B8]">
-                No archived clients found
-              </div>
-            )}
+                </thead>
+                <tbody>
+                  {archivedClients.map((client) => (
+                    <tr
+                      key={client.id}
+                      className="border-b border-[#2D3142] hover:bg-[#2D3142]/30"
+                    >
+                      <td className="py-4 px-4 font-medium text-[#F1F5F9]">
+                        {client.name}
+                      </td>
+                      <td className="py-4 px-4 text-[#94A3B8]">
+                        {client.industry}
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-600">
+                          Archived
+                        </span>
+                      </td>
+                      <td className="py-4 px-4 flex gap-2">
+                        <button
+                          onClick={() => handleRestoreClient(client.id)}
+                          className="p-2 bg-green-500/20 text-green-500 rounded hover:bg-green-500/30 transition-colors flex items-center gap-1"
+                          title="Restore Client"
+                        >
+                          <ArrowPathIcon className="w-4 h-4" />
+                          Restore
+                        </button>
+                        <button
+                          onClick={() => handlePermanentDeleteClient(client.id)}
+                          className="p-2 bg-red-500/20 text-red-500 rounded hover:bg-red-500/30 transition-colors flex items-center gap-1"
+                          title="Permanently Delete"
+                        >
+                          <TrashIcon className="w-4 h-4" />
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {archivedClients.length === 0 && (
+                <div className="text-center py-8 text-[#94A3B8]">
+                  No archived clients found
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
         {/* Security Tab */}
         {activeTab === "security" && (
@@ -635,6 +706,19 @@ export default function SettingsPage() {
         isOpen={showAddUserModal}
         onClose={() => setShowAddUserModal(false)}
         onSubmit={handleAddUser}
+      />
+
+      {/* Edit User Modal */}
+      <EditUserModal
+        isOpen={showEditUserModal}
+        onClose={() => {
+          setShowEditUserModal(false);
+          setUserToEdit(null);
+        }}
+        user={userToEdit}
+        onSave={handleEditUser}
+        isLoading={isEditingUser}
+        error={editError}
       />
 
       {/* Delete User Modal */}
