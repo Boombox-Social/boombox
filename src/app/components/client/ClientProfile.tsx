@@ -1,13 +1,13 @@
 // components/client/ClientProfile.tsx
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { 
-  TrashIcon, 
-  UserIcon, 
-  UsersIcon, 
+import {
+  TrashIcon,
+  UserIcon,
+  UsersIcon,
   PencilSquareIcon,
-  ArchiveBoxIcon 
+  ArchiveBoxIcon,
 } from "@heroicons/react/24/solid";
 import { UserRole } from "../../../generated/prisma";
 import { useAuth } from "../../hooks/useAuth";
@@ -15,58 +15,81 @@ import { useClientManagement } from "../../hooks";
 import { Modal } from "../ui/Modal";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { Client } from "../../types/client.types";
+import { UserAssignmentSelector } from "./UserAssignmentSelector";
 
 interface ClientProfileProps {
   client: Client;
 }
 
-// Dummy assigned SMM data for UI (replace with real data later)
-const assignedSMMs = [
-  {
-    id: 1,
-    name: "John Doe",
-    avatar: null,
-    email: "john@example.com"
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    avatar: null,
-    email: "jane@example.com"
-  }
-];
-
+interface AssignedSMM {
+  id: number;
+  name: string;
+  email: string;
+  avatar?: string | null;
+}
 
 export function ClientProfile({ client }: ClientProfileProps) {
   const { authState } = useAuth();
-  const { deleteClient, archiveClient } = useClientManagement();
+  const { deleteClient, archiveClient, loadClients } = useClientManagement();
   const router = useRouter();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string>("");
   const [showAssignModal, setShowAssignModal] = useState(false);
+
+  // Archive modal state
+  const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [archiveError, setArchiveError] = useState<string>("");
 
+  const [selectedUserIds, setSelectedUserIds] = useState<number[]>(
+    client.assignedUserIds || []
+  );
+  const [assignedSMMs, setAssignedSMMs] = useState<AssignedSMM[]>([]);
+  const [loadingSMMs, setLoadingSMMs] = useState(true);
+
   const isSuperAdmin = authState.user?.role === UserRole.SUPER_ADMIN;
 
-    const handleArchiveClick = async () => {
-      if (typeof client.id !== "number") return; // Prevent undefined
-      setIsArchiving(true);
-      setArchiveError("");
+  const handleArchiveClick = () => {
+    setShowArchiveModal(true);
+    setArchiveError("");
+  };
+
+  useEffect(() => {
+    const fetchAssignedSMMs = async () => {
+      setLoadingSMMs(true);
       try {
-        await archiveClient(client.id);
-        setIsArchiving(false);
-        // Optionally show a toast or update UI
-      } catch (error) {
-        setArchiveError(
-          error instanceof Error
-            ? error.message
-            : "Failed to archive client. Please try again."
-        );
-        setIsArchiving(false);
+        const res = await fetch(`/api/clients/${client.id}/assigned-users`);
+        const data = await res.json();
+        setAssignedSMMs(data.users || []);
+      } catch (_err) {
+        setAssignedSMMs([]);
       }
+      setLoadingSMMs(false);
     };
+    if (client.id) fetchAssignedSMMs();
+  }, [client.id]);
+
+  const handleArchiveConfirm = async () => {
+    if (typeof client.id !== "number") return;
+    setIsArchiving(true);
+    setArchiveError("");
+    try {
+      await archiveClient(client.id);
+      console.log("loading new client list...");
+      await loadClients();
+      setShowArchiveModal(false);
+      router.push("/dashboard");
+    } catch (error) {
+      setArchiveError(
+        error instanceof Error
+          ? error.message
+          : "Failed to archive client. Please try again."
+      );
+    } finally {
+      setIsArchiving(false);
+    }
+  };
 
   const handleDeleteClick = () => {
     setShowDeleteModal(true);
@@ -106,6 +129,18 @@ export function ClientProfile({ client }: ClientProfileProps) {
     setDeleteError("");
   };
 
+  const handleAssignSave = async () => {
+    await fetch(`/api/clients/${client.id}/assign`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userIds: selectedUserIds }),
+    });
+    setShowAssignModal(false);
+    // Refresh assigned SMMs
+    const res = await fetch(`/api/clients/${client.id}/assigned-users`);
+    const data = await res.json();
+    setAssignedSMMs(data.users || []);
+  };
 
   return (
     <>
@@ -120,7 +155,7 @@ export function ClientProfile({ client }: ClientProfileProps) {
               title="Archive"
             >
               <ArchiveBoxIcon className="w-4 h-4" />
-              {isArchiving ? "Archiving..." : "Archive"}
+              Archive
             </button>
             <button
               onClick={handleDeleteClick}
@@ -160,7 +195,7 @@ export function ClientProfile({ client }: ClientProfileProps) {
               Industry: {client.industry}
             </p>
 
-             {/* Assigned SMMs Section with Edit Button */}
+            {/* Assigned SMMs Section with Edit Button */}
             <div className="mt-4 p-3 bg-[#181A20] rounded-lg border border-[#2D3142]">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
@@ -179,30 +214,35 @@ export function ClientProfile({ client }: ClientProfileProps) {
                   </button>
                 )}
               </div>
-              
+
               <div className="flex flex-wrap gap-2">
-                {assignedSMMs.map((smm) => (
-                  <div
-                    key={smm.id}
-                    className="flex items-center gap-2 px-2 py-1 bg-[#23262F] rounded-full border border-[#2D3142] hover:border-[#2563eb] transition-colors"
-                  >
-                    <div className="w-6 h-6 rounded-full bg-[#2563eb]/10 flex items-center justify-center">
-                      {smm.avatar ? (
-                        <img
-                          src={smm.avatar}
-                          alt={smm.name}
-                          className="w-6 h-6 rounded-full"
-                        />
-                      ) : (
-                        <UserIcon className="w-3 h-3 text-[#2563eb]" />
-                      )}
+                {loadingSMMs ? (
+                  <span className="text-[#94A3B8] text-xs italic">
+                    Loading...
+                  </span>
+                ) : assignedSMMs.length > 0 ? (
+                  assignedSMMs.map((smm) => (
+                    <div
+                      key={smm.id}
+                      className="flex items-center gap-2 px-2 py-1 bg-[#23262F] rounded-full border border-[#2D3142] hover:border-[#2563eb] transition-colors"
+                    >
+                      <div className="w-6 h-6 rounded-full bg-[#2563eb]/10 flex items-center justify-center">
+                        {smm.avatar ? (
+                          <img
+                            src={smm.avatar}
+                            alt={smm.name}
+                            className="w-6 h-6 rounded-full"
+                          />
+                        ) : (
+                          <UserIcon className="w-3 h-3 text-[#2563eb]" />
+                        )}
+                      </div>
+                      <span className="text-xs font-medium text-[#F1F5F9] truncate max-w-[120px]">
+                        {smm.name}
+                      </span>
                     </div>
-                    <span className="text-xs font-medium text-[#F1F5F9] truncate max-w-[120px]">
-                      {smm.name}
-                    </span>
-                  </div>
-                ))}
-                {assignedSMMs.length === 0 && (
+                  ))
+                ) : (
                   <p className="text-[#94A3B8] text-xs italic">
                     No SMMs assigned
                   </p>
@@ -212,7 +252,6 @@ export function ClientProfile({ client }: ClientProfileProps) {
           </div>
         </div>
       </div>
-
 
       {/* Delete Modal - Update with Tailwind */}
       <Modal
@@ -275,8 +314,58 @@ export function ClientProfile({ client }: ClientProfileProps) {
               )}
             </button>
           </div>
+        </div>
+      </Modal>
 
-
+      {/* Archive Confirmation Modal */}
+      <Modal
+        isOpen={showArchiveModal}
+        onClose={() => setShowArchiveModal(false)}
+        title="Archive Client"
+        maxWidth="28em"
+      >
+        <div className="p-4">
+          <h3 className="text-lg font-semibold text-[#F1F5F9] mb-2">
+            Confirm Archive
+          </h3>
+          <p className="text-[#94A3B8] mb-4">
+            Are you sure you want to archive <strong>{client.name}</strong>?
+            This will move the client to the archive and remove it from the
+            active list.
+          </p>
+          {archiveError && (
+            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 mb-2 text-yellow-600 text-sm">
+              {archiveError}
+            </div>
+          )}
+          <div className="flex justify-end gap-3 mt-6">
+            <button
+              onClick={() => setShowArchiveModal(false)}
+              className="px-6 py-2 bg-[#2D3142] text-[#F1F5F9] rounded-lg font-medium hover:bg-[#374151] transition-colors"
+              disabled={isArchiving}
+              type="button"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleArchiveConfirm}
+              className="px-6 py-2 bg-yellow-500 text-white rounded-lg font-medium hover:bg-yellow-600 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isArchiving}
+              type="button"
+            >
+              {isArchiving ? (
+                <>
+                  <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Archiving...
+                </>
+              ) : (
+                <>
+                  <ArchiveBoxIcon className="w-5 h-5" />
+                  Archive
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </Modal>
 
@@ -291,15 +380,12 @@ export function ClientProfile({ client }: ClientProfileProps) {
             <label className="block text-sm font-medium text-[#F1F5F9] mb-2">
               Select SMMs to assign (dummy data)
             </label>
-            <ul>
-              {assignedSMMs.map((smm) => (
-                <li key={smm.id} className="flex items-center gap-2 mb-2">
-                  <UserIcon className="w-4 h-4 text-[#2563eb]" />
-                  <span className="text-[#F1F5F9]">{smm.name}</span>
-                  <span className="text-[#94A3B8] text-xs">{smm.email}</span>
-                </li>
-              ))}
-            </ul>
+            <UserAssignmentSelector
+              clientId={client.id}
+              initialAssignedUserIds={selectedUserIds}
+              onChange={setSelectedUserIds}
+              canEdit={isSuperAdmin}
+            />
           </div>
           <div className="flex justify-end gap-3 mt-6">
             <button
@@ -309,7 +395,7 @@ export function ClientProfile({ client }: ClientProfileProps) {
               Close
             </button>
             <button
-              onClick={() => setShowAssignModal(false)}
+              onClick={handleAssignSave}
               className="px-6 py-2 bg-[#2563eb] text-white rounded-lg font-medium hover:bg-[#1E40AF] transition-colors"
             >
               Save
