@@ -20,6 +20,57 @@ interface SMMPromptPlaybookProps {
   client: Client;
 }
 
+function Accordion({
+  title,
+  children,
+  defaultOpen = false,
+}: {
+  title: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div
+      style={{
+        marginBottom: 16,
+        border: `1px solid ${colors.border}`,
+        borderRadius: 8,
+      }}
+    >
+      <button
+        onClick={() => setOpen((v) => !v)}
+        style={{
+          width: "100%",
+          textAlign: "left",
+          background: colors.bg,
+          color: colors.accent,
+          fontWeight: 700,
+          fontSize: 15,
+          padding: "12px 16px",
+          border: "none",
+          borderRadius: 8,
+          cursor: "pointer",
+        }}
+      >
+        {title} {open ? "▲" : "▼"}
+      </button>
+      {open && (
+        <div
+          style={{
+            padding: 16,
+            background: colors.card,
+            color: colors.text,
+            borderTop: `1px solid ${colors.border}`,
+          }}
+        >
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function SMMPromptPlaybook({ client }: SMMPromptPlaybookProps) {
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -126,90 +177,17 @@ Client Profile:
     ) : null;
 
   // PromptCard content for each step
-  const masterPromptCard = (
-    <div>
-      <div
-        style={{
-          background: `${colors.warning}20`,
-          border: `1px solid ${colors.warning}40`,
-          borderRadius: 8,
-          padding: 16,
-          marginBottom: 20,
-          color: colors.text,
-        }}
-      >
-        <h4
-          style={{
-            color: colors.warning,
-            margin: 0,
-            marginBottom: 8,
-            fontSize: 14,
-            fontWeight: 600,
-          }}
-        >
-          ⚠️ Before using this prompt:
-        </h4>
-        <ul
-          style={{
-            margin: 0,
-            paddingLeft: 16,
-            fontSize: 13,
-            lineHeight: 1.4,
-          }}
-        >
-          <li>Always input answers from the Client Data Form first</li>
-          <li>
-            Run in Deep Research Mode so it can pull and summarize current data
-          </li>
-          <li>Copy the client profile data below to feed into your AI</li>
-        </ul>
-      </div>
-      {/* Client Profile Data */}
-      <div
-        style={{
-          background: colors.bg,
-          borderRadius: 8,
-          padding: 16,
-          marginBottom: 16,
-          border: `1px solid ${colors.border}`,
-        }}
-      >
-        <h4
-          style={{
-            color: colors.text,
-            fontSize: 14,
-            fontWeight: 600,
-            marginBottom: 12,
-          }}
-        >
-          📋 Client Profile Data (Copy this first)
-        </h4>
-        <pre
-          style={{
-            background: colors.border,
-            padding: 12,
-            borderRadius: 6,
-            fontSize: 11,
-            color: colors.text,
-            whiteSpace: "pre-wrap",
-            wordBreak: "break-word",
-            margin: 0,
-            lineHeight: 1.4,
-            maxHeight: 200,
-            overflowY: "auto",
-          }}
-        >
-          {generateClientProfile()}
-        </pre>
-      </div>
-      <PromptCard
-        title="🎯 Master Social Media Expert Idea Prompt"
-        prompts={[
-          {
-            label: "Complete Master Strategy Prompt",
-            content: `You are a senior social media strategist for a marketing agency. Your task is to develop a comprehensive and actionable brand strategy for ${
-              client.name
-            }. This strategy must address the client&apos;s marketing challenges, leverage their competitive advantages, and be designed to achieve measurable business goals.
+  const masterPromptAccordion = (
+    <>
+      <Accordion title="Complete Strategy Prompt (v1)" defaultOpen>
+        <PromptCard
+          title="🎯 Master Social Media Expert Idea Prompt"
+          prompts={[
+            {
+              label: "Complete Master Strategy Prompt",
+              content: `You are a senior social media strategist for a marketing agency. Your task is to develop a comprehensive and actionable brand strategy for ${
+                client.name
+              }. This strategy must address the client&apos;s marketing challenges, leverage their competitive advantages, and be designed to achieve measurable business goals.
 
 ${generateClientProfile()}
 
@@ -223,10 +201,63 @@ Create a detailed social media content and brand strategy for the upcoming month
 3. Platform-Specific Recommendations: Detail how to leverage each of the primary channels and secondary channels to create a cohesive funnel.
 
 4. Performance & Measurement: Conclude with a plan for how the success of the strategy will be measured, linking your content ideas to key metrics like Page Reach, Follower Growth, and Link Clicks.`,
-          },
-        ]}
-      />
-    </div>
+            },
+          ]}
+        />
+      </Accordion>
+      <Accordion title="Complete Strategy Prompt (v2)">
+        <PromptCard
+          title="🎯 Master Social Media Expert Idea Prompt (v2)"
+          prompts={[
+            {
+              label: "Detailed Campaign Strategy Prompt",
+              content: `You are a senior social media strategist for a marketing agency. Your task is to develop a comprehensive and actionable brand strategy for a client. This strategy must address the client's marketing challenges, leverage their competitive advantages, and be designed to achieve measurable business goals, utilizing a structure modeled after a detailed campaign document.
+
+Client Profile (Required Inputs): The strategist must receive the following information about the client brand before generating the strategy:
+• Brand Name: ${client.name}
+• Slogan/Tagline: ${client.slogan || "Not provided"}
+• Industry: ${client.industry || "Not specified"}
+• Value Proposition: ${client.uniqueProposition || "Not specified"}
+• Target Audience: ${client.idealCustomers || "Not specified"}
+• Brand Voice & Emotion: ${client.brandEmotion || "Professional"}
+• Primary Goals: ${client.mainGoal || "Not specified"}
+• Core Products/Services: ${client.coreProducts?.join(", ") || "Not specified"}
+• Direct Competitors: ${client.competitors?.join(", ") || "None specified"}
+• Marketing Challenges: [List current business or marketing obstacles, such as planning strategies, executing them effectively, or ensuring long-term sustainability]
+
+Your Task: Create a detailed social media content and brand strategy. Your response must be divided into the following five sections, adopting a comprehensive strategy framework:
+1. Executive Summary
+Generate a brief but comprehensive overview of the campaign. This summary must include:
+• Campaign Aim: State the overall objective (e.g., launching an online presence primarily driving awareness then traffic to e-commerce platforms like Shopee and Lazada).
+• Key Message: Define the core brand promise or statement (e.g., Hexatron offers affordable, reliable, and high-quality electronics designed to bring families closer together).
+• Key Metrics: List the core awareness metrics that will be tracked (e.g., Visits, Content Interaction, Views, Reach, Follower Growth, Link Clicks).
+• Paid Media Overview: Include a summary of the paid media focus and budget (e.g., focusing on awareness, engagement, and traffic using a budget like ₱15,000 for Meta ads).
+2. About
+Provide a detailed profile of the brand. This section must detail:
+• Products/Services: List the main offerings (e.g., Mid-range Smart TV, amplifiers, and party speakers).
+• Brand Voice and Personality: Describe the tone and character the brand conveys online (e.g., simple and practical, fun and friendly, always active and engaging, and never boring).
+• Marketing Challenges: Summarize the key obstacles the strategy is designed to overcome (e.g., challenges in planning the right strategies, executing them effectively, tracking results, and ensuring long-term sustainability).
+3. Competitive & Market Analysis
+Analyze the environment by providing detailed competitor insights and a situational analysis. This section must include:
+• Competitor Breakdowns (for each direct competitor): Include an overview, their primary product focus, their main marketing channels, and a strategy for "How we can win" against them (e.g., position the brand as offering up-to-date technology at a more accessible price against Devant).
+• SWOT Analysis: Structure the analysis clearly, detailing the brand's Strengths (e.g., Quality & Competitive Price, Family-Focused Brand Image), Weaknesses (e.g., Brand Recognition, Offline Presence), Opportunities (e.g., Rising Demand for Home Entertainment, Increasing E-commerce Sales), and Threats (e.g., Established Competitors, Price Sensitivity).
+• Industry Trends & Insights: Identify 3-5 current market insights (e.g., More consumer electronics sales are happening online) and state the required Campaign Application for each insight (e.g., Strongly emphasize ease, trust, and accessibility of products through e-commerce platforms).
+4. Target Audience
+Outline the customer's interaction with the brand, focusing on the path to purchase. This section should include:
+• Customer Journey Map: Detail the three stages of the journey—Awareness Stage, Consideration Stage, and Traffic Stage.
+• For each stage, identify the key Touchpoint (e.g., Users scrolling through feeds), the Goal for that stage (e.g., Create brand recognition and intrigue), and the specific Actions users will take (e.g., Clicking on "Learn More" buttons leading to product pages).
+5. Creative Direction
+Define the visual, thematic, and messaging blueprint for the campaign. This section should include:
+• Campaign Theme & Tagline: Define the central idea (e.g., "Enjoy Life Together") and the underlying message (e.g., "Because life is brighter, more connected, and more fun when enjoyed together").
+• Key Message Pillars: List the 3-4 core values or benefits that will be consistently emphasized (e.g., Affordability, Reliability, Family-Centric, Fun & Enjoyment).
+• Campaign Tone: Specify the emotional feeling and interaction style (e.g., fun & friendly, active & engaging, Never Boring).
+• Visual and Typographical Elements: Specify core design elements, including primary typography (e.g., Futuru for Product Education and Features) and key visual elements (e.g., the hexagon shape and hexagon ripple) that will strengthen brand association.
+`,
+            },
+          ]}
+        />
+      </Accordion>
+    </>
   );
 
   const businessOverviewCard = (
@@ -662,7 +693,7 @@ Context: ${client.name} serves ${
       {/* Step Content */}
       {currentStep === 0 && (
         <>
-          {masterPromptCard}
+          {masterPromptAccordion}
           {renderNextButton()}
         </>
       )}
