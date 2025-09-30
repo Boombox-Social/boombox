@@ -1,6 +1,7 @@
 // dashboard/layout.tsx
 "use client";
 import React, { useState } from "react";
+import { usePathname } from "next/navigation";
 import { useClientManagement, useModal } from "../hooks";
 import { NewClientForm } from "../types";
 import { AddClientModal } from "../components/modals/AddClientModal";
@@ -40,13 +41,22 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { clients, addClient, isLoading, error } = useClientManagement();
+  const pathname = usePathname();
+  const { clients, addClient, isLoading, error, loadClients } =
+    useClientManagement();
   const {
     isOpen: isModalOpen,
     open: openModal,
     close: closeModal,
   } = useModal();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  React.useEffect(() => {
+    // When navigating to dashboard, reload clients
+    if (pathname === "/dashboard") {
+      loadClients();
+    }
+  }, [pathname, loadClients]);
 
   const handleAddClient = async (clientData: NewClientForm) => {
     try {

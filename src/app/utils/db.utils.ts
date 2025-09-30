@@ -461,6 +461,44 @@ static async assignUsersToClient(clientId: number, userIds: number[]) {
     }
   }
 
+  //Archiving clients
+  static async archiveClient(client: any) {
+    try {
+      await prisma.archivedClient.create({
+        data: {
+          originalClientId: client.id,
+          logo: client.logo,
+          name: client.name,
+          address: client.address,
+          industry: client.industry,
+          slogan: client.slogan,
+          links: client.links,
+          coreProducts: client.coreProducts,
+          idealCustomers: client.idealCustomers,
+          brandEmotion: client.brandEmotion,
+          uniqueProposition: client.uniqueProposition,
+          whyChooseUs: client.whyChooseUs,
+          mainGoal: client.mainGoal,
+          shortTermGoal: client.shortTermGoal,
+          longTermGoal: client.longTermGoal,
+          competitors: client.competitors,
+          indirectCompetitors: client.indirectCompetitors,
+          brandAssets: client.brandAssets,
+          fontUsed: client.fontUsed,
+          smmDriveLink: client.smmDriveLink,
+          contractDeliverables: client.contractDeliverables,
+          archivedAt: new Date(),
+          assignedUserIds: client.assignedUserIds,
+          createdById: client.createdById,
+          clientLinksId: client.clientLinksId,
+        },
+      });
+    } catch (error) {
+      console.error('Error archiving client:', error);
+      throw error;
+    }
+  }
+
   // Authentication helpers
   static async updateUserLastLogin(userId: number) {
     try {

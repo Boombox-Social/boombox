@@ -1,6 +1,6 @@
 // types/client.types.ts
 export interface Client {
-  id?: number;
+  id: number;
   logo?: string | null;
   name: string;
   address?: string | null;

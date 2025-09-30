@@ -103,11 +103,8 @@ export function useClientManagement() {
       }
 
       // Update local state
-      setClients(prev =>
-        prev.map(client =>
-          client.id === clientId ? { ...client, archived: true } : client
-        )
-      );
+      setClients(prev => prev.filter(client => client.id !== clientId));
+      
     } catch (error) {
       if (process.env.NODE_ENV !== 'production') {
         console.error('Error archiving client:', error);
