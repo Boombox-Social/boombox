@@ -3,7 +3,7 @@ import React from "react";
 import { BasecampButton } from "./buttons/BasecampButton";
 
 interface BasecampProps {
-  clientId: number;
+  clientId?: number;
 }
 
 export function Basecamp({ clientId }: BasecampProps) {
