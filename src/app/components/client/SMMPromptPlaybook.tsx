@@ -711,7 +711,7 @@ Context: ${client.name} serves ${
       )}
       {currentStep === 3 && (
         <>
-          {masterPromptCard}
+          {masterPromptAccordion}
           {businessOverviewCard}
           {contentCreationCard}
           {additionalPromptCards}
