@@ -39,8 +39,20 @@ export default function ClientDetails({ client }: ClientDetailsProps) {
       </div>
 
       {/* Top right: SMM Prompt Playbook (spans 2 rows, 40% width) */}
-      <div className="md:col-span-1 md:row-span-2 min-w-0 mt-6 md:mt-0">
-        <SMMPromptPlaybook client={client} />
+
+      <SMMPromptPlaybook client={client} />
+
+      {/* Bottom left: Info and Basecamp side by side */}
+      <div className="flex gap-[10px] h-[320px]">
+        <div className="flex-1 min-w-0 h-full">
+          <ClientInformation client={client} />
+        </div>
+        <div className="flex-1 min-w-0 h-full">
+          {typeof client.id === "number" ? (
+            <Basecamp clientId={client.id} />
+          ) : null}
+        </div>
+
       </div>
     </div>
   );

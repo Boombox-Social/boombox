@@ -30,7 +30,19 @@ export function ClientList({ clients, collapsed }: ClientListProps) {
 
   if (!clients || clients.length === 0) {
     console.log("ClientList - no clients to display"); // Debug log
-    return null;
+    return (
+      <div
+        style={{
+          color: "#94A3B8",
+          fontSize: 15,
+          textAlign: "center",
+          padding: "32px 0",
+          width: "100%",
+        }}
+      >
+        No clients added yet.
+      </div>
+    );
   }
 
   return (

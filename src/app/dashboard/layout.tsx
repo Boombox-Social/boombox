@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { usePathname } from "next/navigation";
 import { useClientManagement, useModal } from "../hooks";
 import { NewClientForm } from "../types";
 import { AddClientModal } from "../components/modals/AddClientModal";
@@ -20,11 +21,42 @@ function BurgerButton({ onClick }: { onClick: () => void }) {
   );
 }
 
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { clients, addClient, isLoading, error } = useClientManagement();
   const { isOpen: isModalOpen, open: openModal, close: closeModal } = useModal();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // desktop logic
   const [sidebarMobileOpen, setSidebarMobileOpen] = useState(false); // mobile overlay
+
+  const pathname = usePathname();
+  const { clients, addClient, isLoading, error, loadClients } =
+    useClientManagement();
+  const {
+    isOpen: isModalOpen,
+    open: openModal,
+    close: closeModal,
+  } = useModal();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  React.useEffect(() => {
+    // When navigating to dashboard, reload clients
+    if (pathname === "/dashboard") {
+      loadClients();
+    }
+  }, [pathname, loadClients]);
+
+  const handleAddClient = async (clientData: NewClientForm) => {
+    try {
+      const _newClient = await addClient(clientData);
+      closeModal();
+    } catch (error) {
+      console.error("Failed to add client:", error);
+      throw error;
+    }
+  };
+
+  // Calculate sidebar width based on collapsed state
+  const sidebarWidth = sidebarCollapsed ? 80 : 280; // Match your UI_CONFIG values
 
   return (
     <div className="flex min-h-screen relative">
