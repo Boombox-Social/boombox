@@ -30,9 +30,8 @@ export function OverviewButton({ clientId }: OverviewButtonProps) {
     fetchLink();
   }, [clientId]);
 
-  // Save the link
+  // Save the link (allow blank)
   const handleSave = async () => {
-    if (!overviewLink) return;
     setSaving(true);
     setError(null);
     try {
@@ -75,7 +74,7 @@ export function OverviewButton({ clientId }: OverviewButtonProps) {
           className="bg-[#2563eb] text-[#F1F5F9] border border-[#2D3142] rounded-lg px-2 py-2 text-lg cursor-pointer transition-colors flex items-center min-w-[40px] justify-center"
           onClick={handleSave}
           title="Save Overview Link"
-          disabled={!overviewLink || saving}
+          disabled={saving}
         >
           {saving ? (
             <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

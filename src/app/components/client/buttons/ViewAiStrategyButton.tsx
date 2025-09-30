@@ -30,9 +30,8 @@ export function ViewAiStrategyButton({ clientId }: ViewAiStrategyButtonProps) {
     fetchLink();
   }, [clientId]);
 
-  // Save the link
+  // Save the link (allow blank)
   const handleSave = async () => {
-    if (!aiLink) return;
     setSaving(true);
     setError(null);
     try {
@@ -49,7 +48,8 @@ export function ViewAiStrategyButton({ clientId }: ViewAiStrategyButtonProps) {
     setSaving(false);
   };
 
-  const shouldShowInput = editingAiLink || !aiLink;
+  // Only show input if editing, or if there is no link and not currently saving/loading
+  const shouldShowInput = editingAiLink || (!aiLink && !loading);
 
   if (!clientId) return null;
 
@@ -77,7 +77,7 @@ export function ViewAiStrategyButton({ clientId }: ViewAiStrategyButtonProps) {
             className="bg-[#2563eb] text-[#F1F5F9] border border-[#2D3142] rounded-lg px-2 py-2 text-lg cursor-pointer transition-colors flex items-center min-w-[40px] justify-center"
             onClick={handleSave}
             title="Save Ai Link"
-            disabled={!aiLink || saving}
+            disabled={saving}
           >
             {saving ? (
               <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
