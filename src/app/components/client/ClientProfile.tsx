@@ -1,6 +1,6 @@
 // components/client/ClientProfile.tsx
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   TrashIcon,
@@ -15,26 +15,18 @@ import { useClientManagement } from "../../hooks";
 import { Modal } from "../ui/Modal";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { Client } from "../../types/client.types";
+import { UserAssignmentSelector } from "./UserAssignmentSelector";
 
 interface ClientProfileProps {
   client: Client;
 }
 
-// Dummy assigned SMM data for UI (replace with real data later)
-const assignedSMMs = [
-  {
-    id: 1,
-    name: "John Doe",
-    avatar: null,
-    email: "john@example.com",
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    avatar: null,
-    email: "jane@example.com",
-  },
-];
+interface AssignedSMM {
+  id: number;
+  name: string;
+  email: string;
+  avatar?: string | null;
+}
 
 export function ClientProfile({ client }: ClientProfileProps) {
   const { authState } = useAuth();
@@ -50,12 +42,33 @@ export function ClientProfile({ client }: ClientProfileProps) {
   const [isArchiving, setIsArchiving] = useState(false);
   const [archiveError, setArchiveError] = useState<string>("");
 
+  const [selectedUserIds, setSelectedUserIds] = useState<number[]>(
+    client.assignedUserIds || []
+  );
+  const [assignedSMMs, setAssignedSMMs] = useState<AssignedSMM[]>([]);
+  const [loadingSMMs, setLoadingSMMs] = useState(true);
+
   const isSuperAdmin = authState.user?.role === UserRole.SUPER_ADMIN;
 
   const handleArchiveClick = () => {
     setShowArchiveModal(true);
     setArchiveError("");
   };
+
+  useEffect(() => {
+    const fetchAssignedSMMs = async () => {
+      setLoadingSMMs(true);
+      try {
+        const res = await fetch(`/api/clients/${client.id}/assigned-users`);
+        const data = await res.json();
+        setAssignedSMMs(data.users || []);
+      } catch (_err) {
+        setAssignedSMMs([]);
+      }
+      setLoadingSMMs(false);
+    };
+    if (client.id) fetchAssignedSMMs();
+  }, [client.id]);
 
   const handleArchiveConfirm = async () => {
     if (typeof client.id !== "number") return;
@@ -114,6 +127,19 @@ export function ClientProfile({ client }: ClientProfileProps) {
   const handleDeleteCancel = () => {
     setShowDeleteModal(false);
     setDeleteError("");
+  };
+
+  const handleAssignSave = async () => {
+    await fetch(`/api/clients/${client.id}/assign`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userIds: selectedUserIds }),
+    });
+    setShowAssignModal(false);
+    // Refresh assigned SMMs
+    const res = await fetch(`/api/clients/${client.id}/assigned-users`);
+    const data = await res.json();
+    setAssignedSMMs(data.users || []);
   };
 
   return (
@@ -190,28 +216,33 @@ export function ClientProfile({ client }: ClientProfileProps) {
               </div>
 
               <div className="flex flex-wrap gap-2">
-                {assignedSMMs.map((smm) => (
-                  <div
-                    key={smm.id}
-                    className="flex items-center gap-2 px-2 py-1 bg-[#23262F] rounded-full border border-[#2D3142] hover:border-[#2563eb] transition-colors"
-                  >
-                    <div className="w-6 h-6 rounded-full bg-[#2563eb]/10 flex items-center justify-center">
-                      {smm.avatar ? (
-                        <img
-                          src={smm.avatar}
-                          alt={smm.name}
-                          className="w-6 h-6 rounded-full"
-                        />
-                      ) : (
-                        <UserIcon className="w-3 h-3 text-[#2563eb]" />
-                      )}
+                {loadingSMMs ? (
+                  <span className="text-[#94A3B8] text-xs italic">
+                    Loading...
+                  </span>
+                ) : assignedSMMs.length > 0 ? (
+                  assignedSMMs.map((smm) => (
+                    <div
+                      key={smm.id}
+                      className="flex items-center gap-2 px-2 py-1 bg-[#23262F] rounded-full border border-[#2D3142] hover:border-[#2563eb] transition-colors"
+                    >
+                      <div className="w-6 h-6 rounded-full bg-[#2563eb]/10 flex items-center justify-center">
+                        {smm.avatar ? (
+                          <img
+                            src={smm.avatar}
+                            alt={smm.name}
+                            className="w-6 h-6 rounded-full"
+                          />
+                        ) : (
+                          <UserIcon className="w-3 h-3 text-[#2563eb]" />
+                        )}
+                      </div>
+                      <span className="text-xs font-medium text-[#F1F5F9] truncate max-w-[120px]">
+                        {smm.name}
+                      </span>
                     </div>
-                    <span className="text-xs font-medium text-[#F1F5F9] truncate max-w-[120px]">
-                      {smm.name}
-                    </span>
-                  </div>
-                ))}
-                {assignedSMMs.length === 0 && (
+                  ))
+                ) : (
                   <p className="text-[#94A3B8] text-xs italic">
                     No SMMs assigned
                   </p>
@@ -349,15 +380,12 @@ export function ClientProfile({ client }: ClientProfileProps) {
             <label className="block text-sm font-medium text-[#F1F5F9] mb-2">
               Select SMMs to assign (dummy data)
             </label>
-            <ul>
-              {assignedSMMs.map((smm) => (
-                <li key={smm.id} className="flex items-center gap-2 mb-2">
-                  <UserIcon className="w-4 h-4 text-[#2563eb]" />
-                  <span className="text-[#F1F5F9]">{smm.name}</span>
-                  <span className="text-[#94A3B8] text-xs">{smm.email}</span>
-                </li>
-              ))}
-            </ul>
+            <UserAssignmentSelector
+              clientId={client.id}
+              initialAssignedUserIds={selectedUserIds}
+              onChange={setSelectedUserIds}
+              canEdit={isSuperAdmin}
+            />
           </div>
           <div className="flex justify-end gap-3 mt-6">
             <button
@@ -367,7 +395,7 @@ export function ClientProfile({ client }: ClientProfileProps) {
               Close
             </button>
             <button
-              onClick={() => setShowAssignModal(false)}
+              onClick={handleAssignSave}
               className="px-6 py-2 bg-[#2563eb] text-white rounded-lg font-medium hover:bg-[#1E40AF] transition-colors"
             >
               Save
