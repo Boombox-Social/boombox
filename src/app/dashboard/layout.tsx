@@ -14,21 +14,24 @@ function BurgerButton({ onClick }: { onClick: () => void }) {
       onClick={onClick}
       aria-label="Open sidebar"
     >
-      <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg
+        width="24"
+        height="24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
         <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" />
       </svg>
     </button>
   );
 }
 
-
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { clients, addClient, isLoading, error } = useClientManagement();
-  const { isOpen: isModalOpen, open: openModal, close: closeModal } = useModal();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // desktop logic
-  const [sidebarMobileOpen, setSidebarMobileOpen] = useState(false); // mobile overlay
-
-  const pathname = usePathname();
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { clients, addClient, isLoading, error, loadClients } =
     useClientManagement();
   const {
@@ -36,7 +39,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     open: openModal,
     close: closeModal,
   } = useModal();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // desktop logic
+  const [sidebarMobileOpen, setSidebarMobileOpen] = useState(false); // mobile overlay
+
+  const pathname = usePathname();
 
   React.useEffect(() => {
     // When navigating to dashboard, reload clients
@@ -44,19 +50,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       loadClients();
     }
   }, [pathname, loadClients]);
-
-  const handleAddClient = async (clientData: NewClientForm) => {
-    try {
-      const _newClient = await addClient(clientData);
-      closeModal();
-    } catch (error) {
-      console.error("Failed to add client:", error);
-      throw error;
-    }
-  };
-
-  // Calculate sidebar width based on collapsed state
-  const sidebarWidth = sidebarCollapsed ? 80 : 280; // Match your UI_CONFIG values
 
   return (
     <div className="flex min-h-screen relative">
@@ -84,7 +77,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           aria-label="Expand sidebar"
           style={{ transition: "left 0.2s" }}
         >
-          <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            width="24"
+            height="24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <path d="M8 5l8 7-8 7" />
           </svg>
         </button>
