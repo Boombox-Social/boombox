@@ -5,27 +5,9 @@ import { useClientManagement, useModal } from "../hooks";
 import { NewClientForm } from "../types";
 import { AddClientModal } from "../components/modals/AddClientModal";
 import { SidePanel } from "../components/sidebar/SidePanel";
-import { UserNav } from "../components/header/UserNav";
+import { Navbar } from "../components/header/Navbar";
 
-function BurgerButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      className="fixed top-4 left-2 z-40 md:hidden text-[#F1F5F9] rounded-full w-10 h-10 flex items-center justify-center shadow-lg"
-      onClick={onClick}
-      aria-label="Open sidebar"
-    >
-      <svg
-        width="24"
-        height="24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-      >
-        <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" />
-      </svg>
-    </button>
-  );
-}
+
 
 export default function DashboardLayout({
   children,
@@ -53,15 +35,20 @@ export default function DashboardLayout({
 
   return (
     <div className="flex min-h-screen relative">
-      {/* Burger icon for mobile */}
-      {!sidebarMobileOpen && (
-        <BurgerButton onClick={() => setSidebarMobileOpen(true)} />
-      )}
+      {/* Unified Navbar - adjusts position based on sidebar */}
+      <Navbar
+        onMenuClick={() => setSidebarMobileOpen(true)}
+        showBurger={!sidebarMobileOpen}
+        sidebarCollapsed={sidebarCollapsed}
+      />
 
-      {/* SidePanel: overlay on mobile, normal on desktop */}
+      {/* SidePanel */}
       <SidePanel
         collapsed={sidebarCollapsed}
-        onCollapse={() => setSidebarCollapsed(true)}
+        onCollapse={() => {
+          console.log("Toggle sidebar, current state:", sidebarCollapsed);
+          setSidebarCollapsed(!sidebarCollapsed);
+        }}
         clients={clients}
         onAddClientClick={openModal}
         isLoading={isLoading}
@@ -93,9 +80,11 @@ export default function DashboardLayout({
       <main
         className={`
           flex-1 bg-[#181A20] min-h-screen transition-all
-          ml-0 [${sidebarCollapsed ? "72px" : "220px"}]
+          pt-16
+          ml-0 md:ml-[${sidebarCollapsed ? "72px" : "220px"}]
           p-6
         `}
+        style={{ zIndex: 1 }} // Below both navbar and expand button
       >
         {children}
       </main>
@@ -108,7 +97,6 @@ export default function DashboardLayout({
           closeModal();
         }}
       />
-      <UserNav />
     </div>
   );
 }
