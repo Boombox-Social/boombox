@@ -9,7 +9,6 @@ interface DriveButtonProps {
 export function DriveButton({ clientId, initialDriveLink }: DriveButtonProps) {
   const [driveLink, setDriveLink] = useState(initialDriveLink || "");
   const [editing, setEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,25 +35,7 @@ export function DriveButton({ clientId, initialDriveLink }: DriveButtonProps) {
     setSaving(false);
   };
 
-  // Helper to extract display text
-  const getDisplayText = (url: string) => {
-    try {
-      const cleanUrl = url.replace(/\/$/, "");
-      return cleanUrl.split("/").pop() || url;
-    } catch {
-      return url;
-    }
-  };
-
   if (!clientId) return null;
-
-  if (loading) {
-    return (
-      <div className="flex justify-center gap-2 mt-5 text-[#94A3B8]">
-        Loading...
-      </div>
-    );
-  }
 
   // Show input if editing or no link
   if (!driveLink || editing) {
