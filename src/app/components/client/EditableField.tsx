@@ -88,9 +88,9 @@ export function EditableField({
             minHeight: multiline ? "60px" : "auto",
             border: `1px solid transparent`,
             borderRadius: 6,
-            whiteSpace: multiline ? "pre-wrap" : "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
+            whiteSpace: "normal",
+            wordBreak: "break-word",
+            overflowWrap: "break-word",
           }}
         >
           {displayValue || `No ${label.toLowerCase()} provided`}
