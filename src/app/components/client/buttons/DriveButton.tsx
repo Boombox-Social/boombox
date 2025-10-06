@@ -1,79 +1,58 @@
 import React, { useEffect, useState } from "react";
 import { PencilSquareIcon, CheckCircleIcon } from "@heroicons/react/24/solid";
 
-interface OverviewButtonProps {
+interface DriveButtonProps {
   clientId: number;
+  initialDriveLink?: string | null;
 }
 
-export function OverviewButton({ clientId }: OverviewButtonProps) {
-  const [overviewLink, setOverviewLink] = useState("");
+export function DriveButton({ clientId, initialDriveLink }: DriveButtonProps) {
+  const [driveLink, setDriveLink] = useState(initialDriveLink || "");
   const [editing, setEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch the link on mount
+  // Update local state when prop changes
   useEffect(() => {
-    if (!clientId) return;
-    const fetchLink = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch(`/api/clients/${clientId}/overview-link`);
-        const data = await res.json();
-        setOverviewLink(data.businessSummaryLink || "");
-      } catch (_err) {
-        setError("Failed to load overview link.");
-      }
-      setLoading(false);
-    };
-    fetchLink();
-  }, [clientId]);
+    setDriveLink(initialDriveLink || "");
+  }, [initialDriveLink]);
 
-  // Save the link (allow blank)
+  // Save the link
   const handleSave = async () => {
     setSaving(true);
     setError(null);
     try {
-      const res = await fetch(`/api/clients/${clientId}/overview-link`, {
+      const res = await fetch(`/api/clients/${clientId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessSummaryLink: overviewLink }),
+        body: JSON.stringify({ smmDriveLink: driveLink }),
       });
       if (!res.ok) throw new Error("Failed to save link");
       setEditing(false);
     } catch (_err) {
-      setError("Failed to save overview link.");
+      setError("Failed to save drive link.");
     }
     setSaving(false);
   };
 
   if (!clientId) return null;
 
-  if (loading) {
-    return (
-      <div className="flex justify-center gap-2 mt-5 text-[#94A3B8]">
-        Loading...
-      </div>
-    );
-  }
-
-  // Always show input and save button if there is no link or editing
-  if (!overviewLink || editing) {
+  // Show input if editing or no link
+  if (!driveLink || editing) {
     return (
       <div className="flex justify-center gap-2 mt-5">
         <input
           type="url"
-          value={overviewLink}
-          onChange={(e) => setOverviewLink(e.target.value)}
+          value={driveLink}
+          onChange={(e) => setDriveLink(e.target.value)}
           className="px-5 py-2 rounded-lg border border-[#2D3142] text-base w-full max-w-full min-w-[80px] focus:outline-none"
           autoFocus
-          placeholder="Enter Overview link"
+          placeholder="Enter Google Drive link"
         />
         <button
           className="bg-[#2563eb] text-[#F1F5F9] border border-[#2D3142] rounded-lg px-2 py-2 text-lg cursor-pointer transition-colors flex items-center min-w-[40px] justify-center"
           onClick={handleSave}
-          title="Save Overview Link"
+          title="Save Drive Link"
           disabled={saving}
         >
           {saving ? (
@@ -87,22 +66,22 @@ export function OverviewButton({ clientId }: OverviewButtonProps) {
     );
   }
 
-  // If there is a link, show the link and edit button
+  // Show link with edit button
   return (
     <div className="flex justify-center gap-2 mt-5">
       <a
-        href={overviewLink}
+        href={driveLink}
         target="_blank"
         rel="noopener noreferrer"
-        className="bg-[#1E40AF] text-[#F1F5F9] border-none rounded-lg px-5 py-2 text-lg cursor-pointer transition-colors w-full max-w-full min-w-[80px] block hover:bg-[#2563eb] focus:outline-none text-center"
+        className="bg-[#2563eb] text-[#F1F5F9] border-none rounded-lg px-5 py-2 cursor-pointer transition-colors w-full max-w-full min-w-[80px] block hover:bg-[#2E7D32] focus:outline-none text-center"
         style={{ textDecoration: "none" }}
       >
-        Business Overview
+        Client Drive Link
       </a>
       <button
         className="bg-[#2D3142] text-[#F1F5F9] rounded-lg px-2 py-2 cursor-pointer transition-colors min-w-[40px] flex items-center justify-center hover:bg-[#3c4152] focus:outline-none"
         onClick={() => setEditing(true)}
-        title="Edit Overview Link"
+        title="Edit Drive Link"
       >
         <PencilSquareIcon className="w-4 h-4 text-[#2563eb]" />
       </button>
