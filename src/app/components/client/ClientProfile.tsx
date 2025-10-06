@@ -110,9 +110,9 @@ export function ClientProfile({ client }: ClientProfileProps) {
   return (
     <>
       <div className="bg-[#23262F] rounded-xl border border-[#2D3142] p-6 relative">
-        {/* Delete & Archive Buttons */}
+        {/* Desktop: Delete & Archive Buttons (top right) */}
         {isSuperAdmin && (
-          <div className="absolute top-5 right-5 flex gap-2">
+          <div className="absolute top-5 right-5 gap-2 hidden md:flex">
             <button
               onClick={handleArchiveClick}
               disabled={isArchiving}
@@ -125,6 +125,7 @@ export function ClientProfile({ client }: ClientProfileProps) {
             <button
               onClick={handleDeleteClick}
               className="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-2 transition-colors cursor-pointer"
+              title="Delete"
             >
               <TrashIcon className="w-4 h-4" />
               Delete
@@ -160,26 +161,48 @@ export function ClientProfile({ client }: ClientProfileProps) {
               Industry: {client.industry}
             </p>
 
-             {/* Assigned SMMs Section with Edit Button */}
-            <div className="mt-4 p-3 bg-[#181A20] rounded-lg border border-[#2D3142]">
-              <div className="flex items-center justify-between mb-2">
+            {/* Mobile: Archive & Delete Buttons (below Industry) */}
+            {isSuperAdmin && (
+              <div className="flex flex-row gap-2 mt-4 md:hidden">
+                <button
+                  onClick={handleArchiveClick}
+                  disabled={isArchiving}
+                  className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-semibold px-3 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  title="Archive"
+                >
+                  <ArchiveBoxIcon className="w-4 h-4" />
+                  {isArchiving ? "Archiving..." : "Archive"}
+                </button>
+                <button
+                  onClick={handleDeleteClick}
+                  className="flex-1 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-3 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                  title="Delete"
+                >
+                  <TrashIcon className="w-4 h-4" />
+                  Delete
+                </button>
+              </div>
+            )}
+
+            {/* Assigned Social Media Managers Section */}
+            <div className="mt-4 bg-[#181A20] rounded-lg p-4 border border-[#2D3142]">
+              <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <UsersIcon className="w-4 h-4 text-[#2563eb]" />
-                  <span className="text-[#94A3B8] text-xs font-medium">
+                  <UsersIcon className="w-5 h-5 text-[#2563eb]" />
+                  <h3 className="text-sm font-semibold text-[#F1F5F9]">
                     Assigned Social Media Managers
-                  </span>
+                  </h3>
                 </div>
                 {isSuperAdmin && (
                   <button
                     onClick={() => setShowAssignModal(true)}
-                    className="p-1 hover:bg-[#2D3142] rounded-md transition-colors"
+                    className="text-[#2563eb] hover:text-[#1E40AF] transition-colors"
                     title="Edit Assignments"
                   >
-                    <PencilSquareIcon className="w-4 h-4 text-[#2563eb]" />
+                    <PencilSquareIcon className="w-5 h-5" />
                   </button>
                 )}
               </div>
-              
               <div className="flex flex-wrap gap-2">
                 {assignedSMMs.map((smm) => (
                   <div

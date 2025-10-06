@@ -11,10 +11,8 @@ export default function DashboardContent() {
   const firstName = authState.user?.name?.split(' ')[0] || 'User';
 
   const templates = [
-    { name: "Social Media Calendar", emoji: "📅", link: "https://docs.google.com/spreadsheets/create" },
-    { name: "Monthly Report", emoji: "📊", link: "https://docs.google.com/document/create" },
-    { name: "Marketing Proposal", emoji: "📝", link: "https://docs.google.com/document/create" },
-    { name: "Company Deck", emoji: "🎯", link: "https://docs.google.com/presentation/create" },
+    { name: "Marketing Plan Template", emoji: "📅", link: "https://www.canva.com/design/DAGUWpAtTeE/fizA8Exsk3Hsu7F20Y52ng/edit?utm_content=DAGUWpAtTeE&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton" },
+    { name: "Client Content Calendar Template", emoji: "📝", link: "https://docs.google.com/presentation/d/1WX0pkyKVOKIvXtSSKjs2Wi_1vTGmBrtvpDLguvfHL2k/edit?usp=sharing" },
   ];
 
   return (
@@ -66,17 +64,19 @@ export default function DashboardContent() {
         {/* Templates Card - Spans full width on mobile */}
         <div className="bg-[#23262F] rounded-xl border border-[#2D3142] p-4 sm:p-6 sm:col-span-2 lg:col-span-1">
           <h3 className="text-lg font-semibold text-[#F1F5F9] mb-4">Quick Templates</h3>
-          <div className="grid grid-cols-2 gap-2 sm:gap-3">
+          <div className="flex flex-col gap-3">
             {templates.map((template, index) => (
               <a
                 key={index}
                 href={template.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-[#181A20] rounded-lg hover:bg-[#2D3142] transition-colors"
+                className="flex items-center gap-3 p-3 bg-[#181A20] rounded-lg hover:bg-[#2D3142] transition-colors group"
               >
-                <span className="text-lg sm:text-xl">{template.emoji}</span>
-                <span className="text-xs sm:text-sm text-[#F1F5F9] font-medium truncate">{template.name}</span>
+                <span className="text-2xl flex-shrink-0">{template.emoji}</span>
+                <span className="text-sm text-[#F1F5F9] font-medium group-hover:text-[#2563eb] transition-colors">
+                  {template.name}
+                </span>
               </a>
             ))}
           </div>
@@ -84,7 +84,6 @@ export default function DashboardContent() {
       </div>
 
       {/* Recent Clients Section */}
-      <div className="bg-[#23262F] rounded-xl border border-[#2D3142] p-4 sm:p-6">
         <h3 className="text-lg sm:text-xl font-semibold text-[#F1F5F9] mb-4 sm:mb-6">Recent Clients</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {clients.slice(0, 6).map((client) => (
@@ -103,7 +102,6 @@ export default function DashboardContent() {
             </div>
           ))}
         </div>
-      </div>
     </div>
   );
 }
