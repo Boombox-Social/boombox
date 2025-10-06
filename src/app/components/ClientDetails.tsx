@@ -4,6 +4,7 @@ import { ClientProfile } from "./client/ClientProfile";
 import { ClientInformation } from "./client/ClientInformation";
 import { SMMPromptPlaybook } from "./client/SMMPromptPlaybook";
 import { Basecamp } from "./client/Basecamp";
+import { ClientDrive } from "./client/ClientDrive";
 
 type ClientDetailsProps = {
   client: Client;
@@ -29,21 +30,33 @@ export default function ClientDetails({ client }: ClientDetailsProps) {
       {/* Top left: Profile container */}
       <div className="md:row-span-2 md:col-span-1 min-w-0">
         <ClientProfile client={client} />
-        {/* Info and Basecamp stacked on mobile, side by side on md+ */}
-        <div className="flex flex-col gap-4 mt-4 md:flex-row md:gap-4">
-          <div className="flex-1 min-w-0 h-full">
-            <ClientInformation client={client} />
+
+        {/* Info, Basecamp, and Drive stacked on mobile, in a grid on md+ */}
+        <div className="flex flex-col gap-4 mt-4 md:grid md:grid-cols-2 md:gap-4">
+          <div className="min-w-0 h-full">
+            <div className="min-w-0 h-full">
+              <ClientInformation client={client} />
+            </div>
           </div>
-          <div className="flex-1 min-w-0 h-full">
-            {typeof client.id === "number" ? (
-              <Basecamp clientId={client.id} />
-            ) : null}
+          <div className="flex flex-col min-w-0 h-full gap-4">
+            <div className="min-w-0">
+              {typeof client.id === "number" ? (
+                <Basecamp clientId={client.id} />
+              ) : null}
+            </div>
+            <div className="min-w-0">
+              {typeof client.id === "number" ? (
+                <ClientDrive
+                  clientId={client.id}
+                  smmDriveLink={client.smmDriveLink}
+                />
+              ) : null}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Top right: SMM Prompt Playbook (spans 2 rows, 40% width) */}
-
       <SMMPromptPlaybook client={client} />
     </div>
   );
