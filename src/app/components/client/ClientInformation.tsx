@@ -28,9 +28,9 @@ export function ClientInformation({ client }: ClientInformationProps) {
         isOpen={showInfoModal}
         onClose={() => setShowInfoModal(false)}
         title="Business Information"
-        maxWidth="48em"
+        maxWidth="60em"
       >
-        <div style={{ padding: 16 }}>
+        <div  className="p-6 max-h-[70vh] overflow-y-auto">
           <ClientInfoModal client={client} />
         </div>
       </Modal>
