@@ -7,25 +7,7 @@ import { AddClientModal } from "../components/modals/AddClientModal";
 import { SidePanel } from "../components/sidebar/SidePanel";
 import { Navbar } from "../components/header/Navbar";
 
-function BurgerButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      className="fixed top-4 left-2 z-40 md:hidden text-[#F1F5F9] rounded-full w-10 h-10 flex items-center justify-center shadow-lg"
-      onClick={onClick}
-      aria-label="Open sidebar"
-    >
-      <svg
-        width="24"
-        height="24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-      >
-        <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" />
-      </svg>
-    </button>
-  );
-}
+
 
 export default function DashboardLayout({
   children,
