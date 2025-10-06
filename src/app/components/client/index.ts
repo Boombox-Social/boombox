@@ -1,6 +1,8 @@
 export { ClientProfile } from './ClientProfile';
 export { SMMPromptPlaybook } from './SMMPromptPlaybook';
 export { ClientInformation } from './ClientInformation';
+export { ClientDrive } from './ClientDrive';
+export { Basecamp } from './Basecamp';
 export { PromptCard } from './PromptCard';
 export { EditableField } from './EditableField';
 export { EditableTagField } from './EditableTagField';

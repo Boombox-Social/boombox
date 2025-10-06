@@ -20,10 +20,11 @@ interface Prompt {
 
 interface PromptCardProps {
   title: string;
+  description: string;
   prompts: Prompt[];
 }
 
-export function PromptCard({ title, prompts }: PromptCardProps) {
+export function PromptCard({ title, description, prompts }: PromptCardProps) {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   const copyToClipboard = async (text: string, index: number) => {
@@ -48,6 +49,7 @@ export function PromptCard({ title, prompts }: PromptCardProps) {
       >
         {title}
       </div>
+      <div className="text-sm text-white-100/70 py-2">{description}</div>
 
       <div style={{ marginBottom: 20 }}>
         {prompts.map((prompt, index) => (
