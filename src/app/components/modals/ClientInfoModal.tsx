@@ -101,7 +101,7 @@ export function ClientInfoModal({ client }: ClientInfoModalProps) {
   );
 
   return (
-    <div className="bg-[#23262F] min-w-0 min-h-0 relative">
+    <div className="bg-[#23262F] w-full">
       {/* Header */}
       <div className="flex items-center justify-end mb-2">
         <div className="flex items-center gap-3">
@@ -163,7 +163,7 @@ export function ClientInfoModal({ client }: ClientInfoModalProps) {
       )}
 
       {/* Grid Layout */}
-      <div className="grid gap-2 grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
+      <div className="grid gap-4 grid-cols-[repeat(auto-fit,minmax(300px,1fr))] w-full">
         {/* Basic Info */}
         <EditableField
           label="Industry"
