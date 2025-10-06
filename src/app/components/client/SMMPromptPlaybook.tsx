@@ -20,61 +20,8 @@ interface SMMPromptPlaybookProps {
   client: Client;
 }
 
-function Accordion({
-  title,
-  children,
-  defaultOpen = false,
-}: {
-  title: string;
-  children: React.ReactNode;
-  defaultOpen?: boolean;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-  return (
-    <div
-      style={{
-        marginBottom: 16,
-        border: `1px solid ${colors.border}`,
-        borderRadius: 8,
-      }}
-    >
-      <button
-        onClick={() => setOpen((v) => !v)}
-        style={{
-          width: "100%",
-          textAlign: "left",
-          background: colors.bg,
-          color: colors.accent,
-          fontWeight: 700,
-          fontSize: 15,
-          padding: "12px 16px",
-          border: "none",
-          borderRadius: 8,
-          cursor: "pointer",
-        }}
-      >
-        {title} {open ? "▲" : "▼"}
-      </button>
-      {open && (
-        <div
-          style={{
-            padding: 16,
-            background: colors.card,
-            color: colors.text,
-            borderTop: `1px solid ${colors.border}`,
-          }}
-        >
-          {children}
-        </div>
-      )}
-    </div>
-  );
-}
-
 export function SMMPromptPlaybook({ client }: SMMPromptPlaybookProps) {
   const [currentStep, setCurrentStep] = useState(0);
-
-  //if the overview and ai strategy has links
   const [hasAiStrategyLink, setHasAiStrategyLink] = useState<boolean | null>(
     null
   );
@@ -114,25 +61,27 @@ export function SMMPromptPlaybook({ client }: SMMPromptPlaybookProps) {
   const generateClientProfile = () => {
     return `
 Client Profile:
-* Brand Name: ${client.name}
-* Slogan: ${client.slogan || "Not provided"}
-* Industry: ${client.industry || "Not specified"}
-* Value Proposition: ${client.uniqueProposition || "Not specified"}
-* Target Audience: ${client.idealCustomers || "Not specified"}
-* Brand Voice & Emotion: ${client.brandEmotion || "Professional"}
-* Primary Goals: ${client.mainGoal || "Not specified"}
-* Short Term Goal: ${client.shortTermGoal || "Not specified"}
-* Long Term Goal: ${client.longTermGoal || "Not specified"}
-* Why Choose Us: ${client.whyChooseUs || "Not specified"}
-* Core Products/Services: ${client.coreProducts?.join(", ") || "Not specified"}
-* Direct Competitors: ${client.competitors?.join(", ") || "None specified"}
-* Indirect Competitors: ${
+• Brand Name: ${client.name}
+• Address: ${client.address || "Not provided"}
+• Slogan/Tagline: ${client.slogan || "Not provided"}
+• Industry: ${client.industry || "Not specified"}
+• Business Links: ${client.links?.join(", ") || "Not provided"}
+• Value Proposition: ${client.uniqueProposition || "Not specified"}
+• Target Audience: ${client.idealCustomers || "Not specified"}
+• Brand Voice & Emotion: ${client.brandEmotion || "Professional"}
+• Primary Goals: ${client.mainGoal || "Not specified"}
+• Short Term Goal: ${client.shortTermGoal || "Not specified"}
+• Long Term Goal: ${client.longTermGoal || "Not specified"}
+• Why Choose Us: ${client.whyChooseUs || "Not specified"}
+• Core Products/Services: ${client.coreProducts?.join(", ") || "Not specified"}
+• Direct Competitors: ${client.competitors?.join(", ") || "None specified"}
+• Indirect Competitors: ${
       client.indirectCompetitors?.join(", ") || "None specified"
     }
-* Social Links: ${client.links?.join(", ") || "Not provided"}
-* Contract Deliverables: ${
-      client.contractDeliverables || "Not specified"
-    }`.trim();
+• Social Links: ${client.links?.join(", ") || "Not provided"}
+• Marketing Challenges: [Please specify current business or marketing obstacles, focusing on planning, execution, tracking, and sustainability]
+• Contract Deliverables: ${client.contractDeliverables || "Not specified"}
+• Existing Budget for Paid Media: [Please specify paid media budget]`.trim();
   };
 
   // Steps, conditionally include Master Prompt and Business Overview tabs
@@ -161,7 +110,7 @@ Client Profile:
   useEffect(() => {
     if (hasAiStrategyLink === null || hasOverviewLink === null) return;
     if (currentStep >= steps.length) setCurrentStep(0);
-  }, [hasAiStrategyLink, hasOverviewLink, steps.length]);
+  }, [hasAiStrategyLink, hasOverviewLink, steps.length, currentStep]);
 
   // Navigation bar
   const renderStepNav = () => (
@@ -176,7 +125,6 @@ Client Profile:
       }}
     >
       {steps.map((step, index) => {
-        // Only allow navigation to completed or current steps, or "Show all prompts"
         const isAccessible = index <= currentStep || index === steps.length - 1;
         return (
           <button
@@ -230,93 +178,88 @@ Client Profile:
       </div>
     ) : null;
 
-  // PromptCard content for each step
-  const masterPromptAccordion = (
-    <>
-      <Accordion title="Complete Strategy Prompt (v1)" defaultOpen>
-        <PromptCard
-          title="🎯 Master Social Media Expert Idea Prompt"
-          prompts={[
-            {
-              label: "Complete Master Strategy Prompt",
-              content: `You are a senior social media strategist for a marketing agency. Your task is to develop a comprehensive and actionable brand strategy for ${
-                client.name
-              }. This strategy must address the client&apos;s marketing challenges, leverage their competitive advantages, and be designed to achieve measurable business goals.
+  // Master Prompt Card with new comprehensive 8-section structure
+  const masterPromptCard = (
+    <PromptCard
+      title="🎯 Complete Strategy Prompt (8-Section Deep Research)"
+      description="Step 1: Generate Strategy using ChatGPT Deep Research. 
+      Copy the Prompt below and paste it on ChatGPT Deep Research, once that done copy the result and make a new doc inside the Client Drive Link > AI Docs.
+      Copy the link and paste it on the AI Strategy Link Input"
+      prompts={[
+        {
+          label: "Comprehensive Brand & Campaign Strategy",
+          content: `Role: You are a senior social media strategist for a marketing agency. Your task is to develop a comprehensive and actionable brand strategy for the client. This strategy must strictly adhere to the client's defined content and platform contract deliverables (e.g., Eight static posts, four trendy videos, social listening, and weekly content calendars for Facebook). The strategy must address the client's marketing challenges, leverage any competitive advantages, and be designed to achieve measurable business goals, utilizing a structure modeled after a detailed campaign document.
+
+--------------------------------------------------------------------------------
+
+Required Client Profile Inputs (Must be specified before generating the strategy):
+The strategist must receive the following detailed information about the client brand (Current client is ${
+            client.name
+          }):
 
 ${generateClientProfile()}
 
-Your Task:
-Create a detailed social media content and brand strategy for the upcoming months. Your response should include the following sections, each with specific recommendations:
+--------------------------------------------------------------------------------
 
-1. Brand Strategy Overview: A brief summary of the core brand message and how the content will be used to enhance online presence and foster an emotional connection with the audience.
+Mandatory Output Structure (8 Sections for Deep Research):
+Your response must be divided into the following eight comprehensive sections, aligning with the detailed campaign document structure:
 
-2. Content Pillars & Tactics: Based on the brand's goals and unique value proposition, outline 3-4 key content pillars. For each pillar, provide specific content ideas and formats (e.g., static posts, video reels, interactive content) that directly address the clients challenges and goals.
-
-3. Platform-Specific Recommendations: Detail how to leverage each of the primary channels and secondary channels to create a cohesive funnel.
-
-4. Performance & Measurement: Conclude with a plan for how the success of the strategy will be measured, linking your content ideas to key metrics like Page Reach, Follower Growth, and Link Clicks.`,
-            },
-          ]}
-        />
-      </Accordion>
-      <Accordion title="Complete Strategy Prompt (v2)">
-        <PromptCard
-          title="🎯 Master Social Media Expert Idea Prompt (v2)"
-          prompts={[
-            {
-              label: "Detailed Campaign Strategy Prompt",
-              content: `You are a senior social media strategist for a marketing agency. Your task is to develop a comprehensive and actionable brand strategy for a client. This strategy must address the client's marketing challenges, leverage their competitive advantages, and be designed to achieve measurable business goals, utilizing a structure modeled after a detailed campaign document.
-
-Client Profile (Required Inputs): The strategist must receive the following information about the client brand before generating the strategy:
-• Brand Name: ${client.name}
-• Slogan/Tagline: ${client.slogan || "Not provided"}
-• Industry: ${client.industry || "Not specified"}
-• Value Proposition: ${client.uniqueProposition || "Not specified"}
-• Target Audience: ${client.idealCustomers || "Not specified"}
-• Brand Voice & Emotion: ${client.brandEmotion || "Professional"}
-• Primary Goals: ${client.mainGoal || "Not specified"}
-• Core Products/Services: ${client.coreProducts?.join(", ") || "Not specified"}
-• Direct Competitors: ${client.competitors?.join(", ") || "None specified"}
-• Marketing Challenges: [List current business or marketing obstacles, such as planning strategies, executing them effectively, or ensuring long-term sustainability]
-
-Your Task: Create a detailed social media content and brand strategy. Your response must be divided into the following five sections, adopting a comprehensive strategy framework:
 1. Executive Summary
-Generate a brief but comprehensive overview of the campaign. This summary must include:
-• Campaign Aim: State the overall objective (e.g., launching an online presence primarily driving awareness then traffic to e-commerce platforms like Shopee and Lazada).
-• Key Message: Define the core brand promise or statement (e.g., Hexatron offers affordable, reliable, and high-quality electronics designed to bring families closer together).
-• Key Metrics: List the core awareness metrics that will be tracked (e.g., Visits, Content Interaction, Views, Reach, Follower Growth, Link Clicks).
-• Paid Media Overview: Include a summary of the paid media focus and budget (e.g., focusing on awareness, engagement, and traffic using a budget like ₱15,000 for Meta ads).
+Generate a brief overview of the campaign. This summary must include the Campaign Aim (stating the overall objective, e.g., launching an online presence primarily driving awareness then traffic to e-commerce platforms like Shopee and Lazada), the Key Message (defining the core brand promise), the Key Metrics (listing the core awareness metrics that will be tracked, e.g., Visits, Content Interaction, Views, Reach, Follower Growth, Link Clicks), and a Paid Media Overview (summarizing focus and budget).
+
 2. About
 Provide a detailed profile of the brand. This section must detail:
-• Products/Services: List the main offerings (e.g., Mid-range Smart TV, amplifiers, and party speakers).
-• Brand Voice and Personality: Describe the tone and character the brand conveys online (e.g., simple and practical, fun and friendly, always active and engaging, and never boring).
-• Marketing Challenges: Summarize the key obstacles the strategy is designed to overcome (e.g., challenges in planning the right strategies, executing them effectively, tracking results, and ensuring long-term sustainability).
+• Products/Services.
+• Brand Voice and Personality (describing the tone, e.g., simple and practical, fun and friendly, never boring).
+• Marketing Challenges (summarizing obstacles related to planning, execution, tracking, and long-term sustainability).
+
 3. Competitive & Market Analysis
-Analyze the environment by providing detailed competitor insights and a situational analysis. This section must include:
-• Competitor Breakdowns (for each direct competitor): Include an overview, their primary product focus, their main marketing channels, and a strategy for "How we can win" against them (e.g., position the brand as offering up-to-date technology at a more accessible price against Devant).
-• SWOT Analysis: Structure the analysis clearly, detailing the brand's Strengths (e.g., Quality & Competitive Price, Family-Focused Brand Image), Weaknesses (e.g., Brand Recognition, Offline Presence), Opportunities (e.g., Rising Demand for Home Entertainment, Increasing E-commerce Sales), and Threats (e.g., Established Competitors, Price Sensitivity).
-• Industry Trends & Insights: Identify 3-5 current market insights (e.g., More consumer electronics sales are happening online) and state the required Campaign Application for each insight (e.g., Strongly emphasize ease, trust, and accessibility of products through e-commerce platforms).
+Analyze the environment by providing detailed insights and a situational analysis:
+• Competitor Breakdowns (for each direct competitor): Include the Competitor Overview, their primary product focus, their main marketing channels, and a specific strategy for "How we can win" against them.
+• SWOT Analysis: Detail the brand's Strengths (What customers like), Weaknesses (What needs fixing), Opportunities (What the industry wants), and Threats (What could hinder goals).
+• Industry Trends & Insights: Identify at least 3-5 current market insights and state the required Campaign Application for each insight (e.g., applying ease and trust given increasing e-commerce sales).
+
 4. Target Audience
-Outline the customer's interaction with the brand, focusing on the path to purchase. This section should include:
-• Customer Journey Map: Detail the three stages of the journey—Awareness Stage, Consideration Stage, and Traffic Stage.
-• For each stage, identify the key Touchpoint (e.g., Users scrolling through feeds), the Goal for that stage (e.g., Create brand recognition and intrigue), and the specific Actions users will take (e.g., Clicking on "Learn More" buttons leading to product pages).
+Outline the customer's interaction with the brand:
+• Target Audience Profile: Detail the specific Age group, Sex, Location, Interests (occupation/hobbies), and Keywords that resonate with them.
+• Customer Journey Map: Detail the three stages—Awareness Stage, Consideration Stage, and Traffic Stage.
+• For each stage, identify the key Touchpoint, the Goal for that stage, and the specific Actions users will take (e.g., Clicking on "Learn More" buttons leading to product pages).
+
 5. Creative Direction
-Define the visual, thematic, and messaging blueprint for the campaign. This section should include:
-• Campaign Theme & Tagline: Define the central idea (e.g., "Enjoy Life Together") and the underlying message (e.g., "Because life is brighter, more connected, and more fun when enjoyed together").
-• Key Message Pillars: List the 3-4 core values or benefits that will be consistently emphasized (e.g., Affordability, Reliability, Family-Centric, Fun & Enjoyment).
+Define the visual, thematic, and messaging blueprint:
+• Campaign Theme & Tagline: Define the central idea (e.g., "Enjoy Life Together").
+• Key Message Pillars: List the 3-4 core values or benefits that will be consistently emphasized (e.g., Affordability, Reliability, Family-Centric).
 • Campaign Tone: Specify the emotional feeling and interaction style (e.g., fun & friendly, active & engaging, Never Boring).
-• Visual and Typographical Elements: Specify core design elements, including primary typography (e.g., Futuru for Product Education and Features) and key visual elements (e.g., the hexagon shape and hexagon ripple) that will strengthen brand association.
-`,
-            },
-          ]}
-        />
-      </Accordion>
-    </>
+• Visual and Typographical Elements: Specify core design elements, including primary typography (e.g., Futuru for Product Education) and key visual elements (e.g., the hexagon shape and hexagon ripple) that will strengthen brand association.
+
+6. Campaign Overview & Strategy
+Detail the tactical approach based on the research:
+• Goals & Targets: State the campaign objective (e.g., Build brand awareness). Include specific Metric Baselines, Benchmarks (Organic), and Paid Media Targets for Reach, Views, Visits, Link Clicks, Content Interactions, and Follower Growth.
+• Content Pillars: List the core content themes (e.g., Product Education & Features, Promotions & Special Offers) and describe what this type of content is and how it will be relevant.
+• Core Tactics: Detail the specific actions that will be executed (e.g., Social Media Optimization, Paid Social Ads, Launch Discounts, Giveaways).
+
+7. Media Strategy
+Outline how different platforms will be utilized:
+• Channel Strategy Overview: Define the Primary Channels (e.g., Facebook for awareness, Shopee/Lazada for conversions) and Secondary Channels (e.g., Instagram for supporting awareness).
+• Platform-Specific Strategies (e.g., Facebook Strategy): Detail the unique content pillars, post types/formats (e.g., Static Posts vs. Reels/videos), and engagement tactics (e.g., Community Interaction, Contests & Giveaways, Polls & Q&A) for the main social platform(s).
+• Paid Media/Ads Strategy: Detail the Objectives (Brand Awareness, E-Commerce Traffic), Targeting Strategy, Platforms & Placements (Facebook, Shopee, Lazada), Ad Formats, and Budget Allocation (e.g., ₱15,000 for Facebook ads).
+
+8. Performance Tracking & Optimization
+Conclude with a measurement and optimization plan:
+• Key Performance Indicators (KPIs): List the primary metrics to track (aligned with section 1 and 6).
+• Reporting Cadence: Specify how often performance will be reviewed (e.g., weekly, monthly).
+• Optimization Strategy: Describe how insights will be used to refine content, targeting, and tactics over time.`,
+        },
+      ]}
+    />
   );
 
   const businessOverviewCard = (
     <PromptCard
       title="📝 Business Summary Prompt"
+      description="Step 2: Copy the Business Summary Prompt and paste it on the chat you use to run the Deep Research.
+      Copy the result and make a new doc inside the Client Drive > AI Docs.
+      Copy the link and paste it on Overview Link"
       prompts={[
         {
           label: "Complete Business Summary Generator",
@@ -336,7 +279,7 @@ Please structure your response with the following sections:
 
 **Marketing Goals** – The main outcomes the business wants from social media (e.g., awareness, lead generation, online sales).
 
-**Dont Miss** – Any special considerations like seasonal trends, industry sensitivities, or compliance rules.
+**Don't Miss** – Any special considerations like seasonal trends, industry sensitivities, or compliance rules.
 
 **Instructions:**
 - Write the summary in simple, non-technical language so that someone new to the industry can immediately understand it
@@ -352,10 +295,11 @@ ${generateClientProfile()}`,
   const contentCreationCard = (
     <PromptCard
       title="🎨 Content Creation Template"
+      description="Step 3: Copy the Prompt below and paste it on the chat you run the Deep Research to produce good result"
       prompts={[
         {
           label: "Complete Content Creation Process",
-          content: `You are a senior social media strategist. Using the clients Data Form responses (including contract deliverables, goals, and brand profile), create social media content for ${
+          content: `You are a senior social media strategist. Using the client's Data Form responses (including contract deliverables, goals, and brand profile), create social media content for ${
             client.name
           }.
 
@@ -376,8 +320,8 @@ ${
 
 For each deliverable, include:
 - Post Type & Format (Static, Reel, Carousel, etc.)
-- Content Theme/Pillar (aligned with clients brand pillars)
-- Sample Caption/Copy (drafted in clients brand voice)
+- Content Theme/Pillar (aligned with client's brand pillars)
+- Sample Caption/Copy (drafted in client's brand voice)
 - CTA (Call-to-Action) (aligned with campaign goal)
 - Visual/Creative Idea (clear direction for design team)
 
@@ -393,11 +337,12 @@ ${generateClientProfile()}`,
     <>
       <PromptCard
         title="📋 Practical Prompt Frameworks"
+        description="You can use these prompt on the chat you use to run the deep research"
         prompts={[
           {
             label: "Ad Copy Prompt",
             content: `Write 3 variations of a [platform] ad headline and caption for ${
-              client.coreProducts?.join(", ") || "[clients product/service]"
+              client.coreProducts?.join(", ") || "[client's product/service]"
             }.
 Tone: ${client.brandEmotion || "[insert brand voice]"}.
 Each headline max 10 words.
@@ -464,6 +409,7 @@ Brand context: ${client.brandEmotion || "Professional tone"}, targeting ${
       {client.competitors && client.competitors.length > 0 && (
         <PromptCard
           title="🔍 Competitor Analysis"
+          description="test"
           prompts={[
             {
               label: "Competitor & Inspiration Analysis",
@@ -486,53 +432,11 @@ Summarize:
               } while maintaining our unique brand voice (${
                 client.brandEmotion || "professional"
               })
-4. **Platform strategies** - Which platforms are they using effectively?
-5. **Differentiation opportunities** - How can ${client.name} stand out?
-
-Context: ${client.name} serves ${
-                client.idealCustomers || "[target audience]"
-              } and specializes in ${
-                client.coreProducts?.join(", ") || "[products/services]"
-              }.`,
+4. **Differentiation strategy** - How can we stand out?`,
             },
           ]}
         />
       )}
-
-      {/* Measurement & Iteration */}
-      <div
-        style={{
-          background: colors.bg,
-          borderRadius: 12,
-          padding: 16,
-          marginTop: 20,
-          border: `1px solid ${colors.border}`,
-        }}
-      >
-        <h3
-          style={{
-            fontSize: 16,
-            fontWeight: 600,
-            color: colors.text,
-            marginBottom: 12,
-          }}
-        >
-          📊 Measurement & Iteration Loop
-        </h3>
-        <div style={{ color: colors.muted, fontSize: 13, lineHeight: 1.6 }}>
-          <strong>Week 1:</strong> Gather analytics → find top performers
-          <br />
-          <strong>Week 2:</strong> AI ideation based on insights
-          <br />
-          <strong>Weeks 3–4:</strong> Refine, create variations, A/B test
-          <br />
-          <br />
-          <em>
-            This creates a closed-loop system where AI isn't just used once, but
-            continuously adapted to client data.
-          </em>
-        </div>
-      </div>
     </>
   );
 
@@ -765,7 +669,7 @@ Context: ${client.name} serves ${
       {/* Step Content */}
       {steps[0]?.title === "Master Prompt Strategy" && currentStep === 0 && (
         <>
-          {masterPromptAccordion}
+          {masterPromptCard}
           {renderNextButton()}
         </>
       )}
@@ -788,7 +692,7 @@ Context: ${client.name} serves ${
       {currentStep === steps.length - 1 && (
         <>
           {steps.find((s) => s.title === "Master Prompt Strategy") &&
-            masterPromptAccordion}
+            masterPromptCard}
           {steps.find((s) => s.title === "Business Overview") &&
             businessOverviewCard}
           {contentCreationCard}
