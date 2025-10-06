@@ -182,6 +182,9 @@ Client Profile:
   const masterPromptCard = (
     <PromptCard
       title="🎯 Complete Strategy Prompt (8-Section Deep Research)"
+      description="Step 1: Generate Strategy using ChatGPT Deep Research. 
+      Copy the Prompt below and paste it on ChatGPT Deep Research, once that done copy the result and make a new doc inside the Client Drive Link > AI Docs.
+      Copy the link and paste it on the AI Strategy Link Input"
       prompts={[
         {
           label: "Comprehensive Brand & Campaign Strategy",
@@ -254,6 +257,9 @@ Conclude with a measurement and optimization plan:
   const businessOverviewCard = (
     <PromptCard
       title="📝 Business Summary Prompt"
+      description="Step 2: Copy the Business Summary Prompt and paste it on the chat you use to run the Deep Research.
+      Copy the result and make a new doc inside the Client Drive > AI Docs.
+      Copy the link and paste it on Overview Link"
       prompts={[
         {
           label: "Complete Business Summary Generator",
@@ -289,6 +295,7 @@ ${generateClientProfile()}`,
   const contentCreationCard = (
     <PromptCard
       title="🎨 Content Creation Template"
+      description="Step 3: Copy the Prompt below and paste it on the chat you run the Deep Research to produce good result"
       prompts={[
         {
           label: "Complete Content Creation Process",
@@ -330,6 +337,7 @@ ${generateClientProfile()}`,
     <>
       <PromptCard
         title="📋 Practical Prompt Frameworks"
+        description="You can use these prompt on the chat you use to run the deep research"
         prompts={[
           {
             label: "Ad Copy Prompt",
@@ -401,6 +409,7 @@ Brand context: ${client.brandEmotion || "Professional tone"}, targeting ${
       {client.competitors && client.competitors.length > 0 && (
         <PromptCard
           title="🔍 Competitor Analysis"
+          description="test"
           prompts={[
             {
               label: "Competitor & Inspiration Analysis",
