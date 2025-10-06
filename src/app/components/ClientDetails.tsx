@@ -31,6 +31,7 @@ export default function ClientDetails({ client }: ClientDetailsProps) {
       <div className="md:row-span-2 md:col-span-1 min-w-0">
         <ClientProfile client={client} />
 
+
         {/* Info, Basecamp, and Drive stacked on mobile, in a grid on md+ */}
         <div className="flex flex-col gap-4 mt-4 md:grid md:grid-cols-2 md:gap-4">
           <div className="min-w-0 h-full">
@@ -52,6 +53,7 @@ export default function ClientDetails({ client }: ClientDetailsProps) {
                 />
               ) : null}
             </div>
+
           </div>
         </div>
       </div>

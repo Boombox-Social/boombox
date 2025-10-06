@@ -53,15 +53,20 @@ export default function DashboardLayout({
 
   return (
     <div className="flex min-h-screen relative">
-      {/* Burger icon for mobile */}
-      {!sidebarMobileOpen && (
-        <BurgerButton onClick={() => setSidebarMobileOpen(true)} />
-      )}
+      {/* Unified Navbar - adjusts position based on sidebar */}
+      <Navbar
+        onMenuClick={() => setSidebarMobileOpen(true)}
+        showBurger={!sidebarMobileOpen}
+        sidebarCollapsed={sidebarCollapsed}
+      />
 
-      {/* SidePanel: overlay on mobile, normal on desktop */}
+      {/* SidePanel */}
       <SidePanel
         collapsed={sidebarCollapsed}
-        onCollapse={() => setSidebarCollapsed(true)}
+        onCollapse={() => {
+          console.log("Toggle sidebar, current state:", sidebarCollapsed);
+          setSidebarCollapsed(!sidebarCollapsed);
+        }}
         clients={clients}
         onAddClientClick={openModal}
         isLoading={isLoading}
@@ -93,9 +98,11 @@ export default function DashboardLayout({
       <main
         className={`
           flex-1 bg-[#181A20] min-h-screen transition-all
-          ml-0 [${sidebarCollapsed ? "72px" : "220px"}]
+          pt-16
+          ml-0 md:ml-[${sidebarCollapsed ? "72px" : "220px"}]
           p-6
         `}
+        style={{ zIndex: 1 }} // Below both navbar and expand button
       >
         {children}
       </main>
@@ -108,7 +115,6 @@ export default function DashboardLayout({
           closeModal();
         }}
       />
-      <UserNav />
     </div>
   );
 }
