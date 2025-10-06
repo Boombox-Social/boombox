@@ -5,7 +5,7 @@ import { useClientManagement, useModal } from "../hooks";
 import { NewClientForm } from "../types";
 import { AddClientModal } from "../components/modals/AddClientModal";
 import { SidePanel } from "../components/sidebar/SidePanel";
-import { UserNav } from "../components/header/UserNav";
+import { Navbar } from "../components/header/Navbar";
 
 function BurgerButton({ onClick }: { onClick: () => void }) {
   return (
