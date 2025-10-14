@@ -144,8 +144,7 @@ export function ClientProfile({ client }: ClientProfileProps) {
 
   return (
     <>
-      <div className="bg-[#23262F] rounded-xl border border-[#2D3142] p-6 relative">
-        {/* Desktop: Delete & Archive Buttons (top right) */}
+      <div className="bg-[#23262F] rounded-xl border border-[#2D3142] p-4 sm:p-6 relative overflow-hidden">
         {isSuperAdmin && (
           <div className="absolute top-5 right-5 gap-2 hidden md:flex">
             <button
@@ -168,17 +167,17 @@ export function ClientProfile({ client }: ClientProfileProps) {
           </div>
         )}
 
-        <div className="flex items-start gap-6">
+        <div className="flex items-start gap-4 sm:gap-6">
           {/* Client Logo/Avatar */}
           <div className="flex-shrink-0">
             {client.logo ? (
               <img
                 src={client.logo}
                 alt="Logo"
-                className="w-16 h-16 rounded-full object-cover bg-[#94A3B8]"
+                className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover bg-[#94A3B8]"
               />
             ) : (
-              <div className="w-16 h-16 rounded-full bg-[#2563eb] flex items-center justify-center text-white text-2xl font-bold">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#2563eb] flex items-center justify-center text-white text-xl sm:text-2xl font-bold">
                 {client.name?.charAt(0)?.toUpperCase() || "?"}
               </div>
             )}
@@ -186,13 +185,13 @@ export function ClientProfile({ client }: ClientProfileProps) {
 
           {/* Client Info */}
           <div className="flex-1 min-w-0">
-            <h2 className="text-xl font-bold text-[#F1F5F9] break-words">
+            <h2 className="text-lg sm:text-xl font-bold text-[#F1F5F9] break-words md:pr-44 sm:pr-14">
               {client.name}
             </h2>
-            <p className="text-[#94A3B8] text-sm break-words mt-1">
+            <p className="text-[#94A3B8] text-xs sm:text-sm break-words mt-1 sm:pr-14">
               {client.address}
             </p>
-            <p className="text-[#94A3B8] text-sm mt-2">
+            <p className="text-[#94A3B8] text-xs sm:text-sm mt-2">
               Industry: {client.industry}
             </p>
 
