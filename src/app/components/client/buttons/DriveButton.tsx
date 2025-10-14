@@ -11,7 +11,6 @@ export function DriveButton({ clientId, initialDriveLink }: DriveButtonProps) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
 
   // Update local state when prop changes
   useEffect(() => {
@@ -37,14 +36,6 @@ export function DriveButton({ clientId, initialDriveLink }: DriveButtonProps) {
   };
 
   if (!clientId) return null;
-
-  if (loading) {
-    return (
-      <div className="flex justify-center gap-2 mt-5 text-[#94A3B8]">
-        Loading...
-      </div>
-    );
-  }
 
   // Show input if editing or no link
   if (!driveLink || editing) {
