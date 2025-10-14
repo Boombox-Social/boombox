@@ -43,12 +43,11 @@ export function SidebarHeader({ collapsed, onCollapse, mobileOpen, setMobileOpen
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            console.log("Expand button clicked!"); // Debug
             onCollapse();
           }}
-          className="hidden md:flex fixed left-[80px] top-4 bg-[#2563eb] text-[#F1F5F9] rounded-full w-10 h-10 items-center justify-center border-none cursor-pointer shadow-lg hover:bg-[#1E40AF] transition-all"
+          className="hidden md:flex fixed left-[80px] top-4 text-[#F1F5F9] rounded-full w-10 h-10 items-center justify-center border-none cursor-pointer shadow-lg hover:bg-[#1E40AF] transition-all"
           style={{ 
-            zIndex: 9999, // Higher than navbar (z-40)
+            zIndex: 100,
             pointerEvents: "auto"
           }}
           aria-label="Expand sidebar"

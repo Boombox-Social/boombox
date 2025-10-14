@@ -12,9 +12,10 @@ export function Navbar({ onMenuClick, showBurger, sidebarCollapsed = false }: Na
   return (
     <nav 
       className={`
-        fixed top-0 z-40 h-16
+        fixed top-0 z-30 h-16
         transition-all duration-200
         right-0
+        cursor: cursor-pointer
       `}
       style={{
         background: "transparent",
