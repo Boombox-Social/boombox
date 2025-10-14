@@ -40,13 +40,14 @@ export function SidePanel({
       <aside
         className={`
           flex flex-col bg-[#23262F] text-[#F1F5F9] border-r border-[#2D3142]
-          transition-all duration-200 h-screen
-          fixed top-0 left-0
+          transition-all duration-200
+          fixed top-0 left-0 h-screen
           ${mobileOpen ? "translate-x-0 z-50" : "-translate-x-full z-50"}
           md:translate-x-0
           w-[220px] 
           ${collapsed ? "md:w-[72px] md:z-40" : "md:w-[220px] md:z-50"}
           md:static
+          overflow-y-auto
         `}
         style={{ minWidth: 0 }}
       >
