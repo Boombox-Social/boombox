@@ -46,10 +46,8 @@ export function SidePanel({
           md:translate-x-0
           w-[220px] 
           ${collapsed ? "md:w-[72px] md:z-40" : "md:w-[220px] md:z-50"}
-          md:static
-          overflow-y-auto
+          overflow-hidden
         `}
-        style={{ minWidth: 0 }}
       >
         <SidebarHeader
           collapsed={mobileOpen ? false : collapsed}
@@ -58,17 +56,22 @@ export function SidePanel({
           setMobileOpen={setMobileOpen}
         />
         <DashboardSection collapsed={mobileOpen ? false : collapsed} />
-        {isLoading ? (
-          <div className="flex items-center justify-center text-center text-[#94A3B8] text-sm flex-1 py-4 px-2">
-            <div className="w-5 h-5 border-2 border-[#94A3B8] border-t-[#2563eb] rounded-full animate-spin" />
-          </div>
-        ) : error ? (
-          <div className="flex items-center justify-center text-center text-red-500 text-sm flex-1 py-4 px-2">
-            {collapsed ? "!" : `Error: ${error}`}
-          </div>
-        ) : (
-          <ClientList clients={clients} collapsed={mobileOpen ? false : collapsed} />
-        )}
+
+        {/* Scrollable content area */}
+        <div className="flex-1 overflow-y-auto flex flex-col">
+          {isLoading ? (
+            <div className="flex items-center justify-center text-center text-[#94A3B8] text-sm flex-1 py-4 px-2">
+              <div className="w-5 h-5 border-2 border-[#94A3B8] border-t-[#2563eb] rounded-full animate-spin" />
+            </div>
+          ) : error ? (
+            <div className="flex items-center justify-center text-center text-red-500 text-sm flex-1 py-4 px-2">
+              {collapsed ? "!" : `Error: ${error}`}
+            </div>
+          ) : (
+            <ClientList clients={clients} collapsed={mobileOpen ? false : collapsed} />
+          )}
+        </div>
+
         <SidebarFooter collapsed={mobileOpen ? false : collapsed} onAddClientClick={onAddClientClick} />
       </aside>
     </>

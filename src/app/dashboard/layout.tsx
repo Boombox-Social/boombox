@@ -21,21 +21,20 @@ export default function DashboardLayout({
     open: openModal,
     close: closeModal,
   } = useModal();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // desktop logic
-  const [sidebarMobileOpen, setSidebarMobileOpen] = useState(false); // mobile overlay
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarMobileOpen, setSidebarMobileOpen] = useState(false);
 
   const pathname = usePathname();
 
   React.useEffect(() => {
-    // When navigating to dashboard, reload clients
     if (pathname === "/dashboard") {
       loadClients();
     }
   }, [pathname, loadClients]);
 
   return (
-    <div className="flex min-h-screen relative">
-      {/* Unified Navbar - adjusts position based on sidebar */}
+    <div className="flex min-h-screen relative bg-[#181A20]">
+      {/* Unified Navbar */}
       <Navbar
         onMenuClick={() => setSidebarMobileOpen(true)}
         showBurger={!sidebarMobileOpen}
@@ -60,9 +59,8 @@ export default function DashboardLayout({
       {sidebarCollapsed && (
         <button
           onClick={() => setSidebarCollapsed(false)}
-          className="hidden md:flex fixed top-4 left-[80px] z-30 text-[#F1F5F9] rounded-full w-10 h-10 items-center justify-center shadow-lg"
+          className="hidden md:flex fixed top-4 left-[80px] z-30 bg-[#2563eb] text-[#F1F5F9] rounded-full w-10 h-10 items-center justify-center shadow-lg hover:bg-[#1E40AF] transition-colors"
           aria-label="Expand sidebar"
-          style={{ transition: "left 0.2s" }}
         >
           <svg
             width="24"
@@ -79,12 +77,10 @@ export default function DashboardLayout({
       {/* Main content */}
       <main
         className={`
-          flex-1 bg-[#181A20] min-h-screen transition-all
-          pt-16
-          ml-0 md:ml-[${sidebarCollapsed ? "72px" : "220px"}]
-          p-6
+          flex-1 min-h-screen transition-all duration-200
+          pt-20 px-4 md:px-6
+          ${sidebarCollapsed ? "md:ml-[72px]" : "md:ml-[220px]"}
         `}
-        style={{ zIndex: 1 }} // Below both navbar and expand button
       >
         {children}
       </main>
