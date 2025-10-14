@@ -1,16 +1,14 @@
-// components/sidebar/ClientItem.tsx
 "use client";
 import React from "react";
 import { useRouter } from "next/navigation";
 import { UserIcon } from "@heroicons/react/24/solid";
 import { ClientItemProps } from "../../types";
-import { COLORS } from "../../constants";
 
 export function ClientItem({
   client,
   isSelected,
   collapsed,
-  onClick: _onClick, // Add underscore prefix
+  onClick: _onClick,
 }: ClientItemProps) {
   const router = useRouter();
 
@@ -21,59 +19,26 @@ export function ClientItem({
   return (
     <button
       onClick={handleClick}
-      style={{
-        width: "100%",
-        display: "flex",
-        alignItems: "center",
-        gap: collapsed ? 0 : 12,
-        padding: collapsed ? "8px" : "12px",
-        borderRadius: 8,
-        border: "none",
-        background: isSelected ? COLORS.accent : "transparent",
-        color: isSelected ? COLORS.text : COLORS.muted,
-        cursor: "pointer",
-        transition: "all 0.2s",
-        justifyContent: collapsed ? "center" : "flex-start",
-      }}
-      onMouseEnter={(e) => {
-        if (!isSelected) {
-          e.currentTarget.style.background = COLORS.hover;
-          e.currentTarget.style.color = COLORS.text;
+      className={`
+        w-full flex items-center rounded-lg border-none cursor-pointer transition-all duration-200
+        ${collapsed ? "gap-0 p-2 justify-center" : "gap-3 p-3 justify-start"}
+        ${isSelected 
+          ? "bg-[#2563eb] text-[#F1F5F9]" 
+          : "bg-transparent text-[#94A3B8] hover:bg-[#2D3142] hover:text-[#F1F5F9]"
         }
-      }}
-      onMouseLeave={(e) => {
-        if (!isSelected) {
-          e.currentTarget.style.background = "transparent";
-          e.currentTarget.style.color = COLORS.muted;
-        }
-      }}
+      `}
     >
       {/* Client Avatar */}
-      <div style={{ flexShrink: 0, width: 32, height: 32 }}>
+      <div className="flex-shrink-0 w-8 h-8">
         {client.logo ? (
           <img
             src={client.logo}
             alt={`${client.name} logo`}
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: "50%",
-              objectFit: "cover",
-            }}
+            className="w-8 h-8 rounded-full object-cover"
           />
         ) : (
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: "50%",
-              background: COLORS.accent,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <UserIcon style={{ width: 16, height: 16, color: COLORS.text }} />
+          <div className="w-8 h-8 rounded-full bg-[#2563eb] flex items-center justify-center">
+            <UserIcon className="w-4 h-4 text-[#F1F5F9]" />
           </div>
         )}
       </div>
@@ -81,15 +46,10 @@ export function ClientItem({
       {/* Client Name */}
       {!collapsed && (
         <div
-          style={{
-            flex: 1,
-            textAlign: "left",
-            fontSize: 14,
-            fontWeight: isSelected ? 600 : 500,
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          }}
+          className={`
+            flex-1 text-left text-sm whitespace-nowrap overflow-hidden text-ellipsis
+            ${isSelected ? "font-semibold" : "font-medium"}
+          `}
         >
           {client.name}
         </div>
