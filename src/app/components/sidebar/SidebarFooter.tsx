@@ -1,47 +1,33 @@
 "use client";
 import React from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { PlusIcon, Cog6ToothIcon } from "@heroicons/react/24/solid";
-import { ActionButton } from "../ui";
+import { useAuth } from "../../hooks/useAuth";
 
 interface SidebarFooterProps {
   collapsed: boolean;
-  onAddClientClick: () => void;
 }
 
-export function SidebarFooter({
-  collapsed,
-  onAddClientClick,
-}: SidebarFooterProps) {
-  const router = useRouter();
-  const pathname = usePathname();
+export function SidebarFooter({ collapsed }: SidebarFooterProps) {
+  const { authState } = useAuth();
 
-  const handleSettingsClick = () => {
-    router.push("/dashboard/settings");
-  };
-
-  const isOnSettings = pathname === "/dashboard/settings";
+  if (!authState.user) return null;
 
   return (
-    <div
-      className={`flex flex-col gap-2 items-center ${
-        collapsed ? "p-2" : "p-5"
-      }`}
-    >
-      <ActionButton
-        onClick={onAddClientClick}
-        variant="primary"
-        collapsed={collapsed}
-        icon={<PlusIcon width={20} />}
-        text="+ ADD CLIENT"
-      />
-      <ActionButton
-        onClick={handleSettingsClick}
-        variant={isOnSettings ? "primary" : "secondary"} // Highlight when on settings
-        collapsed={collapsed}
-        icon={<Cog6ToothIcon width={20} />}
-        text="SETTINGS"
-      />
+    <div className={`p-4 border-t border-border ${collapsed ? 'flex justify-center' : ''}`}>
+      <div className={`flex items-center gap-3 ${collapsed ? 'flex-col' : ''}`}>
+        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm flex-shrink-0">
+          {authState.user.name?.charAt(0).toUpperCase() || "U"}
+        </div>
+        {!collapsed && (
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-medium text-foreground truncate">
+              {authState.user.name}
+            </div>
+            <div className="text-xs text-muted-foreground truncate">
+              {authState.user.email}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

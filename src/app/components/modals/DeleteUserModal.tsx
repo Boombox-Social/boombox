@@ -167,7 +167,6 @@ export function DeleteUserModal({
         >
           <h4
             style={{
-              color: colors.text,
               fontSize: 14,
               fontWeight: 600,
               margin: 0,
@@ -197,18 +196,17 @@ export function DeleteUserModal({
                 justifyContent: "center",
                 fontSize: 18,
                 fontWeight: "bold",
-                color: colors.text,
               }}
             >
               {user.name.charAt(0).toUpperCase()}
             </div>
             <div>
               <div
-                style={{ color: colors.text, fontSize: 16, fontWeight: 600 }}
+                style={{ fontSize: 16, fontWeight: 600 }}
               >
                 {user.name}
               </div>
-              <div style={{ color: colors.muted, fontSize: 14 }}>
+              <div style={{ fontSize: 14 }}>
                 {user.email}
               </div>
               <div
@@ -255,15 +253,15 @@ export function DeleteUserModal({
               <span style={{ color: colors.muted, fontSize: 13 }}>
                 Last Login:
               </span>
-              <span style={{ color: colors.text, fontSize: 13 }}>
+              <span style={{ fontSize: 13 }}>
                 {formatDate(user.lastLogin)}
               </span>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span style={{ color: colors.muted, fontSize: 13 }}>
+              <span style={{fontSize: 13 }}>
                 Created:
               </span>
-              <span style={{ color: colors.text, fontSize: 13 }}>
+              <span style={{fontSize: 13 }}>
                 {formatDate(user.createdAt)}
               </span>
             </div>
@@ -274,8 +272,7 @@ export function DeleteUserModal({
         {error && (
           <div
             style={{
-              background: `${colors.danger}20`,
-              border: `1px solid ${colors.danger}40`,
+              border: `1px solid`,
               borderRadius: 8,
               padding: 12,
               marginBottom: 20,

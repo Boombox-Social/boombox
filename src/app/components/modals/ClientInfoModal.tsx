@@ -101,7 +101,7 @@ export function ClientInfoModal({ client }: ClientInfoModalProps) {
   );
 
   return (
-    <div className="bg-[#23262F] w-full">
+    <div className=" w-full">
       {/* Header */}
       <div className="flex items-center justify-end mb-2">
         <div className="flex items-center gap-3">
@@ -116,22 +116,22 @@ export function ClientInfoModal({ client }: ClientInfoModalProps) {
               </button>
               <button
                 className={`${
-                  saving ? "bg-[#94A3B8] opacity-70 cursor-not-allowed" : "bg-[#10b981] cursor-pointer"
-                } text-[#F1F5F9] border-none rounded-lg px-4 py-2 text-sm font-semibold flex items-center justify-center transition-colors`}
+                  saving ? " opacity-70 cursor-not-allowed" : "bg-[#10b981] cursor-pointer"
+                } border border-border rounded-lg px-4 py-2 text-sm font-semibold flex items-center justify-center transition-colors`}
                 onClick={handleSave}
                 disabled={saving}
               >
                 {saving ? (
                   <>
                     <span
-                      className="inline-block mr-2 w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+                      className="inline-block mr-2 w-4 h-4 border-2 border-border border-t-transparent rounded-full animate-spin"
                       style={{ verticalAlign: "middle" }}
                     />
                     Saving...
                   </>
                 ) : (
                   <>
-                    <CheckCircleIcon className="w-4 h-4 text-[#F1F5F9]" />
+                    <CheckCircleIcon className="w-4 h-4" />
                     <span className="ml-1">Save Changes</span>
                   </>
                 )}

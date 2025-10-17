@@ -1,24 +1,8 @@
-// components/modals/AddUserModal.tsx
 "use client";
 import React, { useState } from "react";
 import { UserIcon, CloudArrowUpIcon } from "@heroicons/react/24/solid";
-import { UserRole } from "../../../generated/prisma"; // Import directly from Prisma
+import { UserRole } from "../../../generated/prisma";
 import { Modal, FormField } from "../ui";
-
-// Rest of the file remains the same...
-const colors = {
-  bg: "#181A20",
-  side: "#23262F",
-  card: "#23262F",
-  accent: "#2563eb",
-  text: "#F1F5F9",
-  muted: "#94A3B8",
-  border: "#2D3142",
-  hover: "#1E40AF",
-  success: "#10B981",
-  danger: "#EF4444",
-  warning: "#F59E0B",
-};
 
 interface AddUserModalProps {
   isOpen: boolean;
@@ -80,7 +64,6 @@ export function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModalProps) {
       await onSubmit(formData);
       handleClose();
     } catch (error) {
-      // Wrap console with production check
       if (process.env.NODE_ENV !== "production") {
         console.error("Error creating user:", error);
       }
@@ -120,61 +103,42 @@ export function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModalProps) {
     {
       value: UserRole.SMM,
       label: "SMM (Social Media Manager)",
-      color: colors.accent,
+      description: "Can view and manage assigned clients",
+      colorClass: "text-primary bg-primary/20",
     },
-    { value: UserRole.ADMIN, label: "Admin", color: colors.warning },
-    { value: UserRole.SUPER_ADMIN, label: "Super Admin", color: colors.danger },
+    {
+      value: UserRole.ADMIN,
+      label: "Admin",
+      description: "Can manage all clients and most settings",
+      colorClass: "text-yellow-500 bg-yellow-500/20",
+    },
+    {
+      value: UserRole.SUPER_ADMIN,
+      label: "Super Admin",
+      description: "Full system access and user management",
+      colorClass: "text-red-500 bg-red-500/20",
+    },
   ];
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="Add New User">
-      <div style={{ width: "auto", minWidth: "300px" }}>
+      <div className="w-auto min-w-[300px]">
         {/* Error Display */}
         {errors.submit && (
-          <div
-            style={{
-              background: `${colors.danger}20`,
-              border: `1px solid ${colors.danger}40`,
-              borderRadius: 8,
-              padding: 16,
-              marginBottom: 20,
-              color: colors.danger,
-              fontSize: 14,
-            }}
-          >
+          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-5 text-red-500 text-sm">
             {errors.submit}
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          <div className="flex flex-col gap-5">
             {/* Avatar Preview */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                marginBottom: 10,
-              }}
-            >
-              <div
-                style={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: "50%",
-                  background: colors.accent,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 32,
-                  fontWeight: "bold",
-                  color: colors.text,
-                  border: `2px solid ${colors.border}`,
-                }}
-              >
+            <div className="flex justify-center mb-2.5">
+              <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center text-[32px] font-bold text-primary-foreground border-2 border-border">
                 {formData.name ? (
                   formData.name.charAt(0).toUpperCase()
                 ) : (
-                  <UserIcon style={{ width: 40, height: 40 }} />
+                  <UserIcon className="w-10 h-10" />
                 )}
               </div>
             </div>
@@ -208,67 +172,40 @@ export function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModalProps) {
 
             {/* Role Selection */}
             <div>
-              <label
-                style={{
-                  display: "block",
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: colors.text,
-                  marginBottom: 8,
-                }}
-              >
+              <label className="block text-sm font-semibold text-foreground mb-2">
                 User Role *
               </label>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {roleOptions.map((option) => (
-                  <label
-                    key={option.value}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      padding: 12,
-                      borderRadius: 8,
-                      border: `1px solid ${colors.border}`,
-                      background:
-                        formData.role === option.value
-                          ? `${option.color}20`
-                          : colors.bg,
-                      cursor: "pointer",
-                      transition: "all 0.2s",
-                    }}
-                  >
-                    <input
-                      type="radio"
-                      name="role"
-                      value={option.value}
-                      checked={formData.role === option.value}
-                      onChange={(e) => updateFormField("role")(e.target.value)}
-                      style={{
-                        accentColor: option.color,
-                      }}
-                    />
-                    <div>
-                      <div
-                        style={{
-                          color: colors.text,
-                          fontSize: 14,
-                          fontWeight: 500,
-                        }}
-                      >
-                        {option.label}
+              <div className="flex flex-col gap-2">
+                {roleOptions.map((option) => {
+                  const isSelected = formData.role === option.value;
+                  return (
+                    <label
+                      key={option.value}
+                      className={`
+                        flex items-center gap-2.5 p-3 rounded-lg border border-border
+                        cursor-pointer transition-all
+                        ${isSelected ? option.colorClass : 'bg-background hover:bg-secondary'}
+                      `}
+                    >
+                      <input
+                        type="radio"
+                        name="role"
+                        value={option.value}
+                        checked={isSelected}
+                        onChange={(e) => updateFormField("role")(e.target.value)}
+                        className="accent-primary w-4 h-4"
+                      />
+                      <div className="flex-1">
+                        <div className="text-foreground text-sm font-medium">
+                          {option.label}
+                        </div>
+                        <div className="text-muted-foreground text-xs">
+                          {option.description}
+                        </div>
                       </div>
-                      <div style={{ color: colors.muted, fontSize: 12 }}>
-                        {option.value === UserRole.SMM &&
-                          "Can view and manage assigned clients"}
-                        {option.value === UserRole.ADMIN &&
-                          "Can manage all clients and most settings"}
-                        {option.value === UserRole.SUPER_ADMIN &&
-                          "Full system access and user management"}
-                      </div>
-                    </div>
-                  </label>
-                ))}
+                    </label>
+                  );
+                })}
               </div>
             </div>
 
@@ -282,32 +219,12 @@ export function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModalProps) {
             />
 
             {/* Action Buttons */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: 12,
-                marginTop: 20,
-                paddingTop: 20,
-                borderTop: `1px solid ${colors.border}`,
-              }}
-            >
+            <div className="flex justify-end gap-3 mt-5 pt-5 border-t border-border">
               <button
                 type="button"
                 onClick={handleClose}
                 disabled={isLoading}
-                style={{
-                  background: colors.border,
-                  color: colors.text,
-                  border: "none",
-                  borderRadius: 8,
-                  padding: "12px 24px",
-                  fontSize: 14,
-                  fontWeight: 600,
-                  cursor: isLoading ? "not-allowed" : "pointer",
-                  opacity: isLoading ? 0.6 : 1,
-                  transition: "background 0.2s",
-                }}
+                className="bg-secondary text-foreground border-none rounded-lg px-6 py-3 text-sm font-semibold cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 hover:bg-secondary/80 transition-colors"
               >
                 Cancel
               </button>
@@ -315,38 +232,16 @@ export function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModalProps) {
               <button
                 type="submit"
                 disabled={isLoading}
-                style={{
-                  background: isLoading ? colors.muted : colors.success,
-                  color: colors.text,
-                  border: "none",
-                  borderRadius: 8,
-                  padding: "12px 24px",
-                  fontSize: 14,
-                  fontWeight: 600,
-                  cursor: isLoading ? "not-allowed" : "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  transition: "background 0.2s",
-                }}
+                className="bg-green-500 text-white border-none rounded-lg px-6 py-3 text-sm font-semibold cursor-pointer disabled:cursor-not-allowed disabled:bg-muted-foreground flex items-center gap-2 hover:bg-green-600 transition-colors"
               >
                 {isLoading ? (
                   <>
-                    <div
-                      style={{
-                        width: 16,
-                        height: 16,
-                        border: "2px solid white",
-                        borderTop: "2px solid transparent",
-                        borderRadius: "50%",
-                        animation: "spin 1s linear infinite",
-                      }}
-                    />
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     <span>Creating...</span>
                   </>
                 ) : (
                   <>
-                    <CloudArrowUpIcon style={{ width: 16, height: 16 }} />
+                    <CloudArrowUpIcon className="w-4 h-4" />
                     <span>Create User</span>
                   </>
                 )}
@@ -355,14 +250,6 @@ export function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModalProps) {
           </div>
         </form>
       </div>
-
-      {/* Add spinning animation */}
-      <style>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
     </Modal>
   );
 }

@@ -1,17 +1,6 @@
-// File Structure: src/app/components/client/BrandAssetsSection.tsx - Brand assets as URLs
 "use client";
 import React, { useState } from "react";
 import { Client } from "../../types";
-
-const colors = {
-  bg: "#181A20",
-  text: "#F1F5F9",
-  muted: "#94A3B8",
-  border: "#2D3142",
-  accent: "#2563eb",
-  success: "#10b981",
-  error: "#ef4444",
-};
 
 interface BrandAssetsSectionProps {
   client: Client;
@@ -29,7 +18,6 @@ export function BrandAssetsSection({
   const [newAssetUrl, setNewAssetUrl] = useState("");
   const [error, setError] = useState("");
 
-  // Use local value or fallback to client data
   const brandAssets = value.length > 0 ? value : client.brandAssets || [];
 
   const validateUrl = (url: string): boolean => {
@@ -64,15 +52,8 @@ export function BrandAssetsSection({
   };
 
   return (
-    <div style={{ gridColumn: "1 / -1" }}>
-      <div
-        style={{
-          fontWeight: 700,
-          marginBottom: 6,
-          color: colors.text,
-          fontSize: 14,
-        }}
-      >
+    <div className="col-span-full">
+      <div className="font-bold mb-1.5 text-foreground text-sm">
         Brand Assets
       </div>
 
@@ -80,78 +61,29 @@ export function BrandAssetsSection({
         <div>
           {/* Current Assets */}
           {brandAssets.length > 0 && (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-                gap: 12,
-                marginBottom: 12,
-              }}
-            >
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-3 mb-3">
               {brandAssets.map((assetUrl, index) => (
                 <div
                   key={index}
-                  style={{
-                    background: colors.border,
-                    borderRadius: 8,
-                    padding: 12,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    border: `1px solid ${colors.border}`,
-                  }}
+                  className="bg-secondary rounded-lg p-3 flex items-center gap-2 border border-border"
                 >
-                  <div
-                    style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 4,
-                      background: colors.accent,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: colors.text,
-                      fontSize: 12,
-                      fontWeight: "bold",
-                      flexShrink: 0,
-                    }}
-                  >
+                  <div className="w-8 h-8 rounded bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold flex-shrink-0">
                     🔗
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="flex-1 min-w-0">
                     <a
                       href={assetUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{
-                        color: colors.accent,
-                        textDecoration: "none",
-                        fontSize: 13,
-                        display: "block",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
+                      className="text-primary no-underline text-[13px] block overflow-hidden text-ellipsis whitespace-nowrap hover:underline"
                     >
                       {assetUrl}
                     </a>
                   </div>
                   <button
                     onClick={() => removeAsset(index)}
-                    style={{
-                      background: colors.error,
-                      color: colors.text,
-                      border: "none",
-                      borderRadius: "50%",
-                      width: 20,
-                      height: 20,
-                      cursor: "pointer",
-                      fontSize: 12,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}
+                    className="bg-red-500 text-white border-none rounded-full w-5 h-5 cursor-pointer text-xs flex items-center justify-center flex-shrink-0 hover:bg-red-600 transition-colors"
+                    aria-label="Remove asset"
                   >
                     ×
                   </button>
@@ -162,18 +94,9 @@ export function BrandAssetsSection({
 
           {/* Add New Asset */}
           <div>
-            <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+            <div className="flex gap-2 mb-2">
               <input
-                style={{
-                  flex: 1,
-                  background: colors.bg,
-                  color: colors.text,
-                  border: `1px solid ${colors.border}`,
-                  borderRadius: 6,
-                  padding: "8px 12px",
-                  fontSize: 14,
-                  outline: "none",
-                }}
+                className="flex-1 bg-background text-foreground border border-border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 type="url"
                 value={newAssetUrl}
                 onChange={(e) => {
@@ -184,16 +107,7 @@ export function BrandAssetsSection({
                 placeholder="https://example.com/brand-asset.png"
               />
               <button
-                style={{
-                  background: colors.accent,
-                  color: colors.text,
-                  border: "none",
-                  borderRadius: 6,
-                  padding: "8px 16px",
-                  fontSize: 14,
-                  cursor: "pointer",
-                  fontWeight: 600,
-                }}
+                className="bg-primary text-primary-foreground border-none rounded-md px-4 py-2 text-sm cursor-pointer font-semibold hover:opacity-90 transition-opacity"
                 onClick={addAsset}
               >
                 Add Asset
@@ -201,88 +115,37 @@ export function BrandAssetsSection({
             </div>
 
             {error && (
-              <div
-                style={{
-                  color: colors.error,
-                  fontSize: 12,
-                  marginTop: 4,
-                }}
-              >
+              <div className="text-red-500 text-xs mt-1">
                 {error}
               </div>
             )}
 
-            <div
-              style={{
-                color: colors.muted,
-                fontSize: 12,
-                marginTop: 4,
-              }}
-            >
+            <div className="text-muted-foreground text-xs mt-1">
               Add URLs to brand guidelines, logos, color palettes, etc.
             </div>
           </div>
         </div>
       ) : (
-        <div
-          style={{
-            minHeight: 60,
-            padding: "8px 12px",
-            border: `1px solid transparent`,
-            borderRadius: 6,
-          }}
-        >
+        <div className="min-h-[60px] px-3 py-2 border border-transparent rounded-md">
           {brandAssets.length > 0 ? (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-                gap: 8,
-              }}
-            >
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-2">
               {brandAssets.map((assetUrl, index) => (
                 <a
                   key={index}
                   href={assetUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{
-                    background: colors.border,
-                    borderRadius: 6,
-                    padding: 8,
-                    color: colors.accent,
-                    textDecoration: "none",
-                    fontSize: 12,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    overflow: "hidden",
-                  }}
+                  className="bg-secondary rounded-md p-2 text-primary no-underline text-xs flex items-center gap-1.5 overflow-hidden hover:bg-secondary/80 transition-colors"
                 >
-                  <span style={{ flexShrink: 0 }}>🔗</span>
-                  <span
-                    style={{
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
+                  <span className="flex-shrink-0">🔗</span>
+                  <span className="overflow-hidden text-ellipsis whitespace-nowrap">
                     {assetUrl}
                   </span>
                 </a>
               ))}
             </div>
           ) : (
-            <div
-              style={{
-                color: colors.muted,
-                fontStyle: "italic",
-                fontSize: 14,
-                display: "flex",
-                alignItems: "center",
-                minHeight: 40,
-              }}
-            >
+            <div className="text-muted-foreground italic text-sm flex items-center min-h-[40px]">
               No brand assets provided
             </div>
           )}

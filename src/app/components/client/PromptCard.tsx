@@ -2,17 +2,6 @@
 import React, { useState } from "react";
 import { ClipboardIcon, CheckIcon } from "@heroicons/react/24/outline";
 
-const colors = {
-  bg: "#181A20",
-  side: "#23262F",
-  card: "#23262F",
-  accent: "#2563eb",
-  text: "#F1F5F9",
-  muted: "#94A3B8",
-  border: "#2D3142",
-  hover: "#1E40AF",
-};
-
 interface Prompt {
   label: string;
   content: string;
@@ -38,66 +27,35 @@ export function PromptCard({ title, description, prompts }: PromptCardProps) {
   };
 
   return (
-    <div style={{ marginBottom: 24 }}>
-      <div
-        style={{
-          fontWeight: 700,
-          fontSize: 16,
-          marginBottom: 12,
-          color: colors.text,
-        }}
-      >
+    <div className="mb-6">
+      <div className="font-bold text-base mb-3 text-foreground">
         {title}
       </div>
-      <div className="text-sm text-white-100/70 py-2">{description}</div>
+      <div className="text-sm text-muted-foreground py-2">{description}</div>
 
-      <div style={{ marginBottom: 20 }}>
+      <div className="mb-5">
         {prompts.map((prompt, index) => (
-          <div key={index} style={{ marginBottom: 12 }}>
-            <div
-              style={{
-                fontWeight: 600,
-                color: colors.text,
-                fontSize: 14,
-                marginBottom: 6,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
+          <div key={index} className="mb-3">
+            <div className="font-semibold text-foreground text-sm mb-1.5 flex items-center justify-between">
               <span>{prompt.label}</span>
               <button
                 onClick={() => copyToClipboard(prompt.content, index)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: copiedIndex === index ? "#10b981" : colors.muted,
-                  cursor: "pointer",
-                  padding: "4px",
-                  borderRadius: "4px",
-                  display: "flex",
-                  alignItems: "center",
-                  fontSize: "12px",
-                  transition: "color 0.2s",
-                }}
+                className={`
+                  bg-transparent border-none cursor-pointer
+                  px-1 py-1 rounded flex items-center gap-1
+                  text-xs transition-colors
+                  ${copiedIndex === index ? 'text-green-500' : 'text-muted-foreground hover:text-foreground'}
+                `}
                 title="Copy to clipboard"
               >
                 {copiedIndex === index ? (
                   <>
-                    <CheckIcon
-                      width={16}
-                      height={16}
-                      style={{ marginRight: 4 }}
-                    />
+                    <CheckIcon className="w-4 h-4" />
                     Copied!
                   </>
                 ) : (
                   <>
-                    <ClipboardIcon
-                      width={16}
-                      height={16}
-                      style={{ marginRight: 4 }}
-                    />
+                    <ClipboardIcon className="w-4 h-4" />
                     Copy
                   </>
                 )}
@@ -105,25 +63,15 @@ export function PromptCard({ title, description, prompts }: PromptCardProps) {
             </div>
 
             <div
-              style={{
-                fontSize: 13,
-                color: colors.muted,
-                lineHeight: 1.4,
-                background: colors.bg,
-                padding: 12,
-                borderRadius: 6,
-                border: `1px solid ${colors.border}`,
-                cursor: "pointer",
-                position: "relative",
-                transition: "border-color 0.2s",
-              }}
+              className="
+                text-[13px] text-muted-foreground leading-snug
+                bg-background p-3 rounded-md
+                border border-border
+                cursor-pointer relative
+                transition-colors
+                hover:border-primary
+              "
               onClick={() => copyToClipboard(prompt.content, index)}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = colors.accent;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = colors.border;
-              }}
             >
               "{prompt.content}"
             </div>
@@ -131,13 +79,7 @@ export function PromptCard({ title, description, prompts }: PromptCardProps) {
         ))}
       </div>
 
-      <hr
-        style={{
-          border: 0,
-          borderTop: `1px solid ${colors.border}`,
-          margin: "18px 0",
-        }}
-      />
+      <hr className="border-0 border-t border-border my-4.5" />
     </div>
   );
 }

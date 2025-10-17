@@ -13,7 +13,7 @@ type ClientDetailsProps = {
 export default function ClientDetails({ client }: ClientDetailsProps) {
   if (!client) {
     return (
-      <div className="flex items-center justify-center h-[50vh] text-[#94A3B8]">
+      <div className="flex items-center justify-center h-[50vh]">
         <p>No client selected</p>
       </div>
     );

@@ -3,19 +3,6 @@ import React, { useState, useEffect } from "react";
 import { Client } from "../../types";
 import { PromptCard } from "./PromptCard";
 
-const colors = {
-  bg: "#181A20",
-  side: "#23262F",
-  card: "#23262F",
-  accent: "#2563eb",
-  text: "#F1F5F9",
-  muted: "#94A3B8",
-  border: "#2D3142",
-  hover: "#1E40AF",
-  success: "#10B981",
-  warning: "#F59E0B",
-};
-
 interface SMMPromptPlaybookProps {
   client: Client;
 }
@@ -114,39 +101,31 @@ Client Profile:
 
   // Navigation bar
   const renderStepNav = () => (
-    <div
-      style={{
-        display: "flex",
-        marginBottom: 20,
-        background: colors.bg,
-        borderRadius: 8,
-        padding: 4,
-        border: `1px solid ${colors.border}`,
-      }}
-    >
+    <div className="flex mb-5 bg-background rounded-lg p-1 border border-border">
       {steps.map((step, index) => {
         const isAccessible = index <= currentStep || index === steps.length - 1;
         return (
           <button
             key={index}
             onClick={() => isAccessible && setCurrentStep(index)}
-            style={{
-              flex: 1,
-              padding: "8px 12px",
-              borderRadius: 6,
-              border: "none",
-              background: currentStep === index ? colors.accent : "transparent",
-              color: currentStep === index ? colors.text : colors.muted,
-              fontSize: 12,
-              fontWeight: 600,
-              cursor: isAccessible ? "pointer" : "not-allowed",
-              opacity: isAccessible ? 1 : 0.5,
-              transition: "all 0.2s",
-            }}
             disabled={!isAccessible}
+            className={`
+              flex-1 px-3 py-2 rounded-md border-none text-xs font-semibold
+              transition-all duration-200
+              ${
+                currentStep === index
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-transparent text-muted-foreground"
+              }
+              ${
+                isAccessible
+                  ? "cursor-pointer opacity-100"
+                  : "cursor-not-allowed opacity-50"
+              }
+            `}
           >
             <div>{step.title}</div>
-            <div style={{ fontSize: 10, opacity: 0.8 }}>{step.description}</div>
+            <div className="text-[10px] opacity-80">{step.description}</div>
           </button>
         );
       })}
@@ -156,22 +135,10 @@ Client Profile:
   // "Next" button
   const renderNextButton = () =>
     currentStep < steps.length - 1 ? (
-      <div
-        style={{ display: "flex", justifyContent: "flex-end", marginTop: 24 }}
-      >
+      <div className="flex justify-end mt-6">
         <button
           onClick={() => setCurrentStep((s) => s + 1)}
-          style={{
-            background: colors.accent,
-            color: colors.text,
-            padding: "10px 28px",
-            borderRadius: 8,
-            border: "none",
-            fontWeight: 700,
-            fontSize: 15,
-            cursor: "pointer",
-            transition: "background 0.2s",
-          }}
+          className="bg-primary text-primary-foreground px-7 py-2.5 rounded-lg border border-border font-bold text-[15px] cursor-pointer transition-colors hover:opacity-90"
         >
           Next
         </button>
@@ -443,159 +410,71 @@ Summarize:
   // Wait for links check before rendering steps
   if (hasAiStrategyLink === null || hasOverviewLink === null) {
     return (
-      <div
-        style={{
-          background: colors.card,
-          borderRadius: 16,
-          padding: 24,
-          minWidth: 0,
-          minHeight: 0,
-          color: colors.muted,
-        }}
-      >
+      <div className="bg-card rounded-2xl p-6 min-w-0 min-h-0 text-muted-foreground border border-border">
         Loading...
       </div>
     );
   }
 
   return (
-    <div
-      style={{
-        background: colors.card,
-        borderRadius: 16,
-        padding: 24,
-        gridColumn: "2",
-        gridRow: "1 / span 2",
-        minWidth: 0,
-        minHeight: 0,
-        overflowY: "auto",
-        maxHeight: "calc(100vh - 120px)",
-        position: "relative",
-      }}
-      className="boombox-scrollbar"
-    >
+    <div className="bg-card rounded-2xl p-6 col-start-2 row-span-2 min-w-0 min-h-0 overflow-y-auto max-h-[calc(100vh-120px)] relative boombox-scrollbar border border-border">
       <style>{`
         .boombox-scrollbar::-webkit-scrollbar {
           width: 10px;
           background: transparent;
         }
         .boombox-scrollbar::-webkit-scrollbar-thumb {
-          background: #2563eb;
+          background: rgb(var(--primary));
           border-radius: 8px;
-          border: 2px solid #181A20;
+          border: 2px solid rgb(var(--background));
           box-shadow: 0 0 6px 2px rgba(37,99,235,0.25);
           min-height: 40px;
           transition: background 0.2s;
         }
         .boombox-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #3b82f6;
+          background: rgb(var(--primary));
+          opacity: 0.8;
         }
         .boombox-scrollbar::-webkit-scrollbar-track {
           background: transparent;
         }
         .boombox-scrollbar {
-          scrollbar-color: #2563eb transparent;
+          scrollbar-color: rgb(var(--primary)) transparent;
           scrollbar-width: thin;
         }
       `}</style>
 
       {/* Header */}
-      <div
-        style={{
-          fontWeight: 700,
-          fontSize: 18,
-          marginBottom: 8,
-          color: colors.accent,
-        }}
-      >
+      <div className="font-bold text-lg mb-2 text-primary">
         📘 The Agency AI Content Playbook
       </div>
 
-      <div
-        style={{
-          fontSize: 14,
-          color: colors.muted,
-          marginBottom: 20,
-          lineHeight: 1.4,
-        }}
-      >
+      <div className="text-sm text-muted-foreground mb-5 leading-relaxed">
         This project hub is designed as a training manual and quick-reference
         guide for your team. By integrating AI into your workflow, you can
         empower your team to be more strategic and efficient.
       </div>
 
       {/* AI Platform Links */}
-      <div
-        style={{
-          background: colors.bg,
-          borderRadius: 12,
-          padding: 16,
-          marginBottom: 20,
-          border: `1px solid ${colors.border}`,
-        }}
-      >
-        <h3
-          style={{
-            fontSize: 16,
-            fontWeight: 600,
-            color: colors.text,
-            marginBottom: 12,
-          }}
-        >
+      <div className="bg-background rounded-xl p-4 mb-5 border border-border">
+        <h3 className="text-base font-semibold text-foreground mb-3">
           🤖 Quick AI Access
         </h3>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 12,
-          }}
-        >
+        <div className="grid grid-cols-2 gap-3">
           {/* ChatGPT Link */}
           <a
             href="https://chat.openai.com/"
             target="_blank"
             rel="noopener noreferrer"
-            style={{
-              background: colors.accent,
-              color: colors.text,
-              padding: "12px 16px",
-              borderRadius: 8,
-              textDecoration: "none",
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              fontSize: 14,
-              fontWeight: 600,
-              transition: "background 0.2s",
-              border: "none",
-              cursor: "pointer",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = colors.hover;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = colors.accent;
-            }}
+            className="bg-primary text-primary-foreground p-3 rounded-lg no-underline flex items-center gap-2.5 text-sm font-semibold transition-colors hover:opacity-90 border border-border"
           >
-            <div
-              style={{
-                width: 24,
-                height: 24,
-                borderRadius: "50%",
-                background: "rgba(255,255,255,0.2)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 12,
-              }}
-            >
+            <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs">
               🧠
             </div>
             <div>
               <div>ChatGPT</div>
-              <div style={{ fontSize: 11, opacity: 0.8 }}>OpenAI's GPT-4</div>
+              <div className="text-[11px] opacity-80">OpenAI's GPT-4</div>
             </div>
           </a>
 
@@ -604,60 +483,19 @@ Summarize:
             href="https://gemini.google.com/"
             target="_blank"
             rel="noopener noreferrer"
-            style={{
-              background: "#34A853",
-              color: colors.text,
-              padding: "12px 16px",
-              borderRadius: 8,
-              textDecoration: "none",
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              fontSize: 14,
-              fontWeight: 600,
-              transition: "background 0.2s",
-              border: "none",
-              cursor: "pointer",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "#2E7D32";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "#34A853";
-            }}
+            className="bg-[#34A853] text-white p-3 rounded-lg no-underline flex items-center gap-2.5 text-sm font-semibold transition-colors hover:bg-[#2E7D32] border border-border"
           >
-            <div
-              style={{
-                width: 24,
-                height: 24,
-                borderRadius: "50%",
-                background: "rgba(255,255,255,0.2)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 12,
-              }}
-            >
+            <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs">
               ✨
             </div>
             <div>
               <div>Gemini</div>
-              <div style={{ fontSize: 11, opacity: 0.8 }}>Google AI</div>
+              <div className="text-[11px] opacity-80">Google AI</div>
             </div>
           </a>
         </div>
 
-        <div
-          style={{
-            background: `${colors.success}20`,
-            border: `1px solid ${colors.success}40`,
-            borderRadius: 8,
-            padding: 12,
-            marginTop: 16,
-            color: colors.text,
-            fontSize: 13,
-          }}
-        >
+        <div className="bg-green-500/20 border border-green-500/40 rounded-lg p-3 mt-4 text-foreground text-[13px]">
           💡 <strong>Pro Tip:</strong> Use Deep Research Mode in ChatGPT or
           enable web search in Gemini for better results with current data.
         </div>

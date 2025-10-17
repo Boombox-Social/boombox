@@ -1,4 +1,3 @@
-// File Structure: src/app/components/modals/AddClientModal.tsx - Multi-step modal with improved type safety
 "use client";
 import React, { useState } from "react";
 import {
@@ -108,7 +107,6 @@ export function AddClientModal({
         brandAssets: Array.isArray(formData.brandAssets)
           ? formData.brandAssets
           : [],
-        // UPDATED: Include assignedUserIds
         assignedUserIds: assignedUserIds,
       };
 
@@ -119,7 +117,7 @@ export function AddClientModal({
       setFormData(INITIAL_FORM_STATE);
       setLogoPreview("");
       setCurrentStep(0);
-      setAssignedUserIds([]); // Reset assigned users
+      setAssignedUserIds([]);
       setErrors({});
       onClose();
     } catch (error) {
@@ -148,7 +146,7 @@ export function AddClientModal({
     setFormData(INITIAL_FORM_STATE);
     setLogoPreview("");
     setCurrentStep(0);
-    setAssignedUserIds([]); // Reset assigned users
+    setAssignedUserIds([]);
     setErrors({});
     onClose();
   };
@@ -184,25 +182,12 @@ export function AddClientModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} maxWidth="60em">
-      <div className="w-full max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#2D3142]">
-          <div>
-            <h2 className="text-2xl font-bold text-[#F1F5F9] mb-1">
-              Add New Client
-            </h2>
-            <p className="text-[#94A3B8] text-sm">
-              Create a new client profile for your portfolio
-            </p>
-          </div>
-          <button
-            onClick={handleClose}
-            className="p-2 hover:bg-[#2D3142] rounded-lg transition-colors"
-          >
-            <XMarkIcon className="w-6 h-6 text-[#94A3B8]" />
-          </button>
-        </div>
+    <Modal isOpen={isOpen} onClose={handleClose} maxWidth="60em" title="Add New Client">
+      <div className="w-full">
+        {/* Subtitle */}
+        <p className="text-muted-foreground text-sm mb-6">
+          Create a new client profile for your portfolio
+        </p>
 
         {/* Progress Steps */}
         <div className="flex items-center justify-between mb-8">
@@ -212,8 +197,8 @@ export function AddClientModal({
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
                     index <= currentStep
-                      ? "bg-[#2563eb] text-white"
-                      : "bg-[#2D3142] text-[#94A3B8]"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-muted-foreground"
                   }`}
                 >
                   {index + 1}
@@ -221,18 +206,18 @@ export function AddClientModal({
                 <div className="ml-3 hidden sm:block">
                   <p
                     className={`text-sm font-medium ${
-                      index <= currentStep ? "text-[#F1F5F9]" : "text-[#94A3B8]"
+                      index <= currentStep ? "text-foreground" : "text-muted-foreground"
                     }`}
                   >
                     {step.title}
                   </p>
-                  <p className="text-xs text-[#94A3B8]">{step.description}</p>
+                  <p className="text-xs text-muted-foreground">{step.description}</p>
                 </div>
               </div>
               {index < steps.length - 1 && (
                 <div
                   className={`flex-1 h-0.5 mx-4 transition-colors ${
-                    index < currentStep ? "bg-[#2563eb]" : "bg-[#2D3142]"
+                    index < currentStep ? "bg-primary" : "bg-border"
                   }`}
                 />
               )}
@@ -243,7 +228,7 @@ export function AddClientModal({
         {/* Error Display */}
         {errors.submit && (
           <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-            <p className="text-red-400 text-sm">{errors.submit}</p>
+            <p className="text-red-500 text-sm">{errors.submit}</p>
           </div>
         )}
 
@@ -266,7 +251,7 @@ export function AddClientModal({
                 errors={errors}
               />
 
-              {/* NEW: SMM Assignment Section - Only for ADMIN/SUPER_ADMIN */}
+              {/* SMM Assignment Section - Only for ADMIN/SUPER_ADMIN */}
               {canAssignSMMs && (
                 <AssignmentSection
                   assignedUserIds={assignedUserIds}
@@ -303,15 +288,15 @@ export function AddClientModal({
           )}
 
           {/* Navigation */}
-          <div className="flex items-center justify-between pt-6 border-t border-[#2D3142]">
+          <div className="flex items-center justify-between pt-6 border-t border-border">
             <button
               type="button"
               onClick={prevStep}
               disabled={currentStep === 0}
               className={`px-6 py-2 rounded-lg font-medium transition-colors ${
                 currentStep === 0
-                  ? "bg-[#2D3142] text-[#94A3B8] cursor-not-allowed"
-                  : "bg-[#2D3142] text-[#F1F5F9] hover:bg-[#374151]"
+                  ? "bg-secondary text-muted-foreground cursor-not-allowed opacity-50"
+                  : "bg-secondary text-foreground hover:bg-secondary/80"
               }`}
             >
               Previous
@@ -321,7 +306,7 @@ export function AddClientModal({
               <button
                 type="button"
                 onClick={handleClose}
-                className="px-6 py-2 bg-[#2D3142] text-[#F1F5F9] rounded-lg font-medium hover:bg-[#374151] transition-colors"
+                className="px-6 py-2 bg-secondary text-foreground rounded-lg font-medium hover:bg-secondary/80 transition-colors"
               >
                 Cancel
               </button>
@@ -329,11 +314,11 @@ export function AddClientModal({
               <button
                 type="submit"
                 disabled={isLoading}
-                className="px-6 py-2 bg-[#2563eb] text-white rounded-lg font-medium hover:bg-[#1E40AF] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
+                className="px-6 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center space-x-2"
               >
                 {isLoading ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
                     <span>Creating...</span>
                   </>
                 ) : currentStep < steps.length - 1 ? (
@@ -355,7 +340,7 @@ export function AddClientModal({
   );
 }
 
-// NEW: SMM Assignment Section Component
+// SMM Assignment Section Component
 interface AssignmentSectionProps {
   assignedUserIds: number[];
   setAssignedUserIds: React.Dispatch<React.SetStateAction<number[]>>;
@@ -367,13 +352,13 @@ function AssignmentSection({
 }: AssignmentSectionProps) {
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-[#F1F5F9]">SMM Assignment</h3>
-      <p className="text-sm text-[#94A3B8]">
+      <h3 className="text-lg font-semibold text-foreground">SMM Assignment</h3>
+      <p className="text-sm text-muted-foreground">
         Select which Social Media Managers should be assigned to this client.
         Leave empty to assign later.
       </p>
 
-      <div className="bg-[#23262F] rounded-lg p-4 border border-[#2D3142]">
+      <div className="bg-background rounded-lg p-4 border border-border">
         <UserAssignmentSelector
           initialAssignedUserIds={assignedUserIds}
           onChange={setAssignedUserIds}
@@ -384,12 +369,13 @@ function AssignmentSection({
   );
 }
 
-// Section Components with improved styling
+// Section Components
 interface SectionProps {
   formData: NewClientForm;
   updateFormField: (field: keyof NewClientForm) => (value: string) => void;
   errors: Record<string, string>;
 }
+
 interface LogoSectionProps extends SectionProps {
   logoPreview: string;
   onLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -409,7 +395,7 @@ function LogoUploadSection({
       {/* Logo Upload */}
       <div className="flex flex-col items-center space-y-3">
         <div className="relative">
-          <div className="w-20 h-20 rounded-full bg-[#2D3142] border-2 border-dashed border-[#94A3B8] flex items-center justify-center overflow-hidden hover:border-[#2563eb] transition-colors">
+          <div className="w-20 h-20 rounded-full bg-secondary border-2 border-dashed border-muted-foreground flex items-center justify-center overflow-hidden hover:border-primary transition-colors">
             {logoPreview ? (
               <img
                 src={logoPreview}
@@ -417,7 +403,7 @@ function LogoUploadSection({
                 className="w-full h-full object-cover"
               />
             ) : (
-              <UserIcon className="w-10 h-10 text-[#94A3B8]" />
+              <UserIcon className="w-10 h-10 text-muted-foreground" />
             )}
           </div>
           {logoPreview && (
@@ -440,12 +426,12 @@ function LogoUploadSection({
         />
         <label
           htmlFor="client-logo-upload"
-          className="px-4 py-2 bg-[#2563eb] text-white text-sm font-medium rounded-lg hover:bg-[#1E40AF] cursor-pointer transition-colors"
+          className="px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:opacity-90 cursor-pointer transition-opacity"
         >
           Upload Logo
         </label>
         {errors.logo && (
-          <p className="text-red-400 text-xs text-center">{errors.logo}</p>
+          <p className="text-red-500 text-xs text-center">{errors.logo}</p>
         )}
       </div>
 
@@ -485,7 +471,7 @@ function LogoUploadSection({
 function BasicInfoSection({ formData, updateFormField, errors }: SectionProps) {
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-[#F1F5F9]">
+      <h3 className="text-lg font-semibold text-foreground">
         Additional Information
       </h3>
 
@@ -528,7 +514,7 @@ function BusinessDetailsSection({
 }: SectionProps) {
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold text-[#F1F5F9]">
+      <h3 className="text-lg font-semibold text-foreground">
         Business Strategy & Goals
       </h3>
 
@@ -572,7 +558,7 @@ function BusinessDetailsSection({
         />
       </div>
 
-      <h4 className="text-md font-semibold text-[#F1F5F9] mt-6">
+      <h4 className="text-md font-semibold text-foreground mt-6">
         Business Goals
       </h4>
 
@@ -619,7 +605,7 @@ function CompetitionSection({
 }: SectionProps) {
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-[#F1F5F9]">
+      <h3 className="text-lg font-semibold text-foreground">
         Competition Analysis
       </h3>
 
@@ -652,7 +638,7 @@ function CompetitionSection({
 function BrandingSection({ formData, updateFormField, errors }: SectionProps) {
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-[#F1F5F9]">
+      <h3 className="text-lg font-semibold text-foreground">
         Branding & Assets
       </h3>
 

@@ -1,71 +1,105 @@
-import React from "react";
-import { ChevronLeftIcon, XMarkIcon } from "@heroicons/react/24/solid";
+"use client";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { XMarkIcon } from "@heroicons/react/24/outline";
+import { getClientTheme, Theme } from "../../lib/theme";
 
 interface SidebarHeaderProps {
   collapsed: boolean;
   onCollapse: () => void;
-  mobileOpen?: boolean;
-  setMobileOpen?: (open: boolean) => void;
+  onMobileClose: () => void;
 }
 
-export function SidebarHeader({ collapsed, onCollapse, mobileOpen, setMobileOpen }: SidebarHeaderProps) {
+export function SidebarHeader({ collapsed, onCollapse, onMobileClose }: SidebarHeaderProps) {
+  const [theme, setTheme] = useState<Theme>("dark");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const currentTheme = getClientTheme();
+    setTheme(currentTheme);
+
+    // Listen for theme changes
+    const handleStorageChange = () => {
+      const newTheme = getClientTheme();
+      setTheme(newTheme);
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    
+    // Custom event for theme changes within the same tab
+    const handleThemeChange = (e: CustomEvent) => {
+      setTheme(e.detail as Theme);
+    };
+    
+    window.addEventListener("themechange" as any, handleThemeChange as any);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("themechange" as any, handleThemeChange as any);
+    };
+  }, []);
+
+  // Choose logo based on theme
+  const logoSrc = theme === "dark" 
+    ? "/assets/images/boombox-logo.webp"  // Light logo for dark mode
+    : "/assets/images/boombox-black.webp";   // Dark logo for light mode
+
+  // Prevent flash during hydration
+  if (!mounted) {
+    return (
+      <div className={`flex items-center justify-between p-4 border-b border-border ${collapsed ? 'justify-center' : ''}`}>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-muted animate-pulse" />
+          {!collapsed && (
+            <div className="h-6 w-24 bg-muted rounded animate-pulse" />
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div
-      className={
-        collapsed
-          ? "flex flex-col items-center justify-center py-4 px-2 relative"
-          : "flex flex-row items-center justify-center py-4 px-2 gap-3"
-      }
-    >
-      <Image
-        src="/assets/images/boombox-logo.webp"
-        alt="Logo"
-        width={40}
-        height={40}
-        className="rounded-full"
-      />
+    <div className={`flex items-center justify-between p-4 border-b border-border ${collapsed ? 'justify-center' : ''}`}>
+      {/* Logo */}
+      <div className="flex items-center gap-3">
+        <Image 
+          src={logoSrc}
+          alt="Boombox Logo" 
+          width={collapsed ? 32 : 40}
+          height={collapsed ? 32 : 40}
+          className="rounded-full flex-shrink-0 transition-opacity duration-200"
+          priority
+        />
+        {!collapsed && (
+          <h1 className="text-lg font-bold text-foreground">Boombox</h1>
+        )}
+      </div>
+      
+      {/* Mobile Close Button */}
+      <button
+        onClick={onMobileClose}
+        className="md:hidden p-2 hover:bg-secondary rounded-lg transition-colors"
+        aria-label="Close menu"
+      >
+        <XMarkIcon className="w-5 h-5 text-foreground" />
+      </button>
 
-      {/* Desktop collapse button (when expanded) */}
-      {!collapsed && (
-        <button
-          onClick={onCollapse}
-          className="bg-[#23262F] text-[#F1F5F9] rounded-full w-8 h-8 items-center justify-center border-none cursor-pointer ml-2 hidden md:flex hover:bg-[#2D3142] transition-colors"
-          aria-label="Collapse sidebar"
+      {/* Desktop Collapse Button */}
+      <button
+        onClick={onCollapse}
+        className="hidden md:block p-2 hover:bg-secondary rounded-lg transition-colors"
+        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+      >
+        <svg
+          className={`w-5 h-5 text-foreground transition-transform ${collapsed ? 'rotate-180' : ''}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
         >
-          <ChevronLeftIcon className="w-5 h-5" />
-        </button>
-      )}
-
-      {/* Desktop expand button (when collapsed) - positioned beside the collapsed sidebar */}
-      {collapsed && (
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onCollapse();
-          }}
-          className="hidden md:flex fixed left-[80px] top-4 text-[#F1F5F9] rounded-full w-10 h-10 items-center justify-center border-none cursor-pointer shadow-lg hover:bg-[#1E40AF] transition-all"
-          style={{ 
-            zIndex: 100,
-            pointerEvents: "auto"
-          }}
-          aria-label="Expand sidebar"
-        >
-          <ChevronLeftIcon className="w-5 h-5 rotate-180" />
-        </button>
-      )}
-
-      {/* Mobile close button */}
-      {mobileOpen && setMobileOpen && (
-        <button
-          onClick={() => setMobileOpen(false)}
-          className="bg-[#23262F] text-[#F1F5F9] rounded-full w-8 h-8 flex items-center justify-center border-none cursor-pointer ml-2 md:hidden absolute right-2 hover:bg-[#2D3142] transition-colors"
-          aria-label="Close sidebar"
-        >
-          <XMarkIcon className="w-5 h-5" />
-        </button>
-      )}
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
     </div>
   );
 }

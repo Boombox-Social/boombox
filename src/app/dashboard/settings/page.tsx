@@ -13,6 +13,7 @@ import {
   DeleteUserModal,
   EditUserModal,
 } from "../../components/modals";
+import { ThemeToggle } from "../../components/ui/ThemeToggle";
 
 interface User {
   id: number;
@@ -267,23 +268,23 @@ export default function SettingsPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#F1F5F9] mb-2">Settings</h1>
-        <p className="text-sm sm:text-base text-[#94A3B8]">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Settings</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">
           Manage your account and application settings
         </p>
       </div>
 
       {/* Tabs - Horizontal scroll on mobile */}
       <div className="mb-6 sm:mb-8 overflow-x-auto">
-        <div className="flex space-x-1 bg-[#23262F] rounded-lg p-1 border border-[#2D3142] min-w-max">
+        <div className="flex space-x-1 bg-card rounded-lg p-1 border border-border min-w-max">
           {visibleTabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={`px-4 sm:px-6 py-2 sm:py-3 rounded-md font-medium text-xs sm:text-sm transition-colors whitespace-nowrap ${
                 activeTab === tab.key
-                  ? "bg-[#2563eb] text-[#F1F5F9]"
-                  : "text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#2D3142]"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
               }`}
             >
               {tab.label}
@@ -300,233 +301,321 @@ export default function SettingsPage() {
       )}
 
       {/* Tab Content */}
-      <div className="bg-[#23262F] rounded-xl border border-[#2D3142] overflow-hidden">
+      <div className="space-y-6">
         {/* Profile Tab */}
         {activeTab === "profile" && (
-          <div className="p-4 sm:p-6">
-            <h2 className="text-lg sm:text-xl font-semibold text-[#F1F5F9] mb-4 sm:mb-6">
-              Profile Information
-            </h2>
+          <>
+            {/* Profile Information Card */}
+            <div className="bg-card rounded-xl border border-border overflow-hidden">
+              <div className="p-4 sm:p-6">
+                <h2 className="text-lg sm:text-xl font-semibold text-card-foreground mb-4 sm:mb-6">
+                  Profile Information
+                </h2>
 
-            <div className="space-y-4 sm:space-y-6">
-              {/* User Avatar and Basic Info */}
-              <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-3 sm:space-y-0 sm:space-x-4">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#2563eb] flex items-center justify-center text-xl sm:text-2xl font-bold text-[#F1F5F9]">
-                  {authState.user?.name?.charAt(0).toUpperCase() || "U"}
-                </div>
-                <div className="text-center sm:text-left">
-                  <h3 className="text-base sm:text-lg font-semibold text-[#F1F5F9]">
-                    {authState.user?.name}
-                  </h3>
-                  <p className="text-sm sm:text-base text-[#94A3B8]">{authState.user?.email}</p>
-                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-2">
-                    <span
-                      className="px-2 sm:px-3 py-1 rounded-full text-xs font-medium text-white"
-                      style={{
-                        backgroundColor: getRoleBadgeColor(
-                          authState.user?.role || UserRole.SMM
-                        ),
-                      }}
-                    >
-                      {authState.user?.role}
-                    </span>
-                    <span
-                      className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${
-                        authState.user?.isActive
-                          ? "bg-green-500/20 text-green-400"
-                          : "bg-red-500/20 text-red-400"
-                      }`}
-                    >
-                      {authState.user?.isActive ? "Active" : "Inactive"}
-                    </span>
+                <div className="space-y-4 sm:space-y-6">
+                  {/* User Avatar and Basic Info */}
+                  <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-3 sm:space-y-0 sm:space-x-4">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary flex items-center justify-center text-xl sm:text-2xl font-bold text-primary-foreground">
+                      {authState.user?.name?.charAt(0).toUpperCase() || "U"}
+                    </div>
+                    <div className="text-center sm:text-left">
+                      <h3 className="text-base sm:text-lg font-semibold text-foreground">
+                        {authState.user?.name}
+                      </h3>
+                      <p className="text-sm sm:text-base text-muted-foreground">{authState.user?.email}</p>
+                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-2">
+                        <span
+                          className="px-2 sm:px-3 py-1 rounded-full text-xs font-medium text-white"
+                          style={{
+                            backgroundColor: getRoleBadgeColor(
+                              authState.user?.role || UserRole.SMM
+                            ),
+                          }}
+                        >
+                          {authState.user?.role}
+                        </span>
+                        <span
+                          className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium ${
+                            authState.user?.isActive
+                              ? "bg-green-500/20 text-green-400"
+                              : "bg-red-500/20 text-red-400"
+                          }`}
+                        >
+                          {authState.user?.isActive ? "Active" : "Inactive"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Profile Details */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-foreground mb-2">
+                        Full Name
+                      </label>
+                      <input
+                        type="text"
+                        value={authState.user?.name || ""}
+                        disabled
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-border bg-background text-foreground disabled:opacity-60 text-sm sm:text-base"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-foreground mb-2">
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        value={authState.user?.email || ""}
+                        disabled
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-border bg-background text-foreground disabled:opacity-60 text-sm sm:text-base"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-foreground mb-2">
+                        Role
+                      </label>
+                      <input
+                        type="text"
+                        value={authState.user?.role || ""}
+                        disabled
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-border bg-background text-foreground disabled:opacity-60 text-sm sm:text-base"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-foreground mb-2">
+                        Last Login
+                      </label>
+                      <input
+                        type="text"
+                        value={formatDate(authState.user?.lastLogin)}
+                        disabled
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-border bg-background text-foreground disabled:opacity-60 text-sm sm:text-base"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
-
-              {/* Profile Details */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-[#F1F5F9] mb-2">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    value={authState.user?.name || ""}
-                    disabled
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-[#2D3142] bg-[#181A20] text-[#F1F5F9] disabled:opacity-60 text-sm sm:text-base"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-[#F1F5F9] mb-2">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    value={authState.user?.email || ""}
-                    disabled
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-[#2D3142] bg-[#181A20] text-[#F1F5F9] disabled:opacity-60 text-sm sm:text-base"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-[#F1F5F9] mb-2">
-                    Role
-                  </label>
-                  <input
-                    type="text"
-                    value={authState.user?.role || ""}
-                    disabled
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-[#2D3142] bg-[#181A20] text-[#F1F5F9] disabled:opacity-60 text-sm sm:text-base"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-[#F1F5F9] mb-2">
-                    Last Login
-                  </label>
-                  <input
-                    type="text"
-                    value={formatDate(authState.user?.lastLogin)}
-                    disabled
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-[#2D3142] bg-[#181A20] text-[#F1F5F9] disabled:opacity-60 text-sm sm:text-base"
-                  />
-                </div>
-              </div>
             </div>
-          </div>
+
+            {/* Appearance Section - Theme Toggle */}
+            <ThemeToggle />
+          </>
         )}
 
         {/* Users Tab (Super Admin Only) */}
         {activeTab === "users" && isSuperAdmin && (
-          <div className="p-4 sm:p-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4 sm:mb-6">
-              <h2 className="text-lg sm:text-xl font-semibold text-[#F1F5F9]">
-                User Management
-              </h2>
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
-                <button
-                  onClick={handleRefreshUsers}
-                  disabled={isLoadingUsers}
-                  className="px-4 py-2 bg-[#2D3142] text-[#F1F5F9] rounded-lg hover:bg-[#374151] disabled:opacity-60 transition-colors text-sm"
-                >
-                  {isLoadingUsers ? "Refreshing..." : "Refresh"}
-                </button>
-                <button
-                  onClick={() => setShowAddUserModal(true)}
-                  className="px-4 py-2 bg-[#2563eb] text-[#F1F5F9] rounded-lg hover:bg-[#1E40AF] transition-colors flex items-center justify-center gap-2 text-sm"
-                >
-                  <PlusIcon className="w-4 h-4" />
-                  Add User
-                </button>
+          <div className="bg-card rounded-xl border border-border overflow-hidden">
+            <div className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-4 sm:mb-6">
+                <h2 className="text-lg sm:text-xl font-semibold text-card-foreground">
+                  User Management
+                </h2>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                  <button
+                    onClick={handleRefreshUsers}
+                    disabled={isLoadingUsers}
+                    className="px-4 py-2 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 disabled:opacity-60 transition-colors text-sm"
+                  >
+                    {isLoadingUsers ? "Refreshing..." : "Refresh"}
+                  </button>
+                  <button
+                    onClick={() => setShowAddUserModal(true)}
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2 text-sm"
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                    Add User
+                  </button>
+                </div>
               </div>
-            </div>
 
-            {isLoadingUsers ? (
-              <div className="text-center py-8">
-                <div className="text-sm sm:text-base text-[#94A3B8]">Loading users...</div>
-              </div>
-            ) : (
+              {isLoadingUsers ? (
+                <div className="text-center py-8">
+                  <div className="text-sm sm:text-base text-muted-foreground">Loading users...</div>
+                </div>
+              ) : (
+                <div className="overflow-x-auto -mx-4 sm:mx-0">
+                  <div className="inline-block min-w-full align-middle px-4 sm:px-0">
+                    <table className="min-w-full">
+                      <thead>
+                        <tr className="border-b border-border">
+                          <th className="text-left py-3 px-2 sm:px-4 font-medium text-foreground text-xs sm:text-sm">
+                            User
+                          </th>
+                          <th className="text-left py-3 px-2 sm:px-4 font-medium text-foreground text-xs sm:text-sm hidden sm:table-cell">
+                            Role
+                          </th>
+                          <th className="text-left py-3 px-2 sm:px-4 font-medium text-foreground text-xs sm:text-sm hidden md:table-cell">
+                            Status
+                          </th>
+                          <th className="text-left py-3 px-2 sm:px-4 font-medium text-foreground text-xs sm:text-sm hidden lg:table-cell">
+                            Last Login
+                          </th>
+                          <th className="text-left py-3 px-2 sm:px-4 font-medium text-foreground text-xs sm:text-sm hidden lg:table-cell">
+                            Created
+                          </th>
+                          <th className="text-left py-3 px-2 sm:px-4 font-medium text-foreground text-xs sm:text-sm">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {users.map((user) => (
+                          <tr
+                            key={user.id}
+                            className="border-b border-border hover:bg-secondary/30"
+                          >
+                            <td className="py-3 sm:py-4 px-2 sm:px-4">
+                              <div className="flex items-center space-x-2 sm:space-x-3">
+                                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary flex items-center justify-center text-xs sm:text-sm font-bold text-primary-foreground flex-shrink-0">
+                                  {user.name.charAt(0).toUpperCase()}
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="font-medium text-foreground text-xs sm:text-sm truncate">
+                                    {user.name}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground truncate">
+                                    {user.email}
+                                  </div>
+                                  {/* Show role badge on mobile */}
+                                  <span
+                                    className="inline-block sm:hidden mt-1 px-2 py-0.5 rounded text-[10px] font-medium text-white"
+                                    style={{
+                                      backgroundColor: getRoleBadgeColor(user.role),
+                                    }}
+                                  >
+                                    {user.role}
+                                  </span>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-3 sm:py-4 px-2 sm:px-4 hidden sm:table-cell">
+                              <span
+                                className="px-2 py-1 rounded text-xs font-medium text-white"
+                                style={{
+                                  backgroundColor: getRoleBadgeColor(user.role),
+                                }}
+                              >
+                                {user.role}
+                              </span>
+                            </td>
+                            <td className="py-3 sm:py-4 px-2 sm:px-4 hidden md:table-cell">
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  user.isActive
+                                    ? "bg-green-500/20 text-green-400"
+                                    : "bg-red-500/20 text-red-400"
+                                }`}
+                              >
+                                {user.isActive ? "Active" : "Inactive"}
+                              </span>
+                            </td>
+                            <td className="py-3 sm:py-4 px-2 sm:px-4 text-muted-foreground text-xs sm:text-sm hidden lg:table-cell">
+                              {formatDate(user.lastLogin)}
+                            </td>
+                            <td className="py-3 sm:py-4 px-2 sm:px-4 text-muted-foreground text-xs sm:text-sm hidden lg:table-cell">
+                              {formatDate(user.createdAt)}
+                            </td>
+                            <td className="py-3 sm:py-4 px-2 sm:px-4">
+                              <div className="flex gap-1 sm:gap-2">
+                                <button
+                                  onClick={() => handleEditClick(user)}
+                                  className="p-1 sm:p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded transition-colors"
+                                  title="Edit User"
+                                >
+                                  <PencilSquareIcon className="w-4 h-4" />
+                                </button>
+                                {user.id !== authState.user?.id && (
+                                  <button
+                                    onClick={() => handleDeleteClick(user)}
+                                    className="p-1 sm:p-1.5 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"
+                                    title="Delete User"
+                                  >
+                                    <TrashIcon className="w-4 h-4" />
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {users.length === 0 && !isLoadingUsers && (
+                    <div className="text-center py-8 text-sm sm:text-base text-muted-foreground">
+                      No users found
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Archived Clients Tab */}
+        {activeTab === "archived" && isSuperAdmin && (
+          <div className="bg-card rounded-xl border border-border overflow-hidden">
+            <div className="p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-card-foreground mb-4 sm:mb-6">
+                Archived Clients
+              </h2>
               <div className="overflow-x-auto -mx-4 sm:mx-0">
                 <div className="inline-block min-w-full align-middle px-4 sm:px-0">
                   <table className="min-w-full">
                     <thead>
-                      <tr className="border-b border-[#2D3142]">
-                        <th className="text-left py-3 px-2 sm:px-4 font-medium text-[#F1F5F9] text-xs sm:text-sm">
-                          User
+                      <tr className="border-b border-border">
+                        <th className="text-left py-3 px-2 sm:px-4 font-medium text-foreground text-xs sm:text-sm">
+                          Name
                         </th>
-                        <th className="text-left py-3 px-2 sm:px-4 font-medium text-[#F1F5F9] text-xs sm:text-sm hidden sm:table-cell">
-                          Role
+                        <th className="text-left py-3 px-2 sm:px-4 font-medium text-foreground text-xs sm:text-sm hidden sm:table-cell">
+                          Industry
                         </th>
-                        <th className="text-left py-3 px-2 sm:px-4 font-medium text-[#F1F5F9] text-xs sm:text-sm hidden md:table-cell">
+                        <th className="text-left py-3 px-2 sm:px-4 font-medium text-foreground text-xs sm:text-sm hidden md:table-cell">
                           Status
                         </th>
-                        <th className="text-left py-3 px-2 sm:px-4 font-medium text-[#F1F5F9] text-xs sm:text-sm hidden lg:table-cell">
-                          Last Login
-                        </th>
-                        <th className="text-left py-3 px-2 sm:px-4 font-medium text-[#F1F5F9] text-xs sm:text-sm hidden lg:table-cell">
-                          Created
-                        </th>
-                        <th className="text-left py-3 px-2 sm:px-4 font-medium text-[#F1F5F9] text-xs sm:text-sm">
+                        <th className="text-left py-3 px-2 sm:px-4 font-medium text-foreground text-xs sm:text-sm">
                           Actions
                         </th>
                       </tr>
                     </thead>
                     <tbody>
-                      {users.map((user) => (
+                      {archivedClients.map((client) => (
                         <tr
-                          key={user.id}
-                          className="border-b border-[#2D3142] hover:bg-[#2D3142]/30"
+                          key={client.id}
+                          className="border-b border-border hover:bg-secondary/30"
                         >
-                          <td className="py-3 sm:py-4 px-2 sm:px-4">
-                            <div className="flex items-center space-x-2 sm:space-x-3">
-                              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-[#2563eb] flex items-center justify-center text-xs sm:text-sm font-bold text-[#F1F5F9] flex-shrink-0">
-                                {user.name.charAt(0).toUpperCase()}
-                              </div>
-                              <div className="min-w-0">
-                                <div className="font-medium text-[#F1F5F9] text-xs sm:text-sm truncate">
-                                  {user.name}
-                                </div>
-                                <div className="text-xs text-[#94A3B8] truncate">
-                                  {user.email}
-                                </div>
-                                {/* Show role badge on mobile */}
-                                <span
-                                  className="inline-block sm:hidden mt-1 px-2 py-0.5 rounded text-[10px] font-medium text-white"
-                                  style={{
-                                    backgroundColor: getRoleBadgeColor(user.role),
-                                  }}
-                                >
-                                  {user.role}
-                                </span>
-                              </div>
-                            </div>
+                          <td className="py-3 sm:py-4 px-2 sm:px-4 font-medium text-foreground text-xs sm:text-sm">
+                            {client.name}
                           </td>
-                          <td className="py-3 sm:py-4 px-2 sm:px-4 hidden sm:table-cell">
-                            <span
-                              className="px-2 py-1 rounded text-xs font-medium text-white"
-                              style={{
-                                backgroundColor: getRoleBadgeColor(user.role),
-                              }}
-                            >
-                              {user.role}
-                            </span>
+                          <td className="py-3 sm:py-4 px-2 sm:px-4 text-muted-foreground text-xs sm:text-sm hidden sm:table-cell">
+                            {client.industry}
                           </td>
                           <td className="py-3 sm:py-4 px-2 sm:px-4 hidden md:table-cell">
-                            <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                user.isActive
-                                  ? "bg-green-500/20 text-green-400"
-                                  : "bg-red-500/20 text-red-400"
-                              }`}
-                            >
-                              {user.isActive ? "Active" : "Inactive"}
+                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-600">
+                              Archived
                             </span>
                           </td>
-                          <td className="py-3 sm:py-4 px-2 sm:px-4 text-[#94A3B8] text-xs sm:text-sm hidden lg:table-cell">
-                            {formatDate(user.lastLogin)}
-                          </td>
-                          <td className="py-3 sm:py-4 px-2 sm:px-4 text-[#94A3B8] text-xs sm:text-sm hidden lg:table-cell">
-                            {formatDate(user.createdAt)}
-                          </td>
                           <td className="py-3 sm:py-4 px-2 sm:px-4">
-                            <div className="flex gap-1 sm:gap-2">
+                            <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
                               <button
-                                onClick={() => handleEditClick(user)}
-                                className="p-1 sm:p-1.5 text-[#94A3B8] hover:text-[#2563eb] hover:bg-[#2563eb]/10 rounded transition-colors"
-                                title="Edit User"
+                                onClick={() => handleRestoreClient(client.id)}
+                                className="p-1.5 sm:p-2 bg-green-500/20 text-green-500 rounded hover:bg-green-500/30 transition-colors flex items-center justify-center gap-1 text-xs"
+                                title="Restore Client"
                               >
-                                <PencilSquareIcon className="w-4 h-4" />
+                                <ArrowPathIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                                <span className="sm:inline">Restore</span>
                               </button>
-                              {user.id !== authState.user?.id && (
-                                <button
-                                  onClick={() => handleDeleteClick(user)}
-                                  className="p-1 sm:p-1.5 text-[#94A3B8] hover:text-[#EF4444] hover:bg-[#EF4444]/10 rounded transition-colors"
-                                  title="Delete User"
-                                >
-                                  <TrashIcon className="w-4 h-4" />
-                                </button>
-                              )}
+                              <button
+                                onClick={() => handlePermanentDeleteClient(client.id)}
+                                className="p-1.5 sm:p-2 bg-red-500/20 text-red-500 rounded hover:bg-red-500/30 transition-colors flex items-center justify-center gap-1 text-xs"
+                                title="Permanently Delete"
+                              >
+                                <TrashIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                                <span className="sm:inline">Delete</span>
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -534,167 +623,93 @@ export default function SettingsPage() {
                     </tbody>
                   </table>
                 </div>
-                {users.length === 0 && !isLoadingUsers && (
-                  <div className="text-center py-8 text-sm sm:text-base text-[#94A3B8]">
-                    No users found
+                {archivedClients.length === 0 && (
+                  <div className="text-center py-8 text-sm sm:text-base text-muted-foreground">
+                    No archived clients found
                   </div>
                 )}
               </div>
-            )}
-          </div>
-        )}
-
-        {/* Archived Clients Tab */}
-        {activeTab === "archived" && isSuperAdmin && (
-          <div className="p-4 sm:p-6">
-            <h2 className="text-lg sm:text-xl font-semibold text-[#F1F5F9] mb-4 sm:mb-6">
-              Archived Clients
-            </h2>
-            <div className="overflow-x-auto -mx-4 sm:mx-0">
-              <div className="inline-block min-w-full align-middle px-4 sm:px-0">
-                <table className="min-w-full">
-                  <thead>
-                    <tr className="border-b border-[#2D3142]">
-                      <th className="text-left py-3 px-2 sm:px-4 font-medium text-[#F1F5F9] text-xs sm:text-sm">
-                        Name
-                      </th>
-                      <th className="text-left py-3 px-2 sm:px-4 font-medium text-[#F1F5F9] text-xs sm:text-sm hidden sm:table-cell">
-                        Industry
-                      </th>
-                      <th className="text-left py-3 px-2 sm:px-4 font-medium text-[#F1F5F9] text-xs sm:text-sm hidden md:table-cell">
-                        Status
-                      </th>
-                      <th className="text-left py-3 px-2 sm:px-4 font-medium text-[#F1F5F9] text-xs sm:text-sm">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {archivedClients.map((client) => (
-                      <tr
-                        key={client.id}
-                        className="border-b border-[#2D3142] hover:bg-[#2D3142]/30"
-                      >
-                        <td className="py-3 sm:py-4 px-2 sm:px-4 font-medium text-[#F1F5F9] text-xs sm:text-sm">
-                          {client.name}
-                        </td>
-                        <td className="py-3 sm:py-4 px-2 sm:px-4 text-[#94A3B8] text-xs sm:text-sm hidden sm:table-cell">
-                          {client.industry}
-                        </td>
-                        <td className="py-3 sm:py-4 px-2 sm:px-4 hidden md:table-cell">
-                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-600">
-                            Archived
-                          </span>
-                        </td>
-                        <td className="py-3 sm:py-4 px-2 sm:px-4">
-                          <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
-                            <button
-                              onClick={() => handleRestoreClient(client.id)}
-                              className="p-1.5 sm:p-2 bg-green-500/20 text-green-500 rounded hover:bg-green-500/30 transition-colors flex items-center justify-center gap-1 text-xs"
-                              title="Restore Client"
-                            >
-                              <ArrowPathIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                              <span className="sm:inline">Restore</span>
-                            </button>
-                            <button
-                              onClick={() => handlePermanentDeleteClient(client.id)}
-                              className="p-1.5 sm:p-2 bg-red-500/20 text-red-500 rounded hover:bg-red-500/30 transition-colors flex items-center justify-center gap-1 text-xs"
-                              title="Permanently Delete"
-                            >
-                              <TrashIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-                              <span className="sm:inline">Delete</span>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {archivedClients.length === 0 && (
-                <div className="text-center py-8 text-sm sm:text-base text-[#94A3B8]">
-                  No archived clients found
-                </div>
-              )}
             </div>
           </div>
         )}
 
         {/* Security Tab */}
         {activeTab === "security" && (
-          <div className="p-4 sm:p-6">
-            <h2 className="text-lg sm:text-xl font-semibold text-[#F1F5F9] mb-4 sm:mb-6">
-              Security Settings
-            </h2>
+          <div className="bg-card rounded-xl border border-border overflow-hidden">
+            <div className="p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-card-foreground mb-4 sm:mb-6">
+                Security Settings
+              </h2>
 
-            <div className="space-y-4 sm:space-y-6">
-              {/* Account Actions */}
-              <div className="bg-[#181A20] rounded-lg p-4 sm:p-6 border border-[#2D3142]">
-                <h3 className="text-base sm:text-lg font-medium text-[#F1F5F9] mb-3 sm:mb-4">
-                  Account Actions
-                </h3>
+              <div className="space-y-4 sm:space-y-6">
+                {/* Account Actions */}
+                <div className="bg-background rounded-lg p-4 sm:p-6 border border-border">
+                  <h3 className="text-base sm:text-lg font-medium text-foreground mb-3 sm:mb-4">
+                    Account Actions
+                  </h3>
 
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 py-2 sm:py-3">
-                    <div>
-                      <h4 className="font-medium text-[#F1F5F9] text-sm sm:text-base">Sign Out</h4>
-                      <p className="text-xs sm:text-sm text-[#94A3B8]">
-                        Sign out from your current session
-                      </p>
-                    </div>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full sm:w-auto px-4 sm:px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm"
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-
-                  <div className="border-t border-[#2D3142] pt-3 sm:pt-4">
+                  <div className="space-y-3 sm:space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 py-2 sm:py-3">
                       <div>
-                        <h4 className="font-medium text-[#F1F5F9] text-sm sm:text-base">
-                          Change Password
-                        </h4>
-                        <p className="text-xs sm:text-sm text-[#94A3B8]">
-                          Update your account password
+                        <h4 className="font-medium text-foreground text-sm sm:text-base">Sign Out</h4>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
+                          Sign out from your current session
                         </p>
                       </div>
                       <button
-                        disabled
-                        className="w-full sm:w-auto px-4 sm:px-6 py-2 bg-[#94A3B8] text-[#23262F] rounded-lg opacity-60 cursor-not-allowed text-sm"
+                        onClick={handleLogout}
+                        className="w-full sm:w-auto px-4 sm:px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm"
                       >
-                        Coming Soon
+                        Sign Out
                       </button>
+                    </div>
+
+                    <div className="border-t border-border pt-3 sm:pt-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 py-2 sm:py-3">
+                        <div>
+                          <h4 className="font-medium text-foreground text-sm sm:text-base">
+                            Change Password
+                          </h4>
+                          <p className="text-xs sm:text-sm text-muted-foreground">
+                            Update your account password
+                          </p>
+                        </div>
+                        <button
+                          disabled
+                          className="w-full sm:w-auto px-4 sm:px-6 py-2 bg-muted-foreground text-background rounded-lg opacity-60 cursor-not-allowed text-sm"
+                        >
+                          Coming Soon
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Session Information */}
-              <div className="bg-[#181A20] rounded-lg p-4 sm:p-6 border border-[#2D3142]">
-                <h3 className="text-base sm:text-lg font-medium text-[#F1F5F9] mb-3 sm:mb-4">
-                  Session Information
-                </h3>
-                <div className="space-y-2 sm:space-y-3">
-                  <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                    <span className="text-xs sm:text-sm text-[#94A3B8]">Current Session:</span>
-                    <span className="text-xs sm:text-sm text-[#F1F5F9]">Active</span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
-                    <span className="text-xs sm:text-sm text-[#94A3B8]">User Agent:</span>
-                    <span
-                      className="text-xs sm:text-sm text-[#F1F5F9] truncate max-w-full sm:max-w-xs"
-                      title={
-                        typeof window !== "undefined"
-                          ? navigator.userAgent
-                          : "N/A"
-                      }
-                    >
-                      {typeof window !== "undefined"
-                        ? navigator.userAgent.split(" ")[0]
-                        : "N/A"}
-                    </span>
+                {/* Session Information */}
+                <div className="bg-background rounded-lg p-4 sm:p-6 border border-border">
+                  <h3 className="text-base sm:text-lg font-medium text-foreground mb-3 sm:mb-4">
+                    Session Information
+                  </h3>
+                  <div className="space-y-2 sm:space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                      <span className="text-xs sm:text-sm text-muted-foreground">Current Session:</span>
+                      <span className="text-xs sm:text-sm text-foreground">Active</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-0">
+                      <span className="text-xs sm:text-sm text-muted-foreground">User Agent:</span>
+                      <span
+                        className="text-xs sm:text-sm text-foreground truncate max-w-full sm:max-w-xs"
+                        title={
+                          typeof window !== "undefined"
+                            ? navigator.userAgent
+                            : "N/A"
+                        }
+                      >
+                        {typeof window !== "undefined"
+                          ? navigator.userAgent.split(" ")[0]
+                          : "N/A"}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

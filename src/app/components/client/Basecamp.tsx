@@ -8,8 +8,8 @@ interface BasecampProps {
 
 export function Basecamp({ clientId }: BasecampProps) {
   return (
-    <div className="bg-[#23262F] rounded-2xl p-6 min-w-0 min-h-0 overflow-auto relative">
-      <div className="font-extrabold text-2xl text-[#F1F5F9] text-center">
+    <div className="border border-border rounded-2xl p-6 min-w-0 min-h-0 overflow-auto relative">
+      <div className="font-extrabold text-2xl text-center">
         Basecamp
       </div>
       <BasecampButton clientId={clientId} />

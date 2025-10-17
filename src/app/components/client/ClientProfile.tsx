@@ -144,7 +144,7 @@ export function ClientProfile({ client }: ClientProfileProps) {
 
   return (
     <>
-      <div className="bg-[#23262F] rounded-xl border border-[#2D3142] p-4 sm:p-6 relative overflow-hidden">
+      <div className="border border-border p-4 sm:p-6 relative overflow-hidden">
         {isSuperAdmin && (
           <div className="absolute top-5 right-5 gap-2 hidden md:flex">
             <button
@@ -174,7 +174,7 @@ export function ClientProfile({ client }: ClientProfileProps) {
               <img
                 src={client.logo}
                 alt="Logo"
-                className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover bg-[#94A3B8]"
+                className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover"
               />
             ) : (
               <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#2563eb] flex items-center justify-center text-white text-xl sm:text-2xl font-bold">
@@ -185,13 +185,13 @@ export function ClientProfile({ client }: ClientProfileProps) {
 
           {/* Client Info */}
           <div className="flex-1 min-w-0">
-            <h2 className="text-lg sm:text-xl font-bold text-[#F1F5F9] break-words md:pr-44 sm:pr-14">
+            <h2 className="text-lg sm:text-xl font-bold break-words md:pr-44 sm:pr-14">
               {client.name}
             </h2>
-            <p className="text-[#94A3B8] text-xs sm:text-sm break-words mt-1 sm:pr-14">
+            <p className="text-xs sm:text-sm break-words mt-1 sm:pr-14">
               {client.address}
             </p>
-            <p className="text-[#94A3B8] text-xs sm:text-sm mt-2">
+            <p className="text-xs sm:text-sm mt-2">
               Industry: {client.industry}
             </p>
 
@@ -219,11 +219,11 @@ export function ClientProfile({ client }: ClientProfileProps) {
             )}
 
             {/* Assigned Social Media Managers Section */}
-            <div className="mt-4 bg-[#181A20] rounded-lg p-4 border border-[#2D3142]">
+            <div className="mt-4 rounded-lg p-4 border border-border">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <UsersIcon className="w-5 h-5 text-[#2563eb]" />
-                  <h3 className="text-sm font-semibold text-[#F1F5F9]">
+                  <h3 className="text-sm font-semibold">
                     Assigned Social Media Managers
                   </h3>
                 </div>
@@ -239,16 +239,16 @@ export function ClientProfile({ client }: ClientProfileProps) {
               </div>
               <div className="flex flex-wrap gap-2">
                 {loadingSMMs ? (
-                  <span className="text-[#94A3B8] text-xs italic">
+                  <span className=" text-xs italic">
                     Loading...
                   </span>
                 ) : assignedSMMs.length > 0 ? (
                   assignedSMMs.map((smm) => (
                     <div
                       key={smm.id}
-                      className="flex items-center gap-2 px-2 py-1 bg-[#23262F] rounded-full border border-[#2D3142] hover:border-[#2563eb] transition-colors"
+                      className="flex items-center gap-2 px-2 py-1 rounded-full border border-border hover:border-[#2563eb] transition-colors"
                     >
-                      <div className="w-6 h-6 rounded-full bg-[#2563eb]/10 flex items-center justify-center">
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center">
                         {smm.avatar ? (
                           <img
                             src={smm.avatar}
@@ -259,13 +259,13 @@ export function ClientProfile({ client }: ClientProfileProps) {
                           <UserIcon className="w-3 h-3 text-[#2563eb]" />
                         )}
                       </div>
-                      <span className="text-xs font-medium text-[#F1F5F9] truncate max-w-[120px]">
+                      <span className="text-xs font-medium truncate max-w-[120px]">
                         {smm.name}
                       </span>
                     </div>
                   ))
                 ) : (
-                  <p className="text-[#94A3B8] text-xs italic">
+                  <p className="text-xs italic">
                     No SMMs assigned
                   </p>
                 )}
@@ -289,7 +289,7 @@ export function ClientProfile({ client }: ClientProfileProps) {
               <h3 className="text-red-500 text-base font-semibold mb-2">
                 Permanent Client Deletion
               </h3>
-              <p className="text-[#F1F5F9] text-sm leading-relaxed">
+              <p className=" text-sm leading-relaxed">
                 You are about to permanently delete{" "}
                 <strong>{client.name}</strong>. This action cannot be undone and
                 will remove all client data.
@@ -344,13 +344,12 @@ export function ClientProfile({ client }: ClientProfileProps) {
         isOpen={showArchiveModal}
         onClose={() => setShowArchiveModal(false)}
         title="Archive Client"
-        maxWidth="28em"
       >
         <div className="p-4">
-          <h3 className="text-lg font-semibold text-[#F1F5F9] mb-2">
+          <h3 className="text-lg font-semibold mb-2">
             Confirm Archive
           </h3>
-          <p className="text-[#94A3B8] mb-4">
+          <p className="mb-4">
             Are you sure you want to archive <strong>{client.name}</strong>?
             This will move the client to the archive and remove it from the
             active list.
@@ -399,8 +398,8 @@ export function ClientProfile({ client }: ClientProfileProps) {
       >
         <div className="py-5">
           <div className="mb-4">
-            <label className="block text-sm font-medium text-[#F1F5F9] mb-2">
-              Select SMMs to assign (dummy data)
+            <label className="block text-sm font-medium mb-2">
+              Select SMMs to assign
             </label>
             <UserAssignmentSelector
               clientId={client.id}

@@ -1,59 +1,43 @@
 "use client";
 import React from "react";
-import { useRouter } from "next/navigation";
-import { UserIcon } from "@heroicons/react/24/solid";
-import { ClientItemProps } from "../../types";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import type { Client } from "../../types";
 
-export function ClientItem({
-  client,
-  isSelected,
-  collapsed,
-  onClick: _onClick,
-}: ClientItemProps) {
-  const router = useRouter();
+interface ClientItemProps {
+  client: Client;
+  collapsed: boolean;
+}
 
-  const handleClick = () => {
-    router.push(`/dashboard/client/${client.id}`);
-  };
+export function ClientItem({ client, collapsed }: ClientItemProps) {
+  const pathname = usePathname();
+  const isActive = pathname === `/dashboard/client/${client.id}`;
 
   return (
-    <button
-      onClick={handleClick}
+    <Link
+      href={`/dashboard/client/${client.id}`}
       className={`
-        w-full flex items-center rounded-lg border-none cursor-pointer transition-all duration-200
-        ${collapsed ? "gap-0 p-2 justify-center" : "gap-3 p-3 justify-start"}
-        ${isSelected 
-          ? "bg-[#2563eb] text-[#F1F5F9]" 
-          : "bg-transparent text-[#94A3B8] hover:bg-[#2D3142] hover:text-[#F1F5F9]"
+        flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+        ${collapsed ? 'justify-center' : ''}
+        ${
+          isActive
+            ? "bg-primary/10 text-primary"
+            : "text-muted-foreground hover:bg-secondary"
         }
       `}
+      title={collapsed ? client.name : undefined}
     >
-      {/* Client Avatar */}
-      <div className="flex-shrink-0 w-8 h-8">
-        {client.logo ? (
-          <img
-            src={client.logo}
-            alt={`${client.name} logo`}
-            className="w-8 h-8 rounded-full object-cover"
-          />
-        ) : (
-          <div className="w-8 h-8 rounded-full bg-[#2563eb] flex items-center justify-center">
-            <UserIcon className="w-4 h-4 text-[#F1F5F9]" />
-          </div>
-        )}
+      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+        isActive ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
+      }`}>
+        {client.name.charAt(0).toUpperCase()}
       </div>
-
-      {/* Client Name */}
       {!collapsed && (
-        <div
-          className={`
-            flex-1 text-left text-sm whitespace-nowrap overflow-hidden text-ellipsis
-            ${isSelected ? "font-semibold" : "font-medium"}
-          `}
-        >
-          {client.name}
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium truncate">{client.name}</div>
+          <div className="text-xs opacity-70 truncate">{client.industry}</div>
         </div>
       )}
-    </button>
+    </Link>
   );
 }

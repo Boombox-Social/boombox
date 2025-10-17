@@ -1,7 +1,5 @@
-// components/ui/ActionButton.tsx
 import React from "react";
 import { ActionButtonProps } from "../../types";
-import { COLORS } from "../../constants";
 
 export function ActionButton({
   onClick,
@@ -15,23 +13,17 @@ export function ActionButton({
   return (
     <button
       onClick={onClick}
-      style={{
-        background: isPrimary ? COLORS.accent : COLORS.card,
-        color: COLORS.text,
-        border: isPrimary ? "none" : `1px solid ${COLORS.border}`,
-        borderRadius: 8,
-        padding: collapsed ? 8 : "8px 0",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 8,
-        fontWeight: 600,
-        fontSize: 14,
-        cursor: "pointer",
-        width: "100%",
-        minWidth: collapsed ? 48 : undefined,
-        minHeight: 40,
-      }}
+      className={`
+        rounded-lg flex items-center justify-center gap-2 font-semibold text-sm cursor-pointer
+        transition-all duration-200
+        ${collapsed ? 'p-2 min-w-[48px]' : 'px-4 py-2'}
+        min-h-[40px] w-full
+        ${
+          isPrimary
+            ? 'bg-primary text-primary-foreground hover:opacity-90'
+            : 'bg-card text-foreground border border-border hover:bg-secondary'
+        }
+      `}
       aria-label={collapsed ? text : undefined}
     >
       {collapsed ? icon : text}

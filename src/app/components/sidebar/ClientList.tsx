@@ -1,63 +1,61 @@
 "use client";
 import React from "react";
-import { usePathname } from "next/navigation";
-import { Client } from "../../types";
+import { PlusIcon } from "@heroicons/react/24/solid";
 import { ClientItem } from "./ClientItem";
+import type { Client } from "../../types";
 
 interface ClientListProps {
   clients: Client[];
   collapsed: boolean;
+  onAddClient: () => void;
+  isLoading?: boolean;
+  error?: string | null;
 }
 
-export function ClientList({ clients, collapsed }: ClientListProps) {
-  const pathname = usePathname();
-
-  const getSelectedClientId = () => {
-    const match = pathname.match(/\/dashboard\/client\/(\d+)/);
-    return match ? parseInt(match[1]) : null;
-  };
-
-  const selectedClientId = getSelectedClientId();
-
-  if (!clients || clients.length === 0) {
-    return (
-      <div className="text-center text-[#94A3B8] text-[15px] py-8 w-full">
-        No clients added yet.
-      </div>
-    );
-  }
-
+export function ClientList({
+  clients,
+  collapsed,
+  onAddClient,
+  isLoading = false,
+  error = null,
+}: ClientListProps) {
   return (
-<div
-  className={`flex-1 overflow-y-auto ${collapsed ? 'p-0 items-center gap-2' : 'p-2 items-stretch gap-0'} client-list-scrollbar`}
->
-      {clients.map((client) => {
-        return (
-          <ClientItem
-            key={client.id}
-            client={client}
-            isSelected={selectedClientId === client.id}
-            collapsed={collapsed}
-            onClick={() => {}}
-          />
-        );
-      })}
+    <div className="p-2">
+      <div className={`flex items-center justify-between mb-2 ${collapsed ? 'justify-center' : 'px-2'}`}>
+        {!collapsed && (
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Clients
+          </h2>
+        )}
+        <button
+          onClick={onAddClient}
+          className="p-1.5 hover:bg-secondary rounded-lg transition-colors"
+          title="Add Client"
+          aria-label="Add Client"
+        >
+          <PlusIcon className="w-4 h-4 text-foreground" />
+        </button>
+      </div>
 
-      <style jsx>{`
-        .client-list-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        .client-list-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .client-list-scrollbar::-webkit-scrollbar-thumb {
-          background: #2563eb;
-          border-radius: 3px;
-        }
-        .client-list-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #3b82f6;
-        }
-      `}</style>
+      <div className="space-y-1">
+        {isLoading ? (
+          <div className="text-center py-4">
+            <div className="text-sm text-muted-foreground">Loading...</div>
+          </div>
+        ) : error ? (
+          <div className="text-center py-4">
+            <div className="text-sm text-red-500">{error}</div>
+          </div>
+        ) : clients.length === 0 ? (
+          <div className="text-center py-4">
+            <div className="text-sm text-muted-foreground">No clients yet</div>
+          </div>
+        ) : (
+          clients.map((client) => (
+            <ClientItem key={client.id} client={client} collapsed={collapsed} />
+          ))
+        )}
+      </div>
     </div>
   );
 }

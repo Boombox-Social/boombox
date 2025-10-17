@@ -15,8 +15,8 @@ export function ClientInformation({ client }: ClientInformationProps) {
   const [showInfoModal, setShowInfoModal] = useState(false);
 
   return (
-    <div className="bg-[#23262F] rounded-2xl p-6 min-w-0 min-h-0 overflow-y-auto relative">
-      <div className="font-extrabold text-2xl text-[#F1F5F9]">
+    <div className="border border-border rounded-2xl p-6 min-w-0 min-h-0 overflow-y-auto relative">
+      <div className="font-extrabold text-2xl">
         Business Information
       </div>
       <OpenDetailsButton onClick={() => setShowInfoModal(true)} />
@@ -28,7 +28,7 @@ export function ClientInformation({ client }: ClientInformationProps) {
         isOpen={showInfoModal}
         onClose={() => setShowInfoModal(false)}
         title="Business Information"
-        maxWidth="60em"
+        maxWidth="max-w-6xl"
       >
         <div  className="p-6 max-h-[70vh] overflow-y-auto">
           <ClientInfoModal client={client} />

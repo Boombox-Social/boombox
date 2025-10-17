@@ -1,4 +1,3 @@
-// components/client/UserAssignmentSelector.tsx
 "use client";
 import React, { useState, useEffect } from "react";
 
@@ -34,12 +33,7 @@ export function UserAssignmentSelector({
     const loadSMMUsers = async () => {
       try {
         setError("");
-        console.log("Loading SMM users..."); // Debug log
-
         const response = await fetch("/api/users/smm");
-
-        console.log("Response status:", response.status); // Debug log
-
         if (!response.ok) {
           if (response.status === 403) {
             setError("You don't have permission to assign users");
@@ -51,18 +45,13 @@ export function UserAssignmentSelector({
           }
           throw new Error(`Failed to load users: ${response.status}`);
         }
-
         const data = await response.json();
-        console.log("Response data:", data); // Debug log
-
         if (data.success && data.users) {
           setAvailableUsers(data.users);
-          console.log("SMM users loaded:", data.users.length); // Debug log
         } else {
           throw new Error("Invalid response format");
         }
       } catch (error) {
-        console.error("Error loading SMM users:", error);
         setError(
           error instanceof Error ? error.message : "Failed to load users"
         );
@@ -98,7 +87,6 @@ export function UserAssignmentSelector({
           throw new Error("Failed to update assignments");
         }
       } catch (error) {
-        console.error("Error updating assignments:", error);
         // Revert on error
         setSelectedUserIds(selectedUserIds);
         onChange(selectedUserIds);
@@ -111,15 +99,7 @@ export function UserAssignmentSelector({
   // Don't render anything if user can't edit
   if (!canEdit) {
     return (
-      <div
-        style={{
-          color: "#94A3B8",
-          fontSize: 13,
-          fontStyle: "italic",
-          textAlign: "center",
-          padding: 16,
-        }}
-      >
+      <div className="text-muted-foreground text-sm italic text-center p-4">
         You don't have permission to assign users to clients
       </div>
     );
@@ -128,17 +108,7 @@ export function UserAssignmentSelector({
   // Show error state
   if (error) {
     return (
-      <div
-        style={{
-          color: "#EF4444",
-          fontSize: 13,
-          textAlign: "center",
-          padding: 16,
-          background: "#EF444420",
-          borderRadius: 8,
-          border: "1px solid #EF444440",
-        }}
-      >
+      <div className="text-red-500 text-sm text-center p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
         Error: {error}
       </div>
     );
@@ -147,85 +117,51 @@ export function UserAssignmentSelector({
   // Show loading state
   if (availableUsers.length === 0 && !error) {
     return (
-      <div
-        style={{
-          color: "#94A3B8",
-          fontSize: 13,
-          textAlign: "center",
-          padding: 16,
-        }}
-      >
+      <div className="text-muted-foreground text-sm text-center p-4">
         Loading SMM users...
       </div>
     );
   }
 
   return (
-    <div style={{ marginTop: 16 }}>
-      <h4
-        style={{
-          color: "#F1F5F9",
-          fontSize: 14,
-          fontWeight: 600,
-          marginBottom: 12,
-        }}
-      >
+    <div className="mt-4">
+      <h4 className="text-foreground text-sm font-semibold mb-3">
         Assign SMMs ({selectedUserIds.length} selected)
       </h4>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div className="flex flex-col gap-2">
         {availableUsers.map((user) => {
           const isSelected = selectedUserIds.includes(user.id);
 
           return (
             <label
               key={user.id}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                padding: 12,
-                borderRadius: 8,
-                background: isSelected ? "#2563eb20" : "#23262F",
-                border: `1px solid ${isSelected ? "#2563eb" : "#2D3142"}`,
-                cursor: canEdit ? "pointer" : "default",
-                opacity: isLoading ? 0.7 : 1,
-                transition: "all 0.2s ease",
-              }}
+              className={`
+                flex items-center gap-3 p-3 rounded-lg border
+                transition-all duration-200
+                ${isSelected ? "bg-primary/10 border-primary" : "bg-card border-border"}
+                ${canEdit ? "cursor-pointer" : "cursor-default"}
+                ${isLoading ? "opacity-70" : ""}
+              `}
             >
               <input
                 type="checkbox"
                 checked={isSelected}
                 onChange={() => handleUserToggle(user.id)}
                 disabled={!canEdit || isLoading}
-                style={{
-                  width: 16,
-                  height: 16,
-                  accentColor: "#2563eb",
-                }}
+                className="w-4 h-4 accent-primary"
               />
 
               {/* User Avatar */}
-              <div
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: "50%",
-                  background: user.avatar ? "transparent" : "#2563eb",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: "#F1F5F9",
-                  overflow: "hidden",
-                }}
-              >
+              <div className={`
+                w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm overflow-hidden
+                ${user.avatar ? "" : "bg-primary text-primary-foreground"}
+              `}>
                 {user.avatar ? (
                   <img
                     src={user.avatar}
                     alt={user.name}
-                    style={{ width: 32, height: 32, borderRadius: "50%" }}
+                    className="w-8 h-8 rounded-full object-cover"
                   />
                 ) : (
                   user.name.charAt(0).toUpperCase()
@@ -233,42 +169,18 @@ export function UserAssignmentSelector({
               </div>
 
               {/* User Info */}
-              <div style={{ flex: 1 }}>
-                <div
-                  style={{
-                    color: "#F1F5F9",
-                    fontSize: 14,
-                    fontWeight: 500,
-                  }}
-                >
+              <div className="flex-1 min-w-0">
+                <div className="text-foreground text-sm font-medium truncate">
                   {user.name}
                 </div>
-                <div
-                  style={{
-                    color: "#94A3B8",
-                    fontSize: 12,
-                  }}
-                >
+                <div className="text-muted-foreground text-xs truncate">
                   {user.email}
                 </div>
               </div>
 
               {/* Selection Indicator */}
               {isSelected && (
-                <div
-                  style={{
-                    width: 20,
-                    height: 20,
-                    borderRadius: "50%",
-                    background: "#2563eb",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "white",
-                    fontSize: 12,
-                    fontWeight: "bold",
-                  }}
-                >
+                <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">
                   ✓
                 </div>
               )}
@@ -277,15 +189,7 @@ export function UserAssignmentSelector({
         })}
 
         {availableUsers.length === 0 && !error && (
-          <div
-            style={{
-              color: "#94A3B8",
-              fontSize: 13,
-              textAlign: "center",
-              padding: 16,
-              fontStyle: "italic",
-            }}
-          >
+          <div className=" text-sm text-center p-4 italic">
             No SMM users available for assignment
           </div>
         )}

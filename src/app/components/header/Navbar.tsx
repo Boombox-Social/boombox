@@ -1,54 +1,40 @@
 "use client";
 import React from "react";
+import { Bars3Icon } from "@heroicons/react/24/outline";
 import { UserNav } from "./UserNav";
 
 interface NavbarProps {
   onMenuClick: () => void;
   showBurger: boolean;
-  sidebarCollapsed?: boolean;
+  sidebarCollapsed: boolean;
 }
 
-export function Navbar({ onMenuClick, showBurger, sidebarCollapsed = false }: NavbarProps) {
+export function Navbar({ onMenuClick, showBurger, sidebarCollapsed }: NavbarProps) {
   return (
-    <nav 
+    <nav
       className={`
-        fixed top-0 z-30 h-16
+        fixed top-0 right-0 h-16 z-40
         transition-all duration-200
-        right-0
-        cursor: cursor-pointer
+        ${sidebarCollapsed ? "left-0 md:left-[72px]" : "left-0 md:left-[220px]"}
       `}
-      style={{
-        background: "transparent",
-        borderBottom: "none",
-        left: sidebarCollapsed ? "72px" : "0px",
-      }}
     >
-      <div className="flex items-center justify-between h-full px-4">
-        {/* Left: Burger Button (mobile only) */}
-        <div className="flex items-center md:hidden">
-          {showBurger && (
-            <button
-              onClick={onMenuClick}
-              className="text-[#F1F5F9] rounded-lg p-2 hover:bg-[#2D3142] transition-colors"
-              aria-label="Open sidebar"
-            >
-              <svg
-                width="24"
-                height="24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" />
-              </svg>
-            </button>
-          )}
-        </div>
+      <div className="h-full px-4 flex items-center justify-between">
+        {/* Mobile Menu Button */}
+        {showBurger && (
+          <button
+            onClick={onMenuClick}
+            className="md:hidden p-2 hover:bg-secondary rounded-lg transition-colors"
+            aria-label="Open menu"
+          >
+            <Bars3Icon className="w-6 h-6 text-foreground" />
+          </button>
+        )}
 
-        {/* Right: User Nav */}
-        <div className="ml-auto">
-          <UserNav />
-        </div>
+        {/* Spacer for desktop */}
+        <div className="hidden md:block flex-1" />
+
+        {/* User Navigation */}
+        <UserNav />
       </div>
     </nav>
   );

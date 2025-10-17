@@ -1,9 +1,10 @@
+"use client";
 import React from "react";
 import { SidebarHeader } from "./SidebarHeader";
 import { DashboardSection } from "./DashboardSection";
 import { ClientList } from "./ClientList";
 import { SidebarFooter } from "./SidebarFooter";
-import { Client } from "../../types";
+import type { Client } from "../../types";
 
 interface SidePanelProps {
   collapsed: boolean;
@@ -11,9 +12,9 @@ interface SidePanelProps {
   clients: Client[];
   onAddClientClick: () => void;
   isLoading?: boolean;
-  error?: string;
-  mobileOpen?: boolean;
-  setMobileOpen?: (open: boolean) => void;
+  error?: string | null;
+  mobileOpen: boolean;
+  setMobileOpen: (open: boolean) => void;
 }
 
 export function SidePanel({
@@ -22,57 +23,59 @@ export function SidePanel({
   clients,
   onAddClientClick,
   isLoading = false,
-  error,
-  mobileOpen = false,
+  error = null,
+  mobileOpen,
   setMobileOpen,
 }: SidePanelProps) {
-
   return (
     <>
-      {/* Mobile overlay */}
-      <div
-        className={`
-          fixed inset-0 z-30 bg-[rgba(0,0,0,0.18)] transition-opacity duration-200
-          ${mobileOpen ? "block md:hidden" : "hidden"}
-        `}
-        onClick={() => setMobileOpen && setMobileOpen(false)}
-      />
+      {/* Mobile Overlay */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
       <aside
         className={`
-          flex flex-col bg-[#23262F] text-[#F1F5F9] border-r border-[#2D3142]
-          transition-all duration-200
-          fixed top-0 left-0 h-screen
-          ${mobileOpen ? "translate-x-0 z-50" : "-translate-x-full z-50"}
-          md:translate-x-0
-          w-[220px] 
-          ${collapsed ? "md:w-[72px] md:z-40" : "md:w-[220px] md:z-50"}
-          overflow-hidden
+          fixed top-0 left-0 h-full
+          bg-card
+          border-r border-border
+          transition-all duration-200 z-50
+          ${collapsed ? "w-[72px]" : "w-[220px]"}
+          ${mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
         `}
+        style={{
+          backgroundColor: 'rgb(var(--card))'
+        }}
       >
-        <SidebarHeader
-          collapsed={mobileOpen ? false : collapsed}
-          onCollapse={onCollapse}
-          mobileOpen={mobileOpen}
-          setMobileOpen={setMobileOpen}
-        />
-        <DashboardSection collapsed={mobileOpen ? false : collapsed} />
+        {/* Inner container with explicit background */}
+        <div className="flex flex-col h-full bg-card"
+          style={{
+            backgroundColor: 'rgb(var(--card))'
+          }}
+        >
+          <SidebarHeader
+            collapsed={collapsed}
+            onCollapse={onCollapse}
+            onMobileClose={() => setMobileOpen(false)}
+          />
 
-        {/* Scrollable content area */}
-        <div className="flex-1 overflow-y-auto flex flex-col">
-          {isLoading ? (
-            <div className="flex items-center justify-center text-center text-[#94A3B8] text-sm flex-1 py-4 px-2">
-              <div className="w-5 h-5 border-2 border-[#94A3B8] border-t-[#2563eb] rounded-full animate-spin" />
-            </div>
-          ) : error ? (
-            <div className="flex items-center justify-center text-center text-red-500 text-sm flex-1 py-4 px-2">
-              {collapsed ? "!" : `Error: ${error}`}
-            </div>
-          ) : (
-            <ClientList clients={clients} collapsed={mobileOpen ? false : collapsed} />
-          )}
+          <div className="flex-1 overflow-y-auto bg-card">
+            <DashboardSection collapsed={collapsed} />
+            <ClientList
+              clients={clients}
+              collapsed={collapsed}
+              onAddClient={onAddClientClick}
+              isLoading={isLoading}
+              error={error}
+            />
+          </div>
+
+          <SidebarFooter collapsed={collapsed} />
         </div>
-
-        <SidebarFooter collapsed={mobileOpen ? false : collapsed} onAddClientClick={onAddClientClick} />
       </aside>
     </>
   );

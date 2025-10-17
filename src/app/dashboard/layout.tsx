@@ -7,8 +7,6 @@ import { AddClientModal } from "../components/modals/AddClientModal";
 import { SidePanel } from "../components/sidebar/SidePanel";
 import { Navbar } from "../components/header/Navbar";
 
-
-
 export default function DashboardLayout({
   children,
 }: {
@@ -33,19 +31,16 @@ export default function DashboardLayout({
   }, [pathname, loadClients]);
 
   return (
-    <div className="flex min-h-screen relative bg-[#181A20]">
-      {/* Unified Navbar */}
+    <div className="flex min-h-screen relative bg-background">
       <Navbar
         onMenuClick={() => setSidebarMobileOpen(true)}
         showBurger={!sidebarMobileOpen}
         sidebarCollapsed={sidebarCollapsed}
       />
 
-      {/* SidePanel */}
       <SidePanel
         collapsed={sidebarCollapsed}
         onCollapse={() => {
-          console.log("Toggle sidebar, current state:", sidebarCollapsed);
           setSidebarCollapsed(!sidebarCollapsed);
         }}
         clients={clients}
@@ -56,10 +51,11 @@ export default function DashboardLayout({
         setMobileOpen={setSidebarMobileOpen}
       />
 
+      {/* Expand button when collapsed - Fixed z-index */}
       {sidebarCollapsed && (
         <button
           onClick={() => setSidebarCollapsed(false)}
-          className="hidden md:flex fixed top-4 left-[80px] z-30 bg-[#2563eb] text-[#F1F5F9] rounded-full w-10 h-10 items-center justify-center shadow-lg hover:bg-[#1E40AF] transition-colors"
+          className="hidden md:flex fixed top-4 left-[80px] z-[60] bg-primary text-primary-foreground rounded-full w-10 h-10 items-center justify-center shadow-lg hover:opacity-90 transition-opacity"
           aria-label="Expand sidebar"
         >
           <svg
@@ -74,11 +70,11 @@ export default function DashboardLayout({
         </button>
       )}
 
-      {/* Main content */}
       <main
         className={`
           flex-1 min-h-screen transition-all duration-200
           pt-20 px-4 md:px-6
+          bg-background
           ${sidebarCollapsed ? "md:ml-[72px]" : "md:ml-[220px]"}
         `}
       >

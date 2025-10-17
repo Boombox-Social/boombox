@@ -23,7 +23,7 @@ export default function ClientPage() {
 
   if (!client) {
     return (
-      <div className="flex items-center justify-center h-[50vh] text-[#94A3B8] flex-col gap-4">
+      <div className="flex items-center justify-center h-[50vh] flex-col gap-4">
         <h2 className="text-2xl font-bold">Client Not Found</h2>
         <p>The client you're looking for doesn't exist or has been removed.</p>
       </div>
