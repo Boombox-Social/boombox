@@ -1,6 +1,12 @@
+"use client";
 import React from "react";
-import { ChevronLeftIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
+import { useTheme } from "../../contexts/ThemeContext";
+import { 
+  ChevronLeftIcon, 
+  ChevronRightIcon,
+  XMarkIcon 
+} from "@heroicons/react/24/solid";
 
 interface SidebarHeaderProps {
   collapsed: boolean;
@@ -9,61 +15,138 @@ interface SidebarHeaderProps {
   setMobileOpen?: (open: boolean) => void;
 }
 
-export function SidebarHeader({ collapsed, onCollapse, mobileOpen, setMobileOpen }: SidebarHeaderProps) {
+export function SidebarHeader({
+  collapsed,
+  onCollapse,
+  mobileOpen,
+  setMobileOpen,
+}: SidebarHeaderProps) {
+  const { theme, mounted } = useTheme();
+
+  const logoSrc =
+    theme === "dark"
+      ? "/assets/images/boombox-logo.webp"
+      : "/assets/images/boombox-primary-logo.png";
+
+  if (!mounted) {
+    return (
+      <div
+        className="flex items-center justify-between h-16 px-4 border-b"
+        style={{ borderColor: "var(--border)" }}
+      >
+        <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
+      </div>
+    );
+  }
+
   return (
     <div
-      className={
-        collapsed
-          ? "flex flex-col items-center justify-center py-4 px-2 relative"
-          : "flex flex-row items-center justify-center py-4 px-2 gap-3"
-      }
+      className="flex items-center justify-between h-16 px-4 border-b flex-shrink-0"
+      style={{ borderColor: "var(--border)" }}
     >
-      <Image
-        src="/assets/images/boombox-logo.webp"
-        alt="Logo"
-        width={40}
-        height={40}
-        className="rounded-full"
-      />
-
-      {/* Desktop collapse button (when expanded) */}
+      {/* Logo */}
       {!collapsed && (
+        <div className="flex items-center gap-3">
+        <Image
+          src={logoSrc}
+          alt="Logo"
+          width={collapsed ? 32 : 36}
+          height={collapsed ? 32 : 36}
+          className="rounded-lg transition-all duration-300"
+          style={{
+            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+          }}
+        />
+
+        {!collapsed && (
+          <div className="flex flex-col">
+            <span 
+              className="font-bold text-base tracking-tight"
+              style={{ color: "var(--card-foreground)" }}
+            >
+              Boombox Social
+            </span>
+            <span 
+              className="text-xs"
+              style={{ color: "var(--muted)" }}
+            >
+              Internal AI App
+            </span>
+          </div>
+        )}
+      </div>
+
+      )}
+
+      {/* Collapsed Logo */}
+      {collapsed && (
+        <Image
+          src={logoSrc}
+          alt="Logo"
+          width={collapsed ? 32 : 36}
+          height={collapsed ? 32 : 36}
+          className="rounded-lg transition-all duration-300"
+          style={{
+            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+          }}
+        />
+
+      )}
+
+      {/* Desktop: Collapse Button (always visible) */}
+      {!mobileOpen && (
         <button
           onClick={onCollapse}
-          className="bg-[#23262F] text-[#F1F5F9] rounded-full w-8 h-8 items-center justify-center border-none cursor-pointer ml-2 hidden md:flex hover:bg-[#2D3142] transition-colors"
-          aria-label="Collapse sidebar"
+          className="hidden md:flex items-center justify-center w-6 h-6 rounded-md transition-all duration-200 flex-shrink-0"
+          style={{
+            background: "transparent",
+            border: "1px solid var(--border)",
+            color: "var(--muted)",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "var(--secondary)";
+            e.currentTarget.style.borderColor = "var(--primary)";
+            e.currentTarget.style.color = "var(--primary)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+            e.currentTarget.style.borderColor = "var(--border)";
+            e.currentTarget.style.color = "var(--muted)";
+          }}
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
-          <ChevronLeftIcon className="w-5 h-5" />
+          {collapsed ? (
+            <ChevronRightIcon className="w-4 h-4" />
+          ) : (
+            <ChevronLeftIcon className="w-4 h-4" />
+          )}
         </button>
       )}
 
-      {/* Desktop expand button (when collapsed) - positioned beside the collapsed sidebar */}
-      {collapsed && (
+      {/* Mobile: Close Button */}
+      {mobileOpen && (
         <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onCollapse();
+          onClick={() => setMobileOpen && setMobileOpen(false)}
+          className="md:hidden flex items-center justify-center w-8 h-8 rounded-md transition-all duration-200"
+          style={{
+            background: "transparent",
+            border: "1px solid var(--border)",
           }}
-          className="hidden md:flex fixed left-[80px] top-4 text-[#F1F5F9] rounded-full w-10 h-10 items-center justify-center border-none cursor-pointer shadow-lg hover:bg-[#1E40AF] transition-all"
-          style={{ 
-            zIndex: 100,
-            pointerEvents: "auto"
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "var(--secondary)";
+            e.currentTarget.style.borderColor = "var(--danger)";
           }}
-          aria-label="Expand sidebar"
-        >
-          <ChevronLeftIcon className="w-5 h-5 rotate-180" />
-        </button>
-      )}
-
-      {/* Mobile close button */}
-      {mobileOpen && setMobileOpen && (
-        <button
-          onClick={() => setMobileOpen(false)}
-          className="bg-[#23262F] text-[#F1F5F9] rounded-full w-8 h-8 flex items-center justify-center border-none cursor-pointer ml-2 md:hidden absolute right-2 hover:bg-[#2D3142] transition-colors"
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+            e.currentTarget.style.borderColor = "var(--border)";
+          }}
           aria-label="Close sidebar"
         >
-          <XMarkIcon className="w-5 h-5" />
+          <XMarkIcon 
+            className="w-5 h-5" 
+            style={{ color: "var(--card-foreground)" }}
+          />
         </button>
       )}
     </div>

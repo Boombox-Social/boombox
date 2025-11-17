@@ -3,28 +3,13 @@ import React, { useState, useEffect } from "react";
 import { Client } from "../../types";
 import { PromptCard } from "./PromptCard";
 
-const colors = {
-  bg: "#181A20",
-  side: "#23262F",
-  card: "#23262F",
-  accent: "#2563eb",
-  text: "#F1F5F9",
-  muted: "#94A3B8",
-  border: "#2D3142",
-  hover: "#1E40AF",
-  success: "#10B981",
-  warning: "#F59E0B",
-};
-
 interface SMMPromptPlaybookProps {
   client: Client;
 }
 
 export function SMMPromptPlaybook({ client }: SMMPromptPlaybookProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [hasAiStrategyLink, setHasAiStrategyLink] = useState<boolean | null>(
-    null
-  );
+  const [hasAiStrategyLink, setHasAiStrategyLink] = useState<boolean | null>(null);
   const [hasOverviewLink, setHasOverviewLink] = useState<boolean | null>(null);
 
   // Fetch if there is an AI Strategy link
@@ -75,9 +60,7 @@ Client Profile:
 • Why Choose Us: ${client.whyChooseUs || "Not specified"}
 • Core Products/Services: ${client.coreProducts?.join(", ") || "Not specified"}
 • Direct Competitors: ${client.competitors?.join(", ") || "None specified"}
-• Indirect Competitors: ${
-      client.indirectCompetitors?.join(", ") || "None specified"
-    }
+• Indirect Competitors: ${client.indirectCompetitors?.join(", ") || "None specified"}
 • Social Links: ${client.links?.join(", ") || "Not provided"}
 • Marketing Challenges: [Please specify current business or marketing obstacles, focusing on planning, execution, tracking, and sustainability]
 • Contract Deliverables: ${client.contractDeliverables || "Not specified"}
@@ -86,22 +69,8 @@ Client Profile:
 
   // Steps, conditionally include Master Prompt and Business Overview tabs
   const steps = [
-    ...(hasAiStrategyLink
-      ? []
-      : [
-          {
-            title: "Master Prompt Strategy",
-            description: "Feed AI with client data",
-          },
-        ]),
-    ...(hasOverviewLink
-      ? []
-      : [
-          {
-            title: "Business Overview",
-            description: "Generate overview",
-          },
-        ]),
+    ...(hasAiStrategyLink ? [] : [{ title: "Master Prompt Strategy", description: "Feed AI with client data" }]),
+    ...(hasOverviewLink ? [] : [{ title: "Business Overview", description: "Generate overview" }]),
     { title: "Content Creation", description: "Generate specific content" },
     { title: "Show all prompts", description: "See all prompt templates" },
   ];
@@ -115,13 +84,10 @@ Client Profile:
   // Navigation bar
   const renderStepNav = () => (
     <div
+      className="flex mb-5 p-1 rounded-lg"
       style={{
-        display: "flex",
-        marginBottom: 20,
-        background: colors.bg,
-        borderRadius: 8,
-        padding: 4,
-        border: `1px solid ${colors.border}`,
+        background: "var(--background)",
+        border: "1px solid var(--border)",
       }}
     >
       {steps.map((step, index) => {
@@ -130,23 +96,17 @@ Client Profile:
           <button
             key={index}
             onClick={() => isAccessible && setCurrentStep(index)}
+            disabled={!isAccessible}
+            className="flex-1 px-3 py-2 rounded-md text-xs font-semibold transition-all duration-200"
             style={{
-              flex: 1,
-              padding: "8px 12px",
-              borderRadius: 6,
-              border: "none",
-              background: currentStep === index ? colors.accent : "transparent",
-              color: currentStep === index ? colors.text : colors.muted,
-              fontSize: 12,
-              fontWeight: 600,
+              background: currentStep === index ? "var(--primary)" : "transparent",
+              color: currentStep === index ? "var(--primary-foreground)" : "var(--muted)",
               cursor: isAccessible ? "pointer" : "not-allowed",
               opacity: isAccessible ? 1 : 0.5,
-              transition: "all 0.2s",
             }}
-            disabled={!isAccessible}
           >
             <div>{step.title}</div>
-            <div style={{ fontSize: 10, opacity: 0.8 }}>{step.description}</div>
+            <div className="text-[10px] opacity-80 mt-0.5">{step.description}</div>
           </button>
         );
       })}
@@ -156,35 +116,35 @@ Client Profile:
   // "Next" button
   const renderNextButton = () =>
     currentStep < steps.length - 1 ? (
-      <div
-        style={{ display: "flex", justifyContent: "flex-end", marginTop: 24 }}
-      >
+      <div className="flex justify-end mt-6">
         <button
           onClick={() => setCurrentStep((s) => s + 1)}
+          className="px-7 py-2.5 rounded-md text-sm font-bold transition-all duration-200"
           style={{
-            background: colors.accent,
-            color: colors.text,
-            padding: "10px 28px",
-            borderRadius: 8,
-            border: "none",
-            fontWeight: 700,
-            fontSize: 15,
-            cursor: "pointer",
-            transition: "background 0.2s",
+            background: "var(--primary)",
+            color: "var(--primary-foreground)",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "#1E40AF";
+            e.currentTarget.style.transform = "translateY(-1px)";
+            e.currentTarget.style.boxShadow = "0 4px 12px rgba(37, 99, 235, 0.3)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "var(--primary)";
+            e.currentTarget.style.transform = "translateY(0)";
+            e.currentTarget.style.boxShadow = "none";
           }}
         >
-          Next
+          Next Step →
         </button>
       </div>
     ) : null;
 
-  // Master Prompt Card with new comprehensive 8-section structure
+  // Master Prompt Card
   const masterPromptCard = (
     <PromptCard
       title="🎯 Complete Strategy Prompt (8-Section Deep Research)"
-      description="Step 1: Generate Strategy using ChatGPT Deep Research. 
-      Copy the Prompt below and paste it on ChatGPT Deep Research, once that done copy the result and make a new doc inside the Client Drive Link > AI Docs.
-      Copy the link and paste it on the AI Strategy Link Input"
+      description="Step 1: Generate Strategy using ChatGPT Deep Research. Copy the Prompt below and paste it on ChatGPT Deep Research, once that done copy the result and make a new doc inside the Client Drive Link > AI Docs. Copy the link and paste it on the AI Strategy Link Input"
       prompts={[
         {
           label: "Comprehensive Brand & Campaign Strategy",
@@ -193,9 +153,7 @@ Client Profile:
 --------------------------------------------------------------------------------
 
 Required Client Profile Inputs (Must be specified before generating the strategy):
-The strategist must receive the following detailed information about the client brand (Current client is ${
-            client.name
-          }):
+The strategist must receive the following detailed information about the client brand (Current client is ${client.name}):
 
 ${generateClientProfile()}
 
@@ -257,15 +215,11 @@ Conclude with a measurement and optimization plan:
   const businessOverviewCard = (
     <PromptCard
       title="📝 Business Summary Prompt"
-      description="Step 2: Copy the Business Summary Prompt and paste it on the chat you use to run the Deep Research.
-      Copy the result and make a new doc inside the Client Drive > AI Docs.
-      Copy the link and paste it on Overview Link"
+      description="Step 2: Copy the Business Summary Prompt and paste it on the chat you use to run the Deep Research. Copy the result and make a new doc inside the Client Drive > AI Docs. Copy the link and paste it on Overview Link"
       prompts={[
         {
           label: "Complete Business Summary Generator",
-          content: `You are a senior marketing strategist. Your task is to create a clear, beginner-friendly summary of ${
-            client.name
-          } so that a new social media marketer can quickly understand the business.
+          content: `You are a senior marketing strategist. Your task is to create a clear, beginner-friendly summary of ${client.name} so that a new social media marketer can quickly understand the business.
 
 Please structure your response with the following sections:
 
@@ -299,9 +253,7 @@ ${generateClientProfile()}`,
       prompts={[
         {
           label: "Complete Content Creation Process",
-          content: `You are a senior social media strategist. Using the client's Data Form responses (including contract deliverables, goals, and brand profile), create social media content for ${
-            client.name
-          }.
+          content: `You are a senior social media strategist. Using the client's Data Form responses (including contract deliverables, goals, and brand profile), create social media content for ${client.name}.
 
 Follow this process:
 
@@ -312,11 +264,7 @@ Follow this process:
 5. Present the final, most refined version.
 
 **Content Requirements:**
-${
-  client.contractDeliverables
-    ? `Contract Deliverables: ${client.contractDeliverables}`
-    : "Please specify content requirements based on client needs"
-}
+${client.contractDeliverables ? `Contract Deliverables: ${client.contractDeliverables}` : "Please specify content requirements based on client needs"}
 
 For each deliverable, include:
 - Post Type & Format (Static, Reel, Carousel, etc.)
@@ -332,7 +280,7 @@ ${generateClientProfile()}`,
     />
   );
 
-  // All additional prompt cards (shown only in "Show all prompts" step)
+  // Additional prompt cards
   const additionalPromptCards = (
     <>
       <PromptCard
@@ -341,20 +289,14 @@ ${generateClientProfile()}`,
         prompts={[
           {
             label: "Ad Copy Prompt",
-            content: `Write 3 variations of a [platform] ad headline and caption for ${
-              client.coreProducts?.join(", ") || "[client's product/service]"
-            }.
+            content: `Write 3 variations of a [platform] ad headline and caption for ${client.coreProducts?.join(", ") || "[client's product/service]"}.
 Tone: ${client.brandEmotion || "[insert brand voice]"}.
 Each headline max 10 words.
-Each caption should include a strong CTA and highlight the ${
-              client.uniqueProposition || "[unique value proposition]"
-            }.`,
+Each caption should include a strong CTA and highlight the ${client.uniqueProposition || "[unique value proposition]"}.`,
           },
           {
             label: "Carousel Content Prompt",
-            content: `Generate a 5-slide Instagram carousel for ${
-              client.name
-            } about [theme/product].
+            content: `Generate a 5-slide Instagram carousel for ${client.name} about [theme/product].
 For each slide, provide:
 - Slide Title
 - Key Insight/Message
@@ -364,9 +306,7 @@ Brand voice: ${client.brandEmotion || "Professional"}`,
           },
           {
             label: "Video/Reel Script Prompt",
-            content: `Write a 30-second script for an Instagram Reel about ${
-              client.coreProducts?.join(" or ") || "[product/service]"
-            }.
+            content: `Write a 30-second script for an Instagram Reel about ${client.coreProducts?.join(" or ") || "[product/service]"}.
 Requirements:
 - Hook viewers in the first 3 seconds
 - Highlight main product benefit
@@ -376,9 +316,7 @@ Requirements:
           },
           {
             label: "Static Post Caption Prompt",
-            content: `Write 5 static post captions for Instagram focused on ${
-              client.coreProducts?.join(", ") || "[theme/product]"
-            }.
+            content: `Write 5 static post captions for Instagram focused on ${client.coreProducts?.join(", ") || "[theme/product]"}.
 Each caption should:
 - Stay within 150 words
 - Align with the brand voice: ${client.brandEmotion || "[insert voice]"}
@@ -388,50 +326,32 @@ Each caption should:
           },
           {
             label: "Monthly Calendar Prompt",
-            content: `Using ${client.name}'s deliverables (${
-              client.contractDeliverables ||
-              "[X static, X dynamic, X carousel, etc.]"
-            }), create a 1-month content calendar.
+            content: `Using ${client.name}'s deliverables (${client.contractDeliverables || "[X static, X dynamic, X carousel, etc.]"}), create a 1-month content calendar.
 For each week, provide:
 - Post type & platform
 - Theme/pillar
 - Caption draft
 - Suggested visual
 - CTA
-Brand context: ${client.brandEmotion || "Professional tone"}, targeting ${
-              client.idealCustomers || "[target audience]"
-            }`,
+Brand context: ${client.brandEmotion || "Professional tone"}, targeting ${client.idealCustomers || "[target audience]"}`,
           },
         ]}
       />
 
-      {/* Competitor Analysis (if available) */}
       {client.competitors && client.competitors.length > 0 && (
         <PromptCard
           title="🔍 Competitor Analysis"
-          description="test"
+          description="Analyze competitors and find opportunities"
           prompts={[
             {
               label: "Competitor & Inspiration Analysis",
-              content: `Analyze these competitor brands: ${client.competitors.join(
-                ", "
-              )}.
-${
-  client.indirectCompetitors && client.indirectCompetitors.length > 0
-    ? `Also consider these indirect competitors: ${client.indirectCompetitors.join(
-        ", "
-      )}.`
-    : ""
-}
+              content: `Analyze these competitor brands: ${client.competitors.join(", ")}.
+${client.indirectCompetitors && client.indirectCompetitors.length > 0 ? `Also consider these indirect competitors: ${client.indirectCompetitors.join(", ")}.` : ""}
 
 Summarize:
 1. **Strengths in their social content** - What are they doing well?
 2. **Weaknesses/gaps we can exploit** - Where are the opportunities?
-3. **Content ideas we can adapt** for ${
-                client.name
-              } while maintaining our unique brand voice (${
-                client.brandEmotion || "professional"
-              })
+3. **Content ideas we can adapt** for ${client.name} while maintaining our unique brand voice (${client.brandEmotion || "professional"})
 4. **Differentiation strategy** - How can we stand out?`,
             },
           ]}
@@ -444,158 +364,125 @@ Summarize:
   if (hasAiStrategyLink === null || hasOverviewLink === null) {
     return (
       <div
+        className="rounded-xl p-6 flex items-center justify-center"
         style={{
-          background: colors.card,
-          borderRadius: 16,
-          padding: 24,
-          minWidth: 0,
-          minHeight: 0,
-          color: colors.muted,
+          background: "var(--card)",
+          border: "1px solid var(--border)",
+          minHeight: "200px",
         }}
       >
-        Loading...
+        <div className="flex items-center gap-3">
+          <div
+            className="w-6 h-6 rounded-full animate-spin"
+            style={{
+              border: "2px solid var(--border)",
+              borderTopColor: "var(--primary)",
+            }}
+          />
+          <span style={{ color: "var(--muted)" }}>Loading playbook...</span>
+        </div>
       </div>
     );
   }
 
   return (
     <div
+      className="rounded-xl p-6 overflow-y-auto playbook-scrollbar"
       style={{
-        background: colors.card,
-        borderRadius: 16,
-        padding: 24,
+        background: "var(--card)",
+        border: "1px solid var(--border)",
         gridColumn: "2",
         gridRow: "1 / span 2",
         minWidth: 0,
         minHeight: 0,
-        overflowY: "auto",
         maxHeight: "calc(100vh - 120px)",
-        position: "relative",
       }}
-      className="boombox-scrollbar"
     >
-      <style>{`
-        .boombox-scrollbar::-webkit-scrollbar {
-          width: 10px;
+      <style jsx>{`
+        .playbook-scrollbar::-webkit-scrollbar {
+          width: 8px;
           background: transparent;
         }
-        .boombox-scrollbar::-webkit-scrollbar-thumb {
-          background: #2563eb;
-          border-radius: 8px;
-          border: 2px solid #181A20;
-          box-shadow: 0 0 6px 2px rgba(37,99,235,0.25);
-          min-height: 40px;
+        .playbook-scrollbar::-webkit-scrollbar-thumb {
+          background: var(--primary);
+          border-radius: 4px;
           transition: background 0.2s;
         }
-        .boombox-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #3b82f6;
+        .playbook-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #1E40AF;
         }
-        .boombox-scrollbar::-webkit-scrollbar-track {
+        .playbook-scrollbar::-webkit-scrollbar-track {
           background: transparent;
+          margin: 8px 0;
         }
-        .boombox-scrollbar {
-          scrollbar-color: #2563eb transparent;
+        .playbook-scrollbar {
           scrollbar-width: thin;
+          scrollbar-color: var(--primary) transparent;
         }
       `}</style>
 
       {/* Header */}
-      <div
-        style={{
-          fontWeight: 700,
-          fontSize: 18,
-          marginBottom: 8,
-          color: colors.accent,
-        }}
-      >
-        📘 The Agency AI Content Playbook
-      </div>
-
-      <div
-        style={{
-          fontSize: 14,
-          color: colors.muted,
-          marginBottom: 20,
-          lineHeight: 1.4,
-        }}
-      >
-        This project hub is designed as a training manual and quick-reference
-        guide for your team. By integrating AI into your workflow, you can
-        empower your team to be more strategic and efficient.
+      <div className="mb-2">
+        <h2
+          className="text-lg font-bold mb-2 tracking-tight"
+          style={{ color: "var(--primary)" }}
+        >
+          📘 The Agency AI Content Playbook
+        </h2>
+        <p
+          className="text-sm leading-relaxed"
+          style={{ color: "var(--muted)" }}
+        >
+          This project hub is designed as a training manual and quick-reference guide for your team. By integrating AI into your workflow, you can empower your team to be more strategic and efficient.
+        </p>
       </div>
 
       {/* AI Platform Links */}
       <div
+        className="rounded-lg p-4 mb-5"
         style={{
-          background: colors.bg,
-          borderRadius: 12,
-          padding: 16,
-          marginBottom: 20,
-          border: `1px solid ${colors.border}`,
+          background: "var(--background)",
+          border: "1px solid var(--border)",
         }}
       >
         <h3
-          style={{
-            fontSize: 16,
-            fontWeight: 600,
-            color: colors.text,
-            marginBottom: 12,
-          }}
+          className="text-sm font-semibold mb-3"
+          style={{ color: "var(--card-foreground)" }}
         >
           🤖 Quick AI Access
         </h3>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 12,
-          }}
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {/* ChatGPT Link */}
           <a
             href="https://chat.openai.com/"
             target="_blank"
             rel="noopener noreferrer"
+            className="flex items-center gap-3 px-4 py-3 rounded-md text-sm font-semibold no-underline transition-all duration-200"
             style={{
-              background: colors.accent,
-              color: colors.text,
-              padding: "12px 16px",
-              borderRadius: 8,
-              textDecoration: "none",
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              fontSize: 14,
-              fontWeight: 600,
-              transition: "background 0.2s",
-              border: "none",
-              cursor: "pointer",
+              background: "var(--primary)",
+              color: "var(--primary-foreground)",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = colors.hover;
+              e.currentTarget.style.background = "#1E40AF";
+              e.currentTarget.style.transform = "translateY(-2px)";
+              e.currentTarget.style.boxShadow = "0 4px 12px rgba(37, 99, 235, 0.3)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = colors.accent;
+              e.currentTarget.style.background = "var(--primary)";
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "none";
             }}
           >
             <div
-              style={{
-                width: 24,
-                height: 24,
-                borderRadius: "50%",
-                background: "rgba(255,255,255,0.2)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 12,
-              }}
+              className="w-6 h-6 rounded-full flex items-center justify-center text-xs"
+              style={{ background: "rgba(255,255,255,0.2)" }}
             >
               🧠
             </div>
             <div>
               <div>ChatGPT</div>
-              <div style={{ fontSize: 11, opacity: 0.8 }}>OpenAI's GPT-4</div>
+              <div className="text-[11px] opacity-80">OpenAI's GPT-4</div>
             </div>
           </a>
 
@@ -604,62 +491,44 @@ Summarize:
             href="https://gemini.google.com/"
             target="_blank"
             rel="noopener noreferrer"
+            className="flex items-center gap-3 px-4 py-3 rounded-md text-sm font-semibold no-underline transition-all duration-200"
             style={{
               background: "#34A853",
-              color: colors.text,
-              padding: "12px 16px",
-              borderRadius: 8,
-              textDecoration: "none",
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              fontSize: 14,
-              fontWeight: 600,
-              transition: "background 0.2s",
-              border: "none",
-              cursor: "pointer",
+              color: "#ffffff",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = "#2E7D32";
+              e.currentTarget.style.transform = "translateY(-2px)";
+              e.currentTarget.style.boxShadow = "0 4px 12px rgba(52, 168, 83, 0.3)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background = "#34A853";
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "none";
             }}
           >
             <div
-              style={{
-                width: 24,
-                height: 24,
-                borderRadius: "50%",
-                background: "rgba(255,255,255,0.2)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 12,
-              }}
+              className="w-6 h-6 rounded-full flex items-center justify-center text-xs"
+              style={{ background: "rgba(255,255,255,0.2)" }}
             >
               ✨
             </div>
             <div>
               <div>Gemini</div>
-              <div style={{ fontSize: 11, opacity: 0.8 }}>Google AI</div>
+              <div className="text-[11px] opacity-80">Google AI</div>
             </div>
           </a>
         </div>
 
         <div
+          className="rounded-md p-3 mt-4 text-xs"
           style={{
-            background: `${colors.success}20`,
-            border: `1px solid ${colors.success}40`,
-            borderRadius: 8,
-            padding: 12,
-            marginTop: 16,
-            color: colors.text,
-            fontSize: 13,
+            background: "rgba(16, 185, 129, 0.1)",
+            border: "1px solid rgba(16, 185, 129, 0.3)",
+            color: "var(--card-foreground)",
           }}
         >
-          💡 <strong>Pro Tip:</strong> Use Deep Research Mode in ChatGPT or
-          enable web search in Gemini for better results with current data.
+          💡 <strong>Pro Tip:</strong> Use Deep Research Mode in ChatGPT or enable web search in Gemini for better results with current data.
         </div>
       </div>
 
@@ -673,28 +542,22 @@ Summarize:
           {renderNextButton()}
         </>
       )}
-      {steps.find((s) => s.title === "Business Overview") &&
-        steps.findIndex((s) => s.title === "Business Overview") ===
-          currentStep && (
-          <>
-            {businessOverviewCard}
-            {renderNextButton()}
-          </>
-        )}
-      {steps.find((s) => s.title === "Content Creation") &&
-        steps.findIndex((s) => s.title === "Content Creation") ===
-          currentStep && (
-          <>
-            {contentCreationCard}
-            {renderNextButton()}
-          </>
-        )}
+      {steps.find((s) => s.title === "Business Overview") && steps.findIndex((s) => s.title === "Business Overview") === currentStep && (
+        <>
+          {businessOverviewCard}
+          {renderNextButton()}
+        </>
+      )}
+      {steps.find((s) => s.title === "Content Creation") && steps.findIndex((s) => s.title === "Content Creation") === currentStep && (
+        <>
+          {contentCreationCard}
+          {renderNextButton()}
+        </>
+      )}
       {currentStep === steps.length - 1 && (
         <>
-          {steps.find((s) => s.title === "Master Prompt Strategy") &&
-            masterPromptCard}
-          {steps.find((s) => s.title === "Business Overview") &&
-            businessOverviewCard}
+          {steps.find((s) => s.title === "Master Prompt Strategy") && masterPromptCard}
+          {steps.find((s) => s.title === "Business Overview") && businessOverviewCard}
           {contentCreationCard}
           {additionalPromptCards}
         </>

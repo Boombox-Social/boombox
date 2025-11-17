@@ -1,5 +1,5 @@
 // hooks/index.ts
 export * from './useFileUpload';
 export * from './useClientManagement';
-export { useAuth, usePermission } from '../contexts/AuthContext';
-export { useClientManagement, useModal } from './useClientManagement';
+export * from './useAuth'; // Export from useAuth.ts instead
+export { useModal } from './useClientManagement'; // Remove duplicate useClientManagement export

@@ -15,24 +15,34 @@ export function ClientInformation({ client }: ClientInformationProps) {
   const [showInfoModal, setShowInfoModal] = useState(false);
 
   return (
-    <div className="bg-[#23262F] rounded-2xl p-6 min-w-0 min-h-0 overflow-y-auto relative">
-      <div className="font-extrabold text-2xl text-[#F1F5F9]">
+    <div 
+      className="rounded-lg p-6"
+      style={{
+        background: "var(--card)",
+        border: "1px solid var(--border)",
+      }}
+    >
+      <div 
+        className="font-bold text-xl mb-4 tracking-tight"
+        style={{ color: "var(--card-foreground)" }}
+      >
         Business Information
       </div>
-      <OpenDetailsButton onClick={() => setShowInfoModal(true)} />
-      <ViewAiStrategyButton clientId={client.id} />
-      <OverviewButton clientId={client.id} />
+      
+      <div className="flex flex-col gap-3">
+        <OpenDetailsButton onClick={() => setShowInfoModal(true)} />
+        <ViewAiStrategyButton clientId={client.id} />
+        <OverviewButton clientId={client.id} />
+      </div>
 
       {/* Modal for Client Information */}
       <Modal
         isOpen={showInfoModal}
         onClose={() => setShowInfoModal(false)}
         title="Business Information"
-        maxWidth="60em"
+        maxWidth="1200px"
       >
-        <div  className="p-6 max-h-[70vh] overflow-y-auto">
-          <ClientInfoModal client={client} />
-        </div>
+        <ClientInfoModal client={client} />
       </Modal>
     </div>
   );

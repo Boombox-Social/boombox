@@ -1,4 +1,3 @@
-// components/client/ClientProfile.tsx
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -104,11 +103,7 @@ export function ClientProfile({ client }: ClientProfileProps) {
 
     try {
       await deleteClient(client.id);
-
-      // Close modal first
       setShowDeleteModal(false);
-
-      // Navigate back to dashboard after successful deletion
       router.push("/dashboard");
     } catch (error) {
       if (process.env.NODE_ENV !== "production") {
@@ -144,13 +139,29 @@ export function ClientProfile({ client }: ClientProfileProps) {
 
   return (
     <>
-      <div className="bg-[#23262F] rounded-xl border border-[#2D3142] p-4 sm:p-6 relative overflow-hidden">
+      <div 
+        className="rounded-lg p-4 sm:p-6 relative overflow-hidden"
+        style={{
+          background: "var(--card)",
+          border: "1px solid var(--border)",
+        }}
+      >
         {isSuperAdmin && (
           <div className="absolute top-5 right-5 gap-2 hidden md:flex">
             <button
               onClick={handleArchiveClick}
               disabled={isArchiving}
-              className="bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="text-xs font-semibold px-3 py-2 rounded-md flex items-center gap-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                background: "var(--warning)",
+                color: "#ffffff",
+              }}
+              onMouseEnter={(e) => {
+                if (!isArchiving) e.currentTarget.style.background = "#D97706";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "var(--warning)";
+              }}
               title="Archive"
             >
               <ArchiveBoxIcon className="w-4 h-4" />
@@ -158,7 +169,17 @@ export function ClientProfile({ client }: ClientProfileProps) {
             </button>
             <button
               onClick={handleDeleteClick}
-              className="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-2 transition-colors cursor-pointer"
+              className="text-xs font-semibold px-3 py-2 rounded-md flex items-center gap-2 transition-all duration-200"
+              style={{
+                background: "var(--danger)",
+                color: "#ffffff",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#DC2626";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "var(--danger)";
+              }}
               title="Delete"
             >
               <TrashIcon className="w-4 h-4" />
@@ -174,10 +195,19 @@ export function ClientProfile({ client }: ClientProfileProps) {
               <img
                 src={client.logo}
                 alt="Logo"
-                className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover bg-[#94A3B8]"
+                className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg object-cover"
+                style={{
+                  border: "2px solid var(--border)",
+                }}
               />
             ) : (
-              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#2563eb] flex items-center justify-center text-white text-xl sm:text-2xl font-bold">
+              <div 
+                className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg flex items-center justify-center text-xl sm:text-2xl font-bold"
+                style={{
+                  background: "var(--primary)",
+                  color: "var(--primary-foreground)",
+                }}
+              >
                 {client.name?.charAt(0)?.toUpperCase() || "?"}
               </div>
             )}
@@ -185,13 +215,22 @@ export function ClientProfile({ client }: ClientProfileProps) {
 
           {/* Client Info */}
           <div className="flex-1 min-w-0">
-            <h2 className="text-lg sm:text-xl font-bold text-[#F1F5F9] break-words md:pr-44 sm:pr-14">
+            <h2 
+              className="text-lg sm:text-xl font-bold break-words md:pr-44 sm:pr-14 tracking-tight"
+              style={{ color: "var(--card-foreground)" }}
+            >
               {client.name}
             </h2>
-            <p className="text-[#94A3B8] text-xs sm:text-sm break-words mt-1 sm:pr-14">
+            <p 
+              className="text-xs sm:text-sm break-words mt-1 sm:pr-14"
+              style={{ color: "var(--muted)" }}
+            >
               {client.address}
             </p>
-            <p className="text-[#94A3B8] text-xs sm:text-sm mt-2">
+            <p 
+              className="text-xs sm:text-sm mt-2"
+              style={{ color: "var(--muted)" }}
+            >
               Industry: {client.industry}
             </p>
 
@@ -201,7 +240,11 @@ export function ClientProfile({ client }: ClientProfileProps) {
                 <button
                   onClick={handleArchiveClick}
                   disabled={isArchiving}
-                  className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-semibold px-3 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="flex-1 text-xs font-semibold px-3 py-2 rounded-md flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    background: "var(--warning)",
+                    color: "#ffffff",
+                  }}
                   title="Archive"
                 >
                   <ArchiveBoxIcon className="w-4 h-4" />
@@ -209,7 +252,11 @@ export function ClientProfile({ client }: ClientProfileProps) {
                 </button>
                 <button
                   onClick={handleDeleteClick}
-                  className="flex-1 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-3 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                  className="flex-1 text-xs font-semibold px-3 py-2 rounded-md flex items-center justify-center gap-2 transition-all duration-200"
+                  style={{
+                    background: "var(--danger)",
+                    color: "#ffffff",
+                  }}
                   title="Delete"
                 >
                   <TrashIcon className="w-4 h-4" />
@@ -219,18 +266,37 @@ export function ClientProfile({ client }: ClientProfileProps) {
             )}
 
             {/* Assigned Social Media Managers Section */}
-            <div className="mt-4 bg-[#181A20] rounded-lg p-4 border border-[#2D3142]">
+            <div 
+              className="mt-4 rounded-lg p-4"
+              style={{
+                background: "var(--background)",
+                border: "1px solid var(--border)",
+              }}
+            >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <UsersIcon className="w-5 h-5 text-[#2563eb]" />
-                  <h3 className="text-sm font-semibold text-[#F1F5F9]">
+                  <UsersIcon 
+                    className="w-5 h-5" 
+                    style={{ color: "var(--primary)" }}
+                  />
+                  <h3 
+                    className="text-sm font-semibold"
+                    style={{ color: "var(--card-foreground)" }}
+                  >
                     Assigned Social Media Managers
                   </h3>
                 </div>
                 {isSuperAdmin && (
                   <button
                     onClick={() => setShowAssignModal(true)}
-                    className="text-[#2563eb] hover:text-[#1E40AF] transition-colors"
+                    className="transition-colors"
+                    style={{ color: "var(--primary)" }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = "#1E40AF";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = "var(--primary)";
+                    }}
                     title="Edit Assignments"
                   >
                     <PencilSquareIcon className="w-5 h-5" />
@@ -239,16 +305,34 @@ export function ClientProfile({ client }: ClientProfileProps) {
               </div>
               <div className="flex flex-wrap gap-2">
                 {loadingSMMs ? (
-                  <span className="text-[#94A3B8] text-xs italic">
+                  <span 
+                    className="text-xs italic"
+                    style={{ color: "var(--muted)" }}
+                  >
                     Loading...
                   </span>
                 ) : assignedSMMs.length > 0 ? (
                   assignedSMMs.map((smm) => (
                     <div
                       key={smm.id}
-                      className="flex items-center gap-2 px-2 py-1 bg-[#23262F] rounded-full border border-[#2D3142] hover:border-[#2563eb] transition-colors"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-200"
+                      style={{
+                        background: "var(--secondary)",
+                        border: "1px solid var(--border)",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = "var(--primary)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = "var(--border)";
+                      }}
                     >
-                      <div className="w-6 h-6 rounded-full bg-[#2563eb]/10 flex items-center justify-center">
+                      <div 
+                        className="w-6 h-6 rounded-full flex items-center justify-center"
+                        style={{
+                          background: "rgba(37, 99, 235, 0.1)",
+                        }}
+                      >
                         {smm.avatar ? (
                           <img
                             src={smm.avatar}
@@ -256,16 +340,25 @@ export function ClientProfile({ client }: ClientProfileProps) {
                             className="w-6 h-6 rounded-full"
                           />
                         ) : (
-                          <UserIcon className="w-3 h-3 text-[#2563eb]" />
+                          <UserIcon 
+                            className="w-3 h-3" 
+                            style={{ color: "var(--primary)" }}
+                          />
                         )}
                       </div>
-                      <span className="text-xs font-medium text-[#F1F5F9] truncate max-w-[120px]">
+                      <span 
+                        className="text-xs font-medium truncate max-w-[120px]"
+                        style={{ color: "var(--card-foreground)" }}
+                      >
                         {smm.name}
                       </span>
                     </div>
                   ))
                 ) : (
-                  <p className="text-[#94A3B8] text-xs italic">
+                  <p 
+                    className="text-xs italic"
+                    style={{ color: "var(--muted)" }}
+                  >
                     No SMMs assigned
                   </p>
                 )}
@@ -275,7 +368,7 @@ export function ClientProfile({ client }: ClientProfileProps) {
         </div>
       </div>
 
-      {/* Delete Modal - Update with Tailwind */}
+      {/* Delete Modal */}
       <Modal
         isOpen={showDeleteModal}
         onClose={handleDeleteCancel}
@@ -283,13 +376,28 @@ export function ClientProfile({ client }: ClientProfileProps) {
       >
         <div className="py-5">
           {/* Warning Message */}
-          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-5 flex items-start gap-3">
-            <TrashIcon className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+          <div 
+            className="rounded-lg p-4 mb-5 flex items-start gap-3"
+            style={{
+              background: "rgba(239, 68, 68, 0.1)",
+              border: "1px solid rgba(239, 68, 68, 0.3)",
+            }}
+          >
+            <TrashIcon 
+              className="w-5 h-5 flex-shrink-0 mt-0.5" 
+              style={{ color: "var(--danger)" }}
+            />
             <div>
-              <h3 className="text-red-500 text-base font-semibold mb-2">
+              <h3 
+                className="text-base font-semibold mb-2"
+                style={{ color: "var(--danger)" }}
+              >
                 Permanent Client Deletion
               </h3>
-              <p className="text-[#F1F5F9] text-sm leading-relaxed">
+              <p 
+                className="text-sm leading-relaxed"
+                style={{ color: "var(--card-foreground)" }}
+              >
                 You are about to permanently delete{" "}
                 <strong>{client.name}</strong>. This action cannot be undone and
                 will remove all client data.
@@ -297,14 +405,16 @@ export function ClientProfile({ client }: ClientProfileProps) {
             </div>
           </div>
 
-          {archiveError && (
-            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 mb-2 text-yellow-600 text-sm">
-              {archiveError}
-            </div>
-          )}
           {/* Error Display */}
           {deleteError && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 mb-5 text-red-500 text-sm">
+            <div 
+              className="rounded-lg p-3 mb-5 text-sm"
+              style={{
+                background: "rgba(239, 68, 68, 0.1)",
+                border: "1px solid rgba(239, 68, 68, 0.3)",
+                color: "var(--danger)",
+              }}
+            >
               {deleteError}
             </div>
           )}
@@ -314,14 +424,35 @@ export function ClientProfile({ client }: ClientProfileProps) {
             <button
               onClick={handleDeleteCancel}
               disabled={isDeleting}
-              className="px-6 py-3 bg-[#2D3142] text-[#F1F5F9] rounded-lg font-medium hover:bg-[#374151] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-6 py-3 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                background: "var(--secondary)",
+                color: "var(--card-foreground)",
+                border: "2px solid var(--border)",
+              }}
+              onMouseEnter={(e) => {
+                if (!isDeleting) e.currentTarget.style.background = "var(--background)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "var(--secondary)";
+              }}
             >
               Cancel
             </button>
             <button
               onClick={handleDeleteConfirm}
               disabled={isDeleting}
-              className="px-6 py-3 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+              className="px-6 py-3 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              style={{
+                background: "var(--danger)",
+                color: "#ffffff",
+              }}
+              onMouseEnter={(e) => {
+                if (!isDeleting) e.currentTarget.style.background = "#DC2626";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "var(--danger)";
+              }}
             >
               {isDeleting ? (
                 <>
@@ -347,37 +478,73 @@ export function ClientProfile({ client }: ClientProfileProps) {
         maxWidth="28em"
       >
         <div className="p-4">
-          <h3 className="text-lg font-semibold text-[#F1F5F9] mb-2">
+          <h3 
+            className="text-lg font-semibold mb-2"
+            style={{ color: "var(--card-foreground)" }}
+          >
             Confirm Archive
           </h3>
-          <p className="text-[#94A3B8] mb-4">
+          <p 
+            className="mb-4"
+            style={{ color: "var(--muted)" }}
+          >
             Are you sure you want to archive <strong>{client.name}</strong>?
             This will move the client to the archive and remove it from the
             active list.
           </p>
           {archiveError && (
-            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 mb-2 text-yellow-600 text-sm">
+            <div 
+              className="rounded-lg p-3 mb-2 text-sm"
+              style={{
+                background: "rgba(245, 158, 11, 0.1)",
+                border: "1px solid rgba(245, 158, 11, 0.3)",
+                color: "var(--warning)",
+              }}
+            >
               {archiveError}
             </div>
           )}
           <div className="flex justify-end gap-3 mt-6">
             <button
               onClick={() => setShowArchiveModal(false)}
-              className="px-6 py-2 bg-[#2D3142] text-[#F1F5F9] rounded-lg font-medium hover:bg-[#374151] transition-colors"
+              className="px-6 py-2 rounded-lg font-medium transition-all duration-200"
               disabled={isArchiving}
               type="button"
+              style={{
+                background: "var(--secondary)",
+                color: "var(--card-foreground)",
+                border: "2px solid var(--border)",
+              }}
+              onMouseEnter={(e) => {
+                if (!isArchiving) e.currentTarget.style.background = "var(--background)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "var(--secondary)";
+              }}
             >
               Cancel
             </button>
             <button
               onClick={handleArchiveConfirm}
-              className="px-6 py-2 bg-yellow-500 text-white rounded-lg font-medium hover:bg-yellow-600 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isArchiving}
               type="button"
+              style={{
+                background: "var(--warning)",
+                color: "#ffffff",
+              }}
+              onMouseEnter={(e) => {
+                if (!isArchiving) e.currentTarget.style.background = "#D97706";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "var(--warning)";
+              }}
             >
               {isArchiving ? (
                 <>
-                  <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span 
+                    className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" 
+                  />
                   Archiving...
                 </>
               ) : (
@@ -399,8 +566,11 @@ export function ClientProfile({ client }: ClientProfileProps) {
       >
         <div className="py-5">
           <div className="mb-4">
-            <label className="block text-sm font-medium text-[#F1F5F9] mb-2">
-              Select SMMs to assign (dummy data)
+            <label 
+              className="block text-sm font-medium mb-2"
+              style={{ color: "var(--card-foreground)" }}
+            >
+              Select SMMs to assign
             </label>
             <UserAssignmentSelector
               clientId={client.id}
@@ -412,13 +582,34 @@ export function ClientProfile({ client }: ClientProfileProps) {
           <div className="flex justify-end gap-3 mt-6">
             <button
               onClick={() => setShowAssignModal(false)}
-              className="px-6 py-2 bg-[#2D3142] text-[#F1F5F9] rounded-lg font-medium hover:bg-[#374151] transition-colors"
+              className="px-6 py-2 rounded-lg font-medium transition-all duration-200"
+              style={{
+                background: "var(--secondary)",
+                color: "var(--card-foreground)",
+                border: "2px solid var(--border)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "var(--background)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "var(--secondary)";
+              }}
             >
               Close
             </button>
             <button
               onClick={handleAssignSave}
-              className="px-6 py-2 bg-[#2563eb] text-white rounded-lg font-medium hover:bg-[#1E40AF] transition-colors"
+              className="px-6 py-2 rounded-lg font-medium transition-all duration-200"
+              style={{
+                background: "var(--primary)",
+                color: "var(--primary-foreground)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#1E40AF";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "var(--primary)";
+              }}
             >
               Save
             </button>

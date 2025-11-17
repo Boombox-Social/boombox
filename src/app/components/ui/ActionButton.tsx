@@ -1,7 +1,5 @@
-// components/ui/ActionButton.tsx
 import React from "react";
 import { ActionButtonProps } from "../../types";
-import { COLORS } from "../../constants";
 
 export function ActionButton({
   onClick,
@@ -15,12 +13,13 @@ export function ActionButton({
   return (
     <button
       onClick={onClick}
+      className="w-full transition-all duration-200"
       style={{
-        background: isPrimary ? COLORS.accent : COLORS.card,
-        color: COLORS.text,
-        border: isPrimary ? "none" : `1px solid ${COLORS.border}`,
-        borderRadius: 8,
-        padding: collapsed ? 8 : "8px 0",
+        background: isPrimary ? "var(--primary)" : "transparent",
+        color: isPrimary ? "var(--primary-foreground)" : "var(--card-foreground)",
+        border: isPrimary ? "none" : "2px solid var(--border)",
+        borderRadius: 6,
+        padding: collapsed ? 8 : "10px 12px",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -28,9 +27,29 @@ export function ActionButton({
         fontWeight: 600,
         fontSize: 14,
         cursor: "pointer",
-        width: "100%",
         minWidth: collapsed ? 48 : undefined,
         minHeight: 40,
+        boxShadow: isPrimary ? "0 1px 2px rgba(0, 0, 0, 0.05)" : "none",
+      }}
+      onMouseEnter={(e) => {
+        if (isPrimary) {
+          e.currentTarget.style.background = "#1E40AF";
+          e.currentTarget.style.boxShadow = "0 2px 4px rgba(37, 99, 235, 0.2)";
+          e.currentTarget.style.transform = "translateY(-1px)";
+        } else {
+          e.currentTarget.style.background = "var(--secondary)";
+          e.currentTarget.style.borderColor = "var(--primary)";
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (isPrimary) {
+          e.currentTarget.style.background = "var(--primary)";
+          e.currentTarget.style.boxShadow = "0 1px 2px rgba(0, 0, 0, 0.05)";
+          e.currentTarget.style.transform = "translateY(0)";
+        } else {
+          e.currentTarget.style.background = "transparent";
+          e.currentTarget.style.borderColor = "var(--border)";
+        }
       }}
       aria-label={collapsed ? text : undefined}
     >

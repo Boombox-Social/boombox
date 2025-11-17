@@ -1,22 +1,13 @@
-// File Structure: src/app/components/client/EditableField.tsx - Editable text field component for client information
 "use client";
-import React from "react";
-
-const colors = {
-  bg: "#181A20",
-  text: "#F1F5F9",
-  muted: "#94A3B8",
-  border: "#2D3142",
-};
+import React, { useState } from "react";
 
 interface EditableFieldProps {
   label: string;
   value: string;
-  fallback?: string | null; // FIXED: Allow null values
+  fallback?: string | null;
   editing: boolean;
   onChange: (value: string) => void;
   multiline?: boolean;
-  gridColumn?: string;
 }
 
 export function EditableField({
@@ -26,75 +17,70 @@ export function EditableField({
   editing,
   onChange,
   multiline = false,
-  gridColumn,
 }: EditableFieldProps) {
-  // FIXED: Handle null values properly
-  const displayValue = value || fallback || "";
+  // FIXED: Handle undefined/null values properly
+  const safeValue = value ?? fallback ?? "";
+  const [localValue, setLocalValue] = useState<string>(safeValue);
 
-  const fieldStyle = {
-    gridColumn: gridColumn || "auto",
+  // Update localValue when value prop changes
+  React.useEffect(() => {
+    const updatedValue = value ?? fallback ?? "";
+    setLocalValue(updatedValue);
+  }, [value, fallback]);
+
+  const handleChange = (newValue: string) => {
+    setLocalValue(newValue);
+    onChange(newValue);
   };
 
-  const inputStyle = {
-    width: "100%",
-    background: colors.bg,
-    color: colors.text,
-    border: `1px solid ${colors.border}`,
-    borderRadius: 6,
-    padding: "8px 12px",
-    fontSize: 14,
-    minHeight: multiline ? "60px" : "auto",
-    resize: multiline ? ("vertical" as const) : ("none" as const),
-    outline: "none",
-  };
+  const InputComponent = multiline ? "textarea" : "input";
 
   return (
-    <div style={fieldStyle}>
-      <div
-        style={{
-          fontWeight: 700,
-          marginBottom: 6,
-          color: colors.text,
-          fontSize: 14,
-        }}
+    <div 
+      className="p-4 rounded-md transition-all duration-200"
+      style={{
+        background: "var(--background)",
+        border: "1px solid var(--border)",
+      }}
+    >
+      <label 
+        className="block text-xs font-semibold uppercase tracking-wide mb-3"
+        style={{ color: "var(--muted)" }}
       >
         {label}
-      </div>
+      </label>
 
       {editing ? (
-        multiline ? (
-          <textarea
-            style={inputStyle}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={`Enter ${label.toLowerCase()}`}
-          />
-        ) : (
-          <input
-            style={inputStyle}
-            type="text"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={`Enter ${label.toLowerCase()}`}
-          />
-        )
-      ) : (
-        <div
+        <InputComponent
+          value={localValue}
+          onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => 
+            handleChange(e.target.value)
+          }
+          rows={multiline ? 4 : undefined}
+          className={`w-full px-3 py-2 rounded-md text-sm outline-none transition-all ${
+            multiline ? "resize-none" : ""
+          }`}
           style={{
-            color: displayValue ? colors.text : colors.muted,
-            fontSize: 14,
-            fontStyle: displayValue ? "normal" : "italic",
-            padding: "8px 12px",
-            minHeight: multiline ? "60px" : "auto",
-            border: `1px solid transparent`,
-            borderRadius: 6,
-            whiteSpace: "normal",
-            wordBreak: "break-word",
-            overflowWrap: "break-word",
+            border: "2px solid var(--border)",
+            background: "var(--card)",
+            color: "var(--card-foreground)",
           }}
+          onFocus={(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+            e.currentTarget.style.borderColor = "var(--primary)";
+            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.1)";
+          }}
+          onBlur={(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+            e.currentTarget.style.borderColor = "var(--border)";
+            e.currentTarget.style.boxShadow = "none";
+          }}
+        />
+      ) : (
+        <p 
+          className="text-sm"
+          style={{ color: localValue ? "var(--card-foreground)" : "var(--muted)" }}
         >
-          {displayValue || `No ${label.toLowerCase()} provided`}
-        </div>
+          {localValue || `No ${label.toLowerCase()} set`}
+        </p>
       )}
     </div>
   );

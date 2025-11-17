@@ -1,4 +1,3 @@
-// File Structure: src/app/components/modals/AddClientModal.tsx - Multi-step modal with improved type safety
 "use client";
 import React, { useState } from "react";
 import {
@@ -47,7 +46,6 @@ export function AddClientModal({
     },
   ];
 
-  // Check if current user can assign SMMs (only ADMIN and SUPER_ADMIN)
   const canAssignSMMs =
     authState.user?.role === "ADMIN" || authState.user?.role === "SUPER_ADMIN";
 
@@ -65,7 +63,6 @@ export function AddClientModal({
     return Object.keys(newErrors).length === 0;
   };
 
-  // Helper function to safely convert form fields to arrays
   const safeStringToArray = (
     value: string | string[] | undefined
   ): string[] => {
@@ -81,7 +78,6 @@ export function AddClientModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // If not on the last step, just go to next step
     if (currentStep < steps.length - 1) {
       if (validateStep(currentStep)) {
         setCurrentStep((prev) => prev + 1);
@@ -89,14 +85,12 @@ export function AddClientModal({
       return;
     }
 
-    // Final step - validate and submit
     if (!validateStep(currentStep)) return;
 
     setIsLoading(true);
     setErrors({});
 
     try {
-      // Transform form data for API - ensure all array fields are arrays
       const clientData: NewClientForm = {
         ...formData,
         logo: logoPreview || null,
@@ -108,18 +102,15 @@ export function AddClientModal({
         brandAssets: Array.isArray(formData.brandAssets)
           ? formData.brandAssets
           : [],
-        // UPDATED: Include assignedUserIds
         assignedUserIds: assignedUserIds,
       };
 
-      // Call the onSubmit callback which will use useClientManagement's addClient
       await onSubmit(clientData);
 
-      // Reset form and close modal
       setFormData(INITIAL_FORM_STATE);
       setLogoPreview("");
       setCurrentStep(0);
-      setAssignedUserIds([]); // Reset assigned users
+      setAssignedUserIds([]);
       setErrors({});
       onClose();
     } catch (error) {
@@ -134,7 +125,6 @@ export function AddClientModal({
 
   const updateFormField = (field: keyof NewClientForm) => (value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -148,7 +138,7 @@ export function AddClientModal({
     setFormData(INITIAL_FORM_STATE);
     setLogoPreview("");
     setCurrentStep(0);
-    setAssignedUserIds([]); // Reset assigned users
+    setAssignedUserIds([]);
     setErrors({});
     onClose();
   };
@@ -156,7 +146,6 @@ export function AddClientModal({
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file size (5MB max)
       if (file.size > 5 * 1024 * 1024) {
         setErrors((prev) => ({
           ...prev,
@@ -187,20 +176,39 @@ export function AddClientModal({
     <Modal isOpen={isOpen} onClose={handleClose} maxWidth="60em">
       <div className="w-full max-w-4xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#2D3142]">
+        <div 
+          className="flex items-center justify-between mb-6 pb-4 border-b"
+          style={{ borderColor: "var(--border)" }}
+        >
           <div>
-            <h2 className="text-2xl font-bold text-[#F1F5F9] mb-1">
+            <h2 
+              className="text-2xl font-bold mb-1 tracking-tight"
+              style={{ color: "var(--card-foreground)" }}
+            >
               Add New Client
             </h2>
-            <p className="text-[#94A3B8] text-sm">
+            <p 
+              className="text-sm"
+              style={{ color: "var(--muted)" }}
+            >
               Create a new client profile for your portfolio
             </p>
           </div>
           <button
             onClick={handleClose}
-            className="p-2 hover:bg-[#2D3142] rounded-lg transition-colors"
+            className="p-2 rounded-lg transition-all duration-200"
+            style={{ background: "transparent" }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "var(--secondary)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+            }}
           >
-            <XMarkIcon className="w-6 h-6 text-[#94A3B8]" />
+            <XMarkIcon 
+              className="w-6 h-6" 
+              style={{ color: "var(--muted)" }}
+            />
           </button>
         </div>
 
@@ -210,30 +218,37 @@ export function AddClientModal({
             <div key={index} className="flex items-center flex-1">
               <div className="flex items-center">
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
-                    index <= currentStep
-                      ? "bg-[#2563eb] text-white"
-                      : "bg-[#2D3142] text-[#94A3B8]"
-                  }`}
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-200"
+                  style={{
+                    background: index <= currentStep ? "var(--primary)" : "var(--secondary)",
+                    color: index <= currentStep ? "var(--primary-foreground)" : "var(--muted)",
+                  }}
                 >
                   {index + 1}
                 </div>
                 <div className="ml-3 hidden sm:block">
                   <p
-                    className={`text-sm font-medium ${
-                      index <= currentStep ? "text-[#F1F5F9]" : "text-[#94A3B8]"
-                    }`}
+                    className="text-sm font-medium"
+                    style={{ 
+                      color: index <= currentStep ? "var(--card-foreground)" : "var(--muted)" 
+                    }}
                   >
                     {step.title}
                   </p>
-                  <p className="text-xs text-[#94A3B8]">{step.description}</p>
+                  <p 
+                    className="text-xs"
+                    style={{ color: "var(--muted)" }}
+                  >
+                    {step.description}
+                  </p>
                 </div>
               </div>
               {index < steps.length - 1 && (
                 <div
-                  className={`flex-1 h-0.5 mx-4 transition-colors ${
-                    index < currentStep ? "bg-[#2563eb]" : "bg-[#2D3142]"
-                  }`}
+                  className="flex-1 h-0.5 mx-4 transition-all duration-200"
+                  style={{
+                    background: index < currentStep ? "var(--primary)" : "var(--border)",
+                  }}
                 />
               )}
             </div>
@@ -242,8 +257,19 @@ export function AddClientModal({
 
         {/* Error Display */}
         {errors.submit && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-            <p className="text-red-400 text-sm">{errors.submit}</p>
+          <div 
+            className="mb-6 p-4 rounded-lg"
+            style={{
+              background: "rgba(239, 68, 68, 0.1)",
+              border: "1px solid rgba(239, 68, 68, 0.3)",
+            }}
+          >
+            <p 
+              className="text-sm"
+              style={{ color: "var(--danger)" }}
+            >
+              {errors.submit}
+            </p>
           </div>
         )}
 
@@ -266,7 +292,6 @@ export function AddClientModal({
                 errors={errors}
               />
 
-              {/* NEW: SMM Assignment Section - Only for ADMIN/SUPER_ADMIN */}
               {canAssignSMMs && (
                 <AssignmentSection
                   assignedUserIds={assignedUserIds}
@@ -303,16 +328,30 @@ export function AddClientModal({
           )}
 
           {/* Navigation */}
-          <div className="flex items-center justify-between pt-6 border-t border-[#2D3142]">
+          <div 
+            className="flex items-center justify-between pt-6 border-t"
+            style={{ borderColor: "var(--border)" }}
+          >
             <button
               type="button"
               onClick={prevStep}
               disabled={currentStep === 0}
-              className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                currentStep === 0
-                  ? "bg-[#2D3142] text-[#94A3B8] cursor-not-allowed"
-                  : "bg-[#2D3142] text-[#F1F5F9] hover:bg-[#374151]"
-              }`}
+              className="px-6 py-2 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                background: "var(--secondary)",
+                color: "var(--card-foreground)",
+                border: "1px solid var(--border)",
+              }}
+              onMouseEnter={(e) => {
+                if (currentStep !== 0) {
+                  e.currentTarget.style.background = "var(--background)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (currentStep !== 0) {
+                  e.currentTarget.style.background = "var(--secondary)";
+                }
+              }}
             >
               Previous
             </button>
@@ -321,7 +360,18 @@ export function AddClientModal({
               <button
                 type="button"
                 onClick={handleClose}
-                className="px-6 py-2 bg-[#2D3142] text-[#F1F5F9] rounded-lg font-medium hover:bg-[#374151] transition-colors"
+                className="px-6 py-2 rounded-lg font-medium transition-all duration-200"
+                style={{
+                  background: "var(--secondary)",
+                  color: "var(--card-foreground)",
+                  border: "1px solid var(--border)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "var(--background)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "var(--secondary)";
+                }}
               >
                 Cancel
               </button>
@@ -329,11 +379,29 @@ export function AddClientModal({
               <button
                 type="submit"
                 disabled={isLoading}
-                className="px-6 py-2 bg-[#2563eb] text-white rounded-lg font-medium hover:bg-[#1E40AF] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
+                className="px-6 py-2 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center space-x-2"
+                style={{
+                  background: "var(--primary)",
+                  color: "var(--primary-foreground)",
+                }}
+                onMouseEnter={(e) => {
+                  if (!isLoading) {
+                    e.currentTarget.style.background = "#1E40AF";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "var(--primary)";
+                }}
               >
                 {isLoading ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <div 
+                      className="w-4 h-4 rounded-full animate-spin"
+                      style={{
+                        border: "2px solid rgba(255, 255, 255, 0.3)",
+                        borderTopColor: "#ffffff",
+                      }}
+                    />
                     <span>Creating...</span>
                   </>
                 ) : currentStep < steps.length - 1 ? (
@@ -355,7 +423,7 @@ export function AddClientModal({
   );
 }
 
-// NEW: SMM Assignment Section Component
+// SMM Assignment Section Component
 interface AssignmentSectionProps {
   assignedUserIds: number[];
   setAssignedUserIds: React.Dispatch<React.SetStateAction<number[]>>;
@@ -367,13 +435,27 @@ function AssignmentSection({
 }: AssignmentSectionProps) {
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-[#F1F5F9]">SMM Assignment</h3>
-      <p className="text-sm text-[#94A3B8]">
+      <h3 
+        className="text-lg font-semibold"
+        style={{ color: "var(--card-foreground)" }}
+      >
+        SMM Assignment
+      </h3>
+      <p 
+        className="text-sm"
+        style={{ color: "var(--muted)" }}
+      >
         Select which Social Media Managers should be assigned to this client.
         Leave empty to assign later.
       </p>
 
-      <div className="bg-[#23262F] rounded-lg p-4 border border-[#2D3142]">
+      <div 
+        className="rounded-lg p-4"
+        style={{
+          background: "var(--background)",
+          border: "1px solid var(--border)",
+        }}
+      >
         <UserAssignmentSelector
           initialAssignedUserIds={assignedUserIds}
           onChange={setAssignedUserIds}
@@ -384,12 +466,13 @@ function AssignmentSection({
   );
 }
 
-// Section Components with improved styling
+// Section Components
 interface SectionProps {
   formData: NewClientForm;
   updateFormField: (field: keyof NewClientForm) => (value: string) => void;
   errors: Record<string, string>;
 }
+
 interface LogoSectionProps extends SectionProps {
   logoPreview: string;
   onLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -409,7 +492,19 @@ function LogoUploadSection({
       {/* Logo Upload */}
       <div className="flex flex-col items-center space-y-3">
         <div className="relative">
-          <div className="w-20 h-20 rounded-full bg-[#2D3142] border-2 border-dashed border-[#94A3B8] flex items-center justify-center overflow-hidden hover:border-[#2563eb] transition-colors">
+          <div 
+            className="w-20 h-20 rounded-full border-2 border-dashed flex items-center justify-center overflow-hidden transition-all duration-200"
+            style={{
+              background: "var(--background)",
+              borderColor: "var(--border)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "var(--primary)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "var(--border)";
+            }}
+          >
             {logoPreview ? (
               <img
                 src={logoPreview}
@@ -417,14 +512,26 @@ function LogoUploadSection({
                 className="w-full h-full object-cover"
               />
             ) : (
-              <UserIcon className="w-10 h-10 text-[#94A3B8]" />
+              <UserIcon 
+                className="w-10 h-10" 
+                style={{ color: "var(--muted)" }}
+              />
             )}
           </div>
           {logoPreview && (
             <button
               type="button"
               onClick={() => setLogoPreview("")}
-              className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+              className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200"
+              style={{
+                background: "var(--danger)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#DC2626";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "var(--danger)";
+              }}
             >
               <XMarkIcon className="w-4 h-4 text-white" />
             </button>
@@ -440,12 +547,27 @@ function LogoUploadSection({
         />
         <label
           htmlFor="client-logo-upload"
-          className="px-4 py-2 bg-[#2563eb] text-white text-sm font-medium rounded-lg hover:bg-[#1E40AF] cursor-pointer transition-colors"
+          className="px-4 py-2 text-sm font-medium rounded-lg cursor-pointer transition-all duration-200"
+          style={{
+            background: "var(--primary)",
+            color: "var(--primary-foreground)",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "#1E40AF";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "var(--primary)";
+          }}
         >
           Upload Logo
         </label>
         {errors.logo && (
-          <p className="text-red-400 text-xs text-center">{errors.logo}</p>
+          <p 
+            className="text-xs text-center"
+            style={{ color: "var(--danger)" }}
+          >
+            {errors.logo}
+          </p>
         )}
       </div>
 
@@ -481,11 +603,13 @@ function LogoUploadSection({
   );
 }
 
-// Basic Info Section (Step 0 - additional fields)
 function BasicInfoSection({ formData, updateFormField, errors }: SectionProps) {
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-[#F1F5F9]">
+      <h3 
+        className="text-lg font-semibold"
+        style={{ color: "var(--card-foreground)" }}
+      >
         Additional Information
       </h3>
 
@@ -520,7 +644,6 @@ function BasicInfoSection({ formData, updateFormField, errors }: SectionProps) {
   );
 }
 
-// Business Details Section (Step 1)
 function BusinessDetailsSection({
   formData,
   updateFormField,
@@ -528,7 +651,10 @@ function BusinessDetailsSection({
 }: SectionProps) {
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold text-[#F1F5F9]">
+      <h3 
+        className="text-lg font-semibold"
+        style={{ color: "var(--card-foreground)" }}
+      >
         Business Strategy & Goals
       </h3>
 
@@ -572,7 +698,10 @@ function BusinessDetailsSection({
         />
       </div>
 
-      <h4 className="text-md font-semibold text-[#F1F5F9] mt-6">
+      <h4 
+        className="text-md font-semibold mt-6"
+        style={{ color: "var(--card-foreground)" }}
+      >
         Business Goals
       </h4>
 
@@ -611,7 +740,6 @@ function BusinessDetailsSection({
   );
 }
 
-// Competition Section (Step 2)
 function CompetitionSection({
   formData,
   updateFormField,
@@ -619,7 +747,10 @@ function CompetitionSection({
 }: SectionProps) {
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-[#F1F5F9]">
+      <h3 
+        className="text-lg font-semibold"
+        style={{ color: "var(--card-foreground)" }}
+      >
         Competition Analysis
       </h3>
 
@@ -648,11 +779,13 @@ function CompetitionSection({
   );
 }
 
-// Branding Section (Step 2)
 function BrandingSection({ formData, updateFormField, errors }: SectionProps) {
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-[#F1F5F9]">
+      <h3 
+        className="text-lg font-semibold"
+        style={{ color: "var(--card-foreground)" }}
+      >
         Branding & Assets
       </h3>
 

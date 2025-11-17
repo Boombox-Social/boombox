@@ -20,13 +20,26 @@ export function ClientItem({
     <button
       onClick={handleClick}
       className={`
-        w-full flex items-center rounded-lg border-none cursor-pointer transition-all duration-200
-        ${collapsed ? "gap-0 p-2 justify-center" : "gap-3 p-3 justify-start"}
-        ${isSelected 
-          ? "bg-[#2563eb] text-[#F1F5F9]" 
-          : "bg-transparent text-[#94A3B8] hover:bg-[#2D3142] hover:text-[#F1F5F9]"
-        }
+        w-full flex items-center border-none cursor-pointer transition-all duration-200
+        ${collapsed ? "gap-0 p-2 justify-center rounded-lg" : "gap-3 px-3 py-2.5 justify-start rounded-md"}
       `}
+      style={{
+        background: isSelected ? "var(--primary)" : "transparent",
+        color: isSelected ? "var(--primary-foreground)" : "var(--muted)",
+        marginBottom: collapsed ? 8 : 4,
+      }}
+      onMouseEnter={(e) => {
+        if (!isSelected) {
+          e.currentTarget.style.background = "var(--secondary)";
+          e.currentTarget.style.color = "var(--card-foreground)";
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!isSelected) {
+          e.currentTarget.style.background = "transparent";
+          e.currentTarget.style.color = "var(--muted)";
+        }
+      }}
     >
       {/* Client Avatar */}
       <div className="flex-shrink-0 w-8 h-8">
@@ -35,10 +48,23 @@ export function ClientItem({
             src={client.logo}
             alt={`${client.name} logo`}
             className="w-8 h-8 rounded-full object-cover"
+            style={{
+              border: isSelected ? "2px solid var(--primary-foreground)" : "none",
+            }}
           />
         ) : (
-          <div className="w-8 h-8 rounded-full bg-[#2563eb] flex items-center justify-center">
-            <UserIcon className="w-4 h-4 text-[#F1F5F9]" />
+          <div 
+            className="w-8 h-8 rounded-full flex items-center justify-center"
+            style={{
+              background: isSelected ? "rgba(255, 255, 255, 0.2)" : "var(--primary)",
+            }}
+          >
+            <UserIcon 
+              className="w-4 h-4" 
+              style={{ 
+                color: isSelected ? "var(--primary-foreground)" : "#ffffff" 
+              }} 
+            />
           </div>
         )}
       </div>
