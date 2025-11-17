@@ -38,13 +38,12 @@ export function ClientInfoModal({ client }: ClientInfoModalProps) {
       smmDriveLink: client?.smmDriveLink ?? "",
       contractDeliverables: client?.contractDeliverables ?? "",
     }),
-    [client] // Add client to dependency array
+    [client]
   );
 
   const [originalFormData, setOriginalFormData] = useState(getInitialFormData);
   const [formData, setFormData] = useState(getInitialFormData);
 
-  // Update form data when client changes - add client to dependency array
   useEffect(() => {
     if (client) {
       const newFormData = getInitialFormData();
@@ -53,7 +52,7 @@ export function ClientInfoModal({ client }: ClientInfoModalProps) {
       setEditing(false);
       setError("");
     }
-  }, [client, getInitialFormData]); // Add client and getInitialFormData
+  }, [client, getInitialFormData]);
 
   const handleSave = useCallback(async () => {
     if (!client?.id) return;
@@ -94,55 +93,90 @@ export function ClientInfoModal({ client }: ClientInfoModalProps) {
   const updateField = useCallback(
     (field: string) => (value: any) => {
       setFormData((prev) => ({ ...prev, [field]: value }));
-      // Clear error when user makes changes
       if (error) setError("");
     },
     [error]
   );
 
   return (
-    <div className="bg-[#23262F] w-full">
+    <div className="w-full relative">
       {/* Header */}
-      <div className="flex items-center justify-end mb-2">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-end mb-6">
+        <div className="flex items-center gap-2">
           {editing ? (
             <>
               <button
-                className="bg-[#ff2929] text-[#F1F5F9] border-none rounded-lg px-4 py-2 text-sm font-semibold flex items-center justify-center transition-colors cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200"
+                style={{
+                  background: "transparent",
+                  color: "var(--card-foreground)",
+                  border: "2px solid var(--border)",
+                }}
                 onClick={handleCancel}
                 disabled={saving}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "var(--secondary)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "transparent";
+                }}
               >
-                <XCircleIcon className="w-4 h-4 text-[#F1F5F9]" /> Cancel
+                <XCircleIcon className="w-4 h-4" />
+                Cancel
               </button>
               <button
-                className={`${
-                  saving ? "bg-[#94A3B8] opacity-70 cursor-not-allowed" : "bg-[#10b981] cursor-pointer"
-                } text-[#F1F5F9] border-none rounded-lg px-4 py-2 text-sm font-semibold flex items-center justify-center transition-colors`}
+                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                  saving ? "opacity-60 cursor-not-allowed" : ""
+                }`}
+                style={{
+                  background: "var(--success)",
+                  color: "#ffffff",
+                }}
                 onClick={handleSave}
                 disabled={saving}
+                onMouseEnter={(e) => {
+                  if (!saving) e.currentTarget.style.background = "#059669";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "var(--success)";
+                }}
               >
                 {saving ? (
                   <>
-                    <span
-                      className="inline-block mr-2 w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
-                      style={{ verticalAlign: "middle" }}
+                    <div 
+                      className="w-4 h-4 rounded-full animate-spin"
+                      style={{
+                        border: "2px solid rgba(255, 255, 255, 0.3)",
+                        borderTopColor: "#ffffff",
+                      }}
                     />
                     Saving...
                   </>
                 ) : (
                   <>
-                    <CheckCircleIcon className="w-4 h-4 text-[#F1F5F9]" />
-                    <span className="ml-1">Save Changes</span>
+                    <CheckCircleIcon className="w-4 h-4" />
+                    Save Changes
                   </>
                 )}
               </button>
             </>
           ) : (
             <button
-              className="bg-[#2563eb] text-[#F1F5F9] border-none rounded-lg px-4 py-2 text-sm font-semibold flex items-center justify-center transition-colors cursor-pointer hover:bg-[#1E40AF]"
+              className="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200"
+              style={{
+                background: "var(--primary)",
+                color: "var(--primary-foreground)",
+              }}
               onClick={() => setEditing(true)}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#1E40AF";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "var(--primary)";
+              }}
             >
-              <PencilSquareIcon className="w-4 h-4 text-[#F1F5F9]" /> Edit Info
+              <PencilSquareIcon className="w-4 h-4" />
+              Edit Info
             </button>
           )}
         </div>
@@ -150,20 +184,36 @@ export function ClientInfoModal({ client }: ClientInfoModalProps) {
 
       {/* Error Display */}
       {error && (
-        <div className="bg-[#ef444420] border border-[#ef444440] rounded-lg p-3 mb-5 text-[#ef4444] text-sm">
-          {error}
+        <div 
+          className="rounded-md p-3 mb-5 text-sm flex items-start gap-2"
+          style={{
+            background: "rgba(239, 68, 68, 0.1)",
+            border: "1px solid rgba(239, 68, 68, 0.3)",
+            color: "var(--danger)",
+          }}
+        >
+          <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+          </svg>
+          <span>{error}</span>
         </div>
       )}
 
       {/* Saving Overlay */}
       {saving && (
-        <div className="absolute inset-0 bg-black bg-opacity-50 rounded-2xl flex items-center justify-center z-10">
+        <div 
+          className="absolute inset-0 rounded-lg flex items-center justify-center z-10"
+          style={{
+            background: "rgba(0, 0, 0, 0.5)",
+            backdropFilter: "blur(4px)",
+          }}
+        >
           <LoadingSpinner size="large" text="Saving changes..." />
         </div>
       )}
 
       {/* Grid Layout */}
-      <div className="grid gap-4 grid-cols-[repeat(auto-fit,minmax(300px,1fr))] w-full">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {/* Basic Info */}
         <EditableField
           label="Industry"
@@ -182,25 +232,27 @@ export function ClientInfoModal({ client }: ClientInfoModalProps) {
         />
 
         {/* Links */}
-        <EditableTagField
-          label="Social Media & Website Links"
-          value={formData.links}
-          fallback={client.links}
-          editing={editing}
-          onChange={updateField("links")}
-          isLink={true}
-          gridColumn="1 / -1"
-        />
+        <div className="md:col-span-2 lg:col-span-3">
+          <EditableTagField
+            label="Social Media & Website Links"
+            value={formData.links}
+            fallback={client.links}
+            editing={editing}
+            onChange={updateField("links")}
+            isLink={true}
+          />
+        </div>
 
         {/* Core Products */}
-        <EditableTagField
-          label="Core Products/Services"
-          value={formData.coreProducts}
-          fallback={client.coreProducts}
-          editing={editing}
-          onChange={updateField("coreProducts")}
-          gridColumn="1 / -1"
-        />
+        <div className="md:col-span-2 lg:col-span-3">
+          <EditableTagField
+            label="Core Products/Services"
+            value={formData.coreProducts}
+            fallback={client.coreProducts}
+            editing={editing}
+            onChange={updateField("coreProducts")}
+          />
+        </div>
 
         {/* Strategy Fields */}
         <EditableField
@@ -220,25 +272,27 @@ export function ClientInfoModal({ client }: ClientInfoModalProps) {
           onChange={updateField("brandEmotion")}
         />
 
-        <EditableField
-          label="Unique Value Proposition"
-          value={formData.uniqueProposition}
-          fallback={client.uniqueProposition}
-          editing={editing}
-          onChange={updateField("uniqueProposition")}
-          multiline
-          gridColumn="1 / -1"
-        />
+        <div className="md:col-span-2 lg:col-span-3">
+          <EditableField
+            label="Unique Value Proposition"
+            value={formData.uniqueProposition}
+            fallback={client.uniqueProposition}
+            editing={editing}
+            onChange={updateField("uniqueProposition")}
+            multiline
+          />
+        </div>
 
-        <EditableField
-          label="Why Choose Us"
-          value={formData.whyChooseUs}
-          fallback={client.whyChooseUs}
-          editing={editing}
-          onChange={updateField("whyChooseUs")}
-          multiline
-          gridColumn="1 / -1"
-        />
+        <div className="md:col-span-2 lg:col-span-3">
+          <EditableField
+            label="Why Choose Us"
+            value={formData.whyChooseUs}
+            fallback={client.whyChooseUs}
+            editing={editing}
+            onChange={updateField("whyChooseUs")}
+            multiline
+          />
+        </div>
 
         {/* Goals */}
         <EditableField
@@ -266,41 +320,46 @@ export function ClientInfoModal({ client }: ClientInfoModalProps) {
         />
 
         {/* Competition */}
-        <EditableTagField
-          label="Direct Competitors"
-          value={formData.competitors}
-          fallback={client.competitors}
-          editing={editing}
-          onChange={updateField("competitors")}
-          gridColumn="1 / -1"
-        />
+        <div className="md:col-span-2 lg:col-span-3">
+          <EditableTagField
+            label="Direct Competitors"
+            value={formData.competitors}
+            fallback={client.competitors}
+            editing={editing}
+            onChange={updateField("competitors")}
+          />
+        </div>
 
-        <EditableTagField
-          label="Indirect Competitors"
-          value={formData.indirectCompetitors}
-          fallback={client.indirectCompetitors}
-          editing={editing}
-          onChange={updateField("indirectCompetitors")}
-          gridColumn="1 / -1"
-        />
+        <div className="md:col-span-2 lg:col-span-3">
+          <EditableTagField
+            label="Indirect Competitors"
+            value={formData.indirectCompetitors}
+            fallback={client.indirectCompetitors}
+            editing={editing}
+            onChange={updateField("indirectCompetitors")}
+          />
+        </div>
 
-        {/* Brand Assets - Updated to pass value and onChange */}
-        <BrandAssetsSection
-          client={client}
-          editing={editing}
-          value={formData.brandAssets}
-          onChange={updateField("brandAssets")}
-        />
+        {/* Brand Assets */}
+        <div className="md:col-span-2 lg:col-span-3">
+          <BrandAssetsSection
+            client={client}
+            editing={editing}
+            value={formData.brandAssets}
+            onChange={updateField("brandAssets")}
+          />
+        </div>
 
-        {/* Fonts - Updated to use EditableTagField for font names */}
-        <EditableTagField
-          label="Fonts Used"
-          value={formData.fontUsed}
-          fallback={client.fontUsed}
-          editing={editing}
-          onChange={updateField("fontUsed")}
-          gridColumn="1 / -1"
-        />
+        {/* Fonts */}
+        <div className="md:col-span-2 lg:col-span-3">
+          <EditableTagField
+            label="Fonts Used"
+            value={formData.fontUsed}
+            fallback={client.fontUsed}
+            editing={editing}
+            onChange={updateField("fontUsed")}
+          />
+        </div>
 
         {/* Additional Fields */}
         <EditableField
@@ -311,25 +370,17 @@ export function ClientInfoModal({ client }: ClientInfoModalProps) {
           onChange={updateField("smmDriveLink")}
         />
 
-        <EditableField
-          label="Contract Deliverables"
-          value={formData.contractDeliverables}
-          fallback={client.contractDeliverables}
-          editing={editing}
-          onChange={updateField("contractDeliverables")}
-          multiline
-          gridColumn="1 / -1"
-        />
+        <div className="md:col-span-2 lg:col-span-3">
+          <EditableField
+            label="Contract Deliverables"
+            value={formData.contractDeliverables}
+            fallback={client.contractDeliverables}
+            editing={editing}
+            onChange={updateField("contractDeliverables")}
+            multiline
+          />
+        </div>
       </div>
-
-      {/* Add spinning animation for loading spinner */}
-      <style>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
-
     </div>
   );
 }

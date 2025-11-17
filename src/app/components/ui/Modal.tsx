@@ -1,7 +1,5 @@
-// components/ui/Modal.tsx
 "use client";
 import React from "react";
-import { COLORS, UI_CONFIG } from "../../constants";
 
 interface ModalProps {
   isOpen: boolean;
@@ -16,54 +14,50 @@ export function Modal({
   onClose,
   children,
   title,
-  maxWidth,
+  maxWidth = "600px",
 }: ModalProps) {
   if (!isOpen) return null;
 
-  // Modal component that displays content in a centered dialog with a backdrop
-  // It includes a close button and an optional title
   return (
     <>
       <style>{`
-        .boombox-scrollbar::-webkit-scrollbar {
-          width: 10px;
+        .modal-scrollbar::-webkit-scrollbar {
+          width: 8px;
           background: transparent;
         }
-        .boombox-scrollbar::-webkit-scrollbar-thumb {
-          background: #2563eb;
-          border-radius: 8px;
-          border: 2px solid #181A20;
-          box-shadow: 0 0 6px 2px rgba(37,99,235,0.25);
-          min-height: 40px;
+        .modal-scrollbar::-webkit-scrollbar-thumb {
+          background: var(--border);
+          border-radius: 4px;
           transition: background 0.2s;
         }
-        .boombox-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #3b82f6;
+        .modal-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: var(--muted);
         }
-        .boombox-scrollbar::-webkit-scrollbar-track {
+        .modal-scrollbar::-webkit-scrollbar-track {
           background: transparent;
+          margin: 8px 0;
         }
-        .boombox-scrollbar {
-          scrollbar-color: #2563eb transparent;
+        .modal-scrollbar {
           scrollbar-width: thin;
+          scrollbar-color: var(--border) transparent;
         }
       `}</style>
       <div
-        className="boombox-scrollbar"
+        className="modal-scrollbar"
         style={{
           position: "fixed",
           top: 0,
           left: 0,
           width: "100vw",
           height: "100vh",
-          background: "rgba(24,26,32,0.65)",
+          background: "rgba(0, 0, 0, 0.6)",
           backdropFilter: "blur(4px)",
           zIndex: 100,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           overflowY: "auto",
-          padding: "4vw 2vw",
+          padding: "20px",
         }}
         onClick={(e) => {
           if (e.target === e.currentTarget) {
@@ -72,20 +66,21 @@ export function Modal({
         }}
       >
         <div
+          className="modal-scrollbar"
           style={{
-            background: COLORS.card,
-            color: COLORS.text,
-            borderRadius: UI_CONFIG.BORDER_RADIUS.LARGE,
-            border: `1.5px solid ${COLORS.border}`,
-            padding: "clamp(18px, 4vw, 36px)",
+            background: "var(--card)",
+            color: "var(--card-foreground)",
+            borderRadius: 12,
+            border: "1px solid var(--border)",
+            padding: "32px",
             width: "100%",
-            maxWidth: maxWidth || UI_CONFIG.MODAL_MAX_WIDTH,
+            maxWidth: maxWidth,
             maxHeight: "90vh",
             overflowY: "auto",
-            boxShadow: "0 8px 40px 0 rgba(0,0,0,0.30)",
+            boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
             display: "flex",
             flexDirection: "column",
-            gap: UI_CONFIG.FORM_GAP,
+            gap: 24,
           }}
         >
           {title && (
@@ -93,30 +88,48 @@ export function Modal({
               style={{
                 display: "flex",
                 justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: UI_CONFIG.SPACING.SM,
+                alignItems: "flex-start",
+                paddingBottom: 16,
+                borderBottom: "1px solid var(--border)",
               }}
             >
               <h2
                 style={{
-                  fontWeight: 800,
+                  fontWeight: 700,
                   fontSize: 24,
                   margin: 0,
-                  color: COLORS.text,
+                  color: "var(--card-foreground)",
                   letterSpacing: "-0.5px",
+                  lineHeight: 1.2,
                 }}
               >
                 {title}
               </h2>
               <button
                 onClick={onClose}
+                className="transition-all duration-200"
                 style={{
-                  background: "none",
+                  background: "transparent",
                   border: "none",
-                  color: COLORS.muted,
-                  fontSize: 24,
+                  color: "var(--muted)",
+                  fontSize: 28,
                   cursor: "pointer",
                   padding: 4,
+                  width: 32,
+                  height: 32,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: 6,
+                  lineHeight: 1,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "var(--secondary)";
+                  e.currentTarget.style.color = "var(--card-foreground)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.color = "var(--muted)";
                 }}
                 aria-label="Close modal"
               >

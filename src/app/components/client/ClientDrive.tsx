@@ -9,8 +9,17 @@ interface ClientDriveProps {
 
 export function ClientDrive({ clientId, smmDriveLink }: ClientDriveProps) {
   return (
-    <div className="bg-[#23262F] rounded-2xl p-6 min-w-0 min-h-0 overflow-auto relative">
-      <div className="font-extrabold text-2xl text-[#F1F5F9] text-center">
+    <div 
+      className="rounded-lg p-6"
+      style={{
+        background: "var(--card)",
+        border: "1px solid var(--border)",
+      }}
+    >
+      <div 
+        className="font-bold text-xl mb-4 text-center tracking-tight"
+        style={{ color: "var(--card-foreground)" }}
+      >
         Client Drive
       </div>
       {clientId && (

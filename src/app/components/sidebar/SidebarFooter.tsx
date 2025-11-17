@@ -24,23 +24,28 @@ export function SidebarFooter({
 
   return (
     <div
-      className={`flex flex-col gap-2 items-center ${
-        collapsed ? "p-2" : "p-5"
+      className={`flex flex-col gap-2 ${
+        collapsed ? "p-2" : "p-4"
       }`}
+      style={{
+        borderTop: "1px solid var(--border)",
+        paddingTop: "12px",
+        paddingBottom: "12px",
+      }}
     >
       <ActionButton
         onClick={onAddClientClick}
         variant="primary"
         collapsed={collapsed}
-        icon={<PlusIcon width={20} />}
-        text="+ ADD CLIENT"
+        icon={<PlusIcon width={18} />}
+        text="Add Client"
       />
       <ActionButton
         onClick={handleSettingsClick}
-        variant={isOnSettings ? "primary" : "secondary"} // Highlight when on settings
+        variant={isOnSettings ? "primary" : "secondary"}
         collapsed={collapsed}
-        icon={<Cog6ToothIcon width={20} />}
-        text="SETTINGS"
+        icon={<Cog6ToothIcon width={18} />}
+        text="Settings"
       />
     </div>
   );
