@@ -35,18 +35,10 @@ export default function DashboardLayout({
       className="flex min-h-screen relative"
       style={{ background: "var(--background)" }}
     >
-      {/* Unified Navbar */}
-      <Navbar
-        onMenuClick={() => setSidebarMobileOpen(true)}
-        showBurger={!sidebarMobileOpen}
-        sidebarCollapsed={sidebarCollapsed}
-      />
-
       {/* SidePanel */}
       <SidePanel
         collapsed={sidebarCollapsed}
         onCollapse={() => {
-          console.log("Toggle sidebar, current state:", sidebarCollapsed);
           setSidebarCollapsed(!sidebarCollapsed);
         }}
         clients={clients}
@@ -55,6 +47,13 @@ export default function DashboardLayout({
         error={error}
         mobileOpen={sidebarMobileOpen}
         setMobileOpen={setSidebarMobileOpen}
+      />
+
+      {/* Navbar */}
+      <Navbar
+        onMenuClick={() => setSidebarMobileOpen(true)}
+        showBurger={!sidebarMobileOpen}
+        sidebarCollapsed={sidebarCollapsed}
       />
 
       {/* Main content */}
