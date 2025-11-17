@@ -1,23 +1,14 @@
-// File Structure: src/app/components/client/EditableTagField.tsx - Editable tag field component for arrays
 "use client";
 import React, { useState } from "react";
-
-const colors = {
-  bg: "#181A20",
-  text: "#F1F5F9",
-  muted: "#94A3B8",
-  border: "#2D3142",
-  accent: "#2563eb",
-};
+import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 
 interface EditableTagFieldProps {
   label: string;
   value: string[];
-  fallback?: string[] | null; // FIXED: Allow null values
+  fallback?: string[] | null;
   editing: boolean;
   onChange: (value: string[]) => void;
   isLink?: boolean;
-  gridColumn?: string;
 }
 
 export function EditableTagField({
@@ -27,190 +18,166 @@ export function EditableTagField({
   editing,
   onChange,
   isLink = false,
-  gridColumn,
 }: EditableTagFieldProps) {
-  const [inputValue, setInputValue] = useState("");
-  // FIXED: Handle null values properly
-  const displayValue = value.length > 0 ? value : fallback || [];
+  // FIXED: Handle undefined/null values properly
+  const safeValue = Array.isArray(value) ? value : (Array.isArray(fallback) ? fallback : []);
+  const [localValues, setLocalValues] = useState<string[]>(safeValue);
+  const [newTag, setNewTag] = useState("");
 
-  const addItem = () => {
-    if (inputValue.trim()) {
-      const newItems = inputValue
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-      onChange([...value, ...newItems]);
-      setInputValue("");
+  // Update localValues when value prop changes
+  React.useEffect(() => {
+    const updatedValue = Array.isArray(value) ? value : (Array.isArray(fallback) ? fallback : []);
+    setLocalValues(updatedValue);
+  }, [value, fallback]);
+
+  const handleAddTag = () => {
+    if (newTag.trim() && !localValues.includes(newTag.trim())) {
+      const updatedValues = [...localValues, newTag.trim()];
+      setLocalValues(updatedValues);
+      onChange(updatedValues);
+      setNewTag("");
     }
   };
 
-  const removeItem = (index: number) => {
-    onChange(value.filter((_, i) => i !== index));
+  const handleRemoveTag = (tagToRemove: string) => {
+    const updatedValues = localValues.filter((tag) => tag !== tagToRemove);
+    setLocalValues(updatedValues);
+    onChange(updatedValues);
   };
 
-  const fieldStyle = {
-    gridColumn: gridColumn || "auto",
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddTag();
+    }
   };
 
   return (
-    <div style={fieldStyle}>
-      <div
-        style={{
-          fontWeight: 700,
-          marginBottom: 6,
-          color: colors.text,
-          fontSize: 14,
-        }}
+    <div 
+      className="p-4 rounded-md transition-all duration-200"
+      style={{
+        background: "var(--background)",
+        border: "1px solid var(--border)",
+      }}
+    >
+      <label 
+        className="block text-xs font-semibold uppercase tracking-wide mb-3"
+        style={{ color: "var(--muted)" }}
       >
         {label}
-      </div>
+      </label>
 
       {editing ? (
-        <div>
-          {/* Current Items */}
-          {value.length > 0 && (
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 8,
-                marginBottom: 12,
-              }}
-            >
-              {value.map((item, index) => (
-                <div
-                  key={index}
-                  style={{
-                    background: colors.accent,
-                    color: colors.text,
-                    padding: "4px 8px",
-                    borderRadius: 4,
-                    fontSize: 12,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                  }}
-                >
-                  {isLink ? (
-                    <a
-                      href={item}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        color: colors.text,
-                        textDecoration: "none",
-                      }}
-                    >
-                      {item}
-                    </a>
-                  ) : (
-                    item
-                  )}
-                  <button
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: colors.text,
-                      cursor: "pointer",
-                      fontSize: 12,
-                      padding: 0,
-                    }}
-                    onClick={() => removeItem(index)}
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Add New Item */}
-          <div style={{ display: "flex", gap: 8 }}>
+        <div className="space-y-3">
+          <div className="flex gap-2">
             <input
-              style={{
-                flex: 1,
-                background: colors.bg,
-                color: colors.text,
-                border: `1px solid ${colors.border}`,
-                borderRadius: 6,
-                padding: "8px 12px",
-                fontSize: 14,
-                outline: "none",
-              }}
               type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && addItem()}
-              placeholder={`Add ${label.toLowerCase()} (comma-separated)`}
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder={`Add ${isLink ? "link" : "tag"}...`}
+              className="flex-1 px-3 py-2 rounded-md text-sm outline-none transition-all"
+              style={{
+                border: "2px solid var(--border)",
+                background: "var(--card)",
+                color: "var(--card-foreground)",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "var(--primary)";
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.1)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "var(--border)";
+                e.currentTarget.style.boxShadow = "none";
+              }}
             />
             <button
+              onClick={handleAddTag}
+              type="button"
+              className="px-3 py-2 rounded-md transition-all duration-200"
               style={{
-                background: colors.accent,
-                color: colors.text,
-                border: "none",
-                borderRadius: 6,
-                padding: "8px 16px",
-                fontSize: 14,
-                cursor: "pointer",
+                background: "var(--primary)",
+                color: "var(--primary-foreground)",
               }}
-              onClick={addItem}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#1E40AF";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "var(--primary)";
+              }}
             >
-              Add
+              <PlusIcon className="w-4 h-4" />
             </button>
           </div>
-        </div>
-      ) : (
-        <div
-          style={{
-            minHeight: 40,
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 8,
-            alignItems: "flex-start",
-            padding: "8px 12px",
-            border: `1px solid transparent`,
-            borderRadius: 6,
-          }}
-        >
-          {displayValue.length > 0 ? (
-            displayValue.map((item, index) => (
-              <div
+
+          <div className="flex flex-wrap gap-2">
+            {localValues.map((tag, index) => (
+              <span
                 key={index}
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium"
                 style={{
-                  background: colors.border,
-                  color: colors.text,
-                  padding: "4px 8px",
-                  borderRadius: 4,
-                  fontSize: 12,
+                  background: "var(--secondary)",
+                  color: "var(--card-foreground)",
                 }}
               >
                 {isLink ? (
                   <a
-                    href={item}
+                    href={tag}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{
-                      color: colors.accent,
-                      textDecoration: "none",
-                    }}
+                    className="hover:underline"
+                    style={{ color: "var(--primary)" }}
                   >
-                    {item}
+                    {tag}
                   </a>
                 ) : (
-                  item
+                  tag
                 )}
-              </div>
+                <button
+                  onClick={() => handleRemoveTag(tag)}
+                  type="button"
+                  className="hover:opacity-70 transition-opacity"
+                >
+                  <XMarkIcon className="w-3.5 h-3.5" />
+                </button>
+              </span>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {localValues.length > 0 ? (
+            localValues.map((tag, index) => (
+              <span
+                key={index}
+                className="inline-block px-3 py-1.5 rounded-md text-sm font-medium"
+                style={{
+                  background: "var(--secondary)",
+                  color: "var(--card-foreground)",
+                }}
+              >
+                {isLink ? (
+                  <a
+                    href={tag}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:underline"
+                    style={{ color: "var(--primary)" }}
+                  >
+                    {tag}
+                  </a>
+                ) : (
+                  tag
+                )}
+              </span>
             ))
           ) : (
-            <div
-              style={{
-                color: colors.muted,
-                fontStyle: "italic",
-                fontSize: 14,
-              }}
+            <span 
+              className="text-sm italic"
+              style={{ color: "var(--muted)" }}
             >
-              No {label.toLowerCase()} provided
-            </div>
+              No {label.toLowerCase()} added
+            </span>
           )}
         </div>
       )}

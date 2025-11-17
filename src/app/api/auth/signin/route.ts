@@ -1,150 +1,112 @@
-// api/auth/signin/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { AuthUtils } from '../../../utils/auth.utils';
-import { DatabaseUtils } from '../../../utils/db.utils';
+import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { prisma } from "../../../lib/prisma";
+
+const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret";
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "fallback-refresh-secret";
+
+// Extended token expiration times
+const ACCESS_TOKEN_EXPIRY = "7d"; // 7 days instead of 15 minutes
+const REFRESH_TOKEN_EXPIRY = "30d"; // 30 days instead of 7 days
 
 export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json();
-    console.log('🔐 Sign in attempt for:', email);
 
-    // Validate input
     if (!email || !password) {
-      console.log('❌ Missing email or password');
       return NextResponse.json(
-        { 
-          success: false,
-          error: 'Email and password are required' 
-        },
+        { error: "Email and password are required" },
         { status: 400 }
       );
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      console.log('❌ Invalid email format:', email);
-      return NextResponse.json(
-        { 
-          success: false,
-          error: 'Invalid email format' 
-        },
-        { status: 400 }
-      );
-    }
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
 
-    // Check if user exists first
-    console.log('🔍 Checking if user exists:', email);
-    const user = await DatabaseUtils.findUserByEmail(email);
     if (!user) {
-      console.log('❌ User not found:', email);
       return NextResponse.json(
-        { 
-          success: false,
-          error: 'Invalid email or password' 
-        },
+        { error: "Invalid credentials" },
         { status: 401 }
       );
     }
 
-    console.log('✅ User found:', { 
-      id: user.id, 
-      email: user.email, 
-      role: user.role, 
-      isActive: user.isActive 
-    });
-
-    if (!user.isActive) {
-      console.log('❌ User is inactive:', email);
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
       return NextResponse.json(
-        { 
-          success: false,
-          error: 'Account is inactive. Please contact an administrator.' 
-        },
+        { error: "Invalid credentials" },
+        { status: 401 }
+      );
+    }
+
+    // Check if user is active
+    if (!user.isActive) {
+      return NextResponse.json(
+        { error: "Account is inactive. Please contact an administrator." },
         { status: 403 }
       );
     }
 
-    // Authenticate user using the database
-    console.log('🔍 Attempting to authenticate:', email);
-    const authResult = await AuthUtils.authenticateUser(email, password);
-    console.log('✅ Authentication successful for:', email);
+    // Update last login
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLogin: new Date() },
+    });
 
-    // Create response with CONSISTENT field names that match frontend expectations
+    // Generate tokens
+    const accessToken = jwt.sign(
+      { userId: user.id, email: user.email, role: user.role },
+      JWT_SECRET,
+      { expiresIn: ACCESS_TOKEN_EXPIRY }
+    );
+
+    const refreshToken = jwt.sign(
+      { userId: user.id, email: user.email },
+      JWT_REFRESH_SECRET,
+      { expiresIn: REFRESH_TOKEN_EXPIRY }
+    );
+
+    // Create response
     const response = NextResponse.json({
-      success: true, // Frontend expects this
-      message: 'Sign in successful',
-      user: authResult.user,
-      accessToken: authResult.accessToken, // Frontend expects accessToken
-      refreshToken: authResult.refreshToken, // Frontend expects refreshToken
-      // Remove the old 'token' field to avoid confusion
-    });
-
-    // Set HTTP-only cookies for security
-    response.cookies.set('auth-token', authResult.accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 60 * 60, // 1 hour
-      path: '/',
-    });
-
-    response.cookies.set('refresh-token', authResult.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: '/',
-    });
-
-    console.log('✅ Sign in successful for:', email);
-    return response;
-
-  } catch (error) {
-    console.error('❌ Signin error:', error);
-    
-    // Handle specific error types
-    if (error instanceof Error) {
-      console.log('Error message:', error.message);
-      
-      if (error.message === 'Invalid credentials') {
-        return NextResponse.json(
-          { 
-            success: false,
-            error: 'Invalid email or password' 
-          },
-          { status: 401 }
-        );
-      }
-      
-      if (error.message.includes('inactive')) {
-        return NextResponse.json(
-          { 
-            success: false,
-            error: 'Account is inactive. Please contact an administrator.' 
-          },
-          { status: 403 }
-        );
-      }
-
-      // JWT errors
-      if (error.message.includes('JWT') || error.message.includes('secret')) {
-        console.log('❌ JWT configuration error - check your JWT_SECRET');
-        return NextResponse.json(
-          { 
-            success: false,
-            error: 'Authentication configuration error' 
-          },
-          { status: 500 }
-        );
-      }
-    }
-    
-    return NextResponse.json(
-      { 
-        success: false,
-        error: 'Authentication failed. Please try again.' 
+      message: "Login successful",
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        avatar: user.avatar,
+        isActive: user.isActive,
+        lastLogin: user.lastLogin,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
       },
+    });
+
+    // Set HTTP-only cookies with extended duration
+    response.cookies.set("auth-token", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+      path: "/",
+    });
+
+    response.cookies.set("refresh-token", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 30 * 24 * 60 * 60, // 30 days in seconds
+      path: "/",
+    });
+
+    return response;
+  } catch (error) {
+    console.error("Sign in error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

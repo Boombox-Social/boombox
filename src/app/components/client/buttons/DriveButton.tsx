@@ -12,12 +12,14 @@ export function DriveButton({ clientId, initialDriveLink }: DriveButtonProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Update local state when prop changes
   useEffect(() => {
-    setDriveLink(initialDriveLink || "");
+    const link = initialDriveLink || "";
+    setDriveLink(link);
+    if (!link) {
+      setEditing(true);
+    }
   }, [initialDriveLink]);
 
-  // Save the link
   const handleSave = async () => {
     setSaving(true);
     setError(null);
@@ -25,7 +27,7 @@ export function DriveButton({ clientId, initialDriveLink }: DriveButtonProps) {
       const res = await fetch(`/api/clients/${clientId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ smmDriveLink: driveLink }),
+        body: JSON.stringify({ smmDriveLink: driveLink.trim() }),
       });
       if (!res.ok) throw new Error("Failed to save link");
       setEditing(false);
@@ -37,54 +39,141 @@ export function DriveButton({ clientId, initialDriveLink }: DriveButtonProps) {
 
   if (!clientId) return null;
 
-  // Show input if editing or no link
-  if (!driveLink || editing) {
-    return (
-      <div className="flex justify-center gap-2 mt-5">
-        <input
-          type="url"
-          value={driveLink}
-          onChange={(e) => setDriveLink(e.target.value)}
-          className="px-5 py-2 rounded-lg border border-[#2D3142] text-base w-full max-w-full min-w-[80px] focus:outline-none"
-          autoFocus
-          placeholder="Enter Google Drive link"
-        />
-        <button
-          className="bg-[#2563eb] text-[#F1F5F9] border border-[#2D3142] rounded-lg px-2 py-2 text-lg cursor-pointer transition-colors flex items-center min-w-[40px] justify-center"
-          onClick={handleSave}
-          title="Save Drive Link"
-          disabled={saving}
-        >
-          {saving ? (
-            <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          ) : (
-            <CheckCircleIcon className="w-4 h-4 text-[#F1F5F9]" />
-          )}
-        </button>
-        {error && <span className="text-red-500 text-xs ml-2">{error}</span>}
-      </div>
-    );
-  }
-
-  // Show link with edit button
   return (
-    <div className="flex justify-center gap-2 mt-5">
-      <a
-        href={driveLink}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="bg-[#2563eb] text-[#F1F5F9] border-none rounded-lg px-5 py-2 cursor-pointer transition-colors w-full max-w-full min-w-[80px] block hover:bg-[#2E7D32] focus:outline-none text-center"
-        style={{ textDecoration: "none" }}
-      >
-        Client Drive Link
-      </a>
-      <button
-        className="bg-[#2D3142] text-[#F1F5F9] rounded-lg px-2 py-2 cursor-pointer transition-colors min-w-[40px] flex items-center justify-center hover:bg-[#3c4152] focus:outline-none"
-        onClick={() => setEditing(true)}
-        title="Edit Drive Link"
-      >
-        <PencilSquareIcon className="w-4 h-4 text-[#2563eb]" />
-      </button>
+    <div className="flex flex-col gap-2">
+      {editing ? (
+        <>
+          <div className="flex gap-2">
+            <input
+              type="url"
+              value={driveLink}
+              onChange={(e) => setDriveLink(e.target.value)}
+              className="flex-1 px-3 py-2 rounded-md text-sm outline-none transition-all"
+              style={{
+                border: "2px solid var(--border)",
+                background: "var(--background)",
+                color: "var(--card-foreground)",
+              }}
+              placeholder="Enter Google Drive link"
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "var(--primary)";
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.1)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "var(--border)";
+                e.currentTarget.style.boxShadow = "none";
+              }}
+              onKeyPress={(e) => {
+                if (e.key === "Enter" && driveLink.trim()) {
+                  handleSave();
+                }
+              }}
+            />
+            <button
+              className="px-3 py-2 rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                background: "var(--success)",
+                color: "#ffffff",
+              }}
+              onClick={handleSave}
+              title="Save Drive Link"
+              disabled={saving}
+              onMouseEnter={(e) => {
+                if (!saving) {
+                  e.currentTarget.style.background = "#059669";
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "var(--success)";
+              }}
+            >
+              {saving ? (
+                <div 
+                  className="w-4 h-4 rounded-full animate-spin"
+                  style={{
+                    border: "2px solid rgba(255, 255, 255, 0.3)",
+                    borderTopColor: "#ffffff",
+                  }}
+                />
+              ) : (
+                <CheckCircleIcon className="w-4 h-4" />
+              )}
+            </button>
+          </div>
+          {driveLink && (
+            <button
+              onClick={() => setEditing(false)}
+              className="text-xs transition-colors self-start"
+              style={{ color: "var(--muted)" }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "var(--card-foreground)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "var(--muted)";
+              }}
+            >
+              Cancel
+            </button>
+          )}
+        </>
+      ) : (
+        <div className="flex gap-2">
+          <button
+            className="flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200"
+            style={{
+              background: "var(--primary)",
+              color: "var(--primary-foreground)",
+            }}
+            onClick={() => window.open(driveLink, "_blank")}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "#1E40AF";
+              e.currentTarget.style.transform = "translateY(-1px)";
+              e.currentTarget.style.boxShadow = "0 4px 12px rgba(37, 99, 235, 0.3)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "var(--primary)";
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "none";
+            }}
+          >
+            Client Drive Link
+          </button>
+          <button
+            className="px-3 py-2 rounded-md transition-all duration-200"
+            style={{
+              background: "var(--secondary)",
+              border: "1px solid var(--border)",
+            }}
+            onClick={() => setEditing(true)}
+            title="Edit Drive Link"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "var(--background)";
+              e.currentTarget.style.borderColor = "var(--primary)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "var(--secondary)";
+              e.currentTarget.style.borderColor = "var(--border)";
+            }}
+          >
+            <PencilSquareIcon 
+              className="w-4 h-4" 
+              style={{ color: "var(--primary)" }}
+            />
+          </button>
+        </div>
+      )}
+      {error && (
+        <div 
+          className="text-xs p-2 rounded-md"
+          style={{
+            color: "var(--danger)",
+            background: "rgba(239, 68, 68, 0.1)",
+            border: "1px solid rgba(239, 68, 68, 0.3)",
+          }}
+        >
+          {error}
+        </div>
+      )}
     </div>
   );
 }
