@@ -1,7 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "./hooks/useAuth";
+import { useAuthContext as useAuth } from "./contexts/AuthContext";
 
 export default function RootPage() {
   const router = useRouter();

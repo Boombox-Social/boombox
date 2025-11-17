@@ -1,71 +1,82 @@
-// api/auth/me/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { AuthUtils } from '../../../utils/auth.utils';
-import { DatabaseUtils } from '../../../utils/db.utils';
+import { NextRequest, NextResponse } from "next/server";
+import jwt from "jsonwebtoken";
+import { prisma } from "../../../lib/prisma";
+
+const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret";
 
 export async function GET(request: NextRequest) {
   try {
-    // Try multiple ways to get the token to handle different scenarios
-    let token = request.cookies.get('auth-token')?.value;
-    
-    // If no cookie, try Authorization header (for localStorage-based auth)
-    if (!token) {
-      const authHeader = request.headers.get('authorization');
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        token = authHeader.substring(7);
-      }
-    }
+    const token = request.cookies.get("auth-token")?.value;
 
     if (!token) {
       return NextResponse.json(
-        { 
-          success: false,
-          error: 'Authentication required' 
-        },
+        { error: "Not authenticated" },
         { status: 401 }
       );
     }
 
     // Verify token
-    const payload = AuthUtils.parseJWT(token);
-    if (!payload) {
-      return NextResponse.json(
-        { 
-          success: false,
-          error: 'Invalid token' 
-        },
-        { status: 401 }
-      );
-    }
+    const decoded = jwt.verify(token, JWT_SECRET) as {
+      userId: number;
+      email: string;
+      role: string;
+    };
 
-    // Get user data
-    const user = await DatabaseUtils.findUserById(payload.userId);
-    if (!user || !user.isActive) {
-      return NextResponse.json(
-        { 
-          success: false,
-          error: 'User not found or inactive' 
-        },
-        { status: 401 }
-      );
-    }
-
-    // Get user stats
-    const stats = await DatabaseUtils.getUserStats(user.id, user.role);
-
-    return NextResponse.json({
-      success: true,
-      user,
-      stats
+    // Fetch user from database with caching
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        avatar: true,
+        isActive: true,
+        lastLogin: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
 
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    if (!user.isActive) {
+      return NextResponse.json(
+        { error: "Account is inactive" },
+        { status: 403 }
+      );
+    }
+
+    // Return user data with cache headers
+    const response = NextResponse.json({ user });
+    
+    // Set cache headers to cache for 5 minutes
+    response.headers.set('Cache-Control', 'private, max-age=300');
+    
+    return response;
   } catch (error) {
-    console.error('Get user profile error:', error);
+    if (error instanceof jwt.TokenExpiredError) {
+      return NextResponse.json(
+        { error: "Token expired" },
+        { status: 401 }
+      );
+    }
+
+    if (error instanceof jwt.JsonWebTokenError) {
+      return NextResponse.json(
+        { error: "Invalid token" },
+        { status: 401 }
+      );
+    }
+
+    console.error("Auth error:", error);
     return NextResponse.json(
-      { 
-        success: false,
-        error: 'Failed to get user profile' 
-      },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

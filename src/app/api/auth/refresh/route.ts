@@ -1,69 +1,84 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { AuthUtils } from '../../../utils/auth.utils';
-import { DatabaseUtils } from '../../../utils/db.utils';
+import { NextRequest, NextResponse } from "next/server";
+import jwt from "jsonwebtoken";
+import { prisma } from "../../../lib/prisma";
+
+const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret";
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "fallback-refresh-secret";
+const ACCESS_TOKEN_EXPIRY = "7d";
 
 export async function POST(request: NextRequest) {
   try {
-    const refreshToken = request.cookies.get('refresh-token')?.value;
+    const refreshToken = request.cookies.get("refresh-token")?.value;
 
     if (!refreshToken) {
       return NextResponse.json(
-        { error: 'Refresh token not found' },
+        { error: "No refresh token provided" },
         { status: 401 }
       );
     }
 
     // Verify refresh token
-    const payload = AuthUtils.verifyRefreshToken(refreshToken);
-    if (!payload) {
-      return NextResponse.json(
-        { error: 'Invalid refresh token' },
-        { status: 401 }
-      );
-    }
+    const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET) as {
+      userId: number;
+      email: string;
+    };
 
-    // Get user data
-    const user = await DatabaseUtils.findUserById(payload.userId);
+    // Fetch user
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        avatar: true,
+        isActive: true,
+        lastLogin: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
     if (!user || !user.isActive) {
       return NextResponse.json(
-        { error: 'User not found or inactive' },
-        { status: 401 }
+        { error: "User not found or inactive" },
+        { status: 404 }
       );
     }
 
-    // Generate new tokens
-    const { accessToken, refreshToken: newRefreshToken } = AuthUtils.generateTokens(user);
+    // Generate new access token
+    const newAccessToken = jwt.sign(
+      { userId: user.id, email: user.email, role: user.role },
+      JWT_SECRET,
+      { expiresIn: ACCESS_TOKEN_EXPIRY }
+    );
 
     const response = NextResponse.json({
-      message: 'Token refreshed successfully',
-      token: accessToken,
-      refreshToken: newRefreshToken,
-      user
+      message: "Token refreshed",
+      user,
     });
 
-    // Update cookies
-    response.cookies.set('auth-token', accessToken, {
+    // Set new access token cookie
+    response.cookies.set("auth-token", newAccessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 60 * 60, // 1 hour
-      path: '/',
-    });
-
-    response.cookies.set('refresh-token', newRefreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: '/',
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+      path: "/",
     });
 
     return response;
-
   } catch (error) {
-    console.error('Token refresh error:', error);
+    if (error instanceof jwt.TokenExpiredError) {
+      return NextResponse.json(
+        { error: "Refresh token expired" },
+        { status: 401 }
+      );
+    }
+
+    console.error("Token refresh error:", error);
     return NextResponse.json(
-      { error: 'Token refresh failed' },
+      { error: "Failed to refresh token" },
       { status: 500 }
     );
   }
