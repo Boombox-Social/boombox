@@ -1,12 +1,6 @@
 "use client";
 import React from "react";
 
-const colors = {
-  accent: "#2563eb",
-  text: "#F1F5F9",
-  muted: "#94A3B8",
-};
-
 interface LoadingSpinnerProps {
   size?: "small" | "medium" | "large";
   text?: string;
@@ -20,9 +14,15 @@ export function LoadingSpinner({ size = "medium", text }: LoadingSpinnerProps) {
   };
 
   const textSizes = {
-    small: "text-sm",
-    medium: "text-base",
-    large: "text-lg",
+    small: "text-xs",
+    medium: "text-sm",
+    large: "text-base",
+  };
+
+  const borderWidth = {
+    small: "2px",
+    medium: "3px",
+    large: "4px",
   };
 
   return (
@@ -37,18 +37,20 @@ export function LoadingSpinner({ size = "medium", text }: LoadingSpinnerProps) {
       }}
     >
       <div
-        className={`${sizeClasses[size]} animate-spin rounded-full border-2 border-t-transparent`}
+        className={`${sizeClasses[size]} animate-spin rounded-full`}
         style={{
-          borderColor: colors.muted,
-          borderTopColor: colors.accent,
+          border: `${borderWidth[size]} solid var(--border)`,
+          borderTopColor: "var(--primary)",
         }}
       />
       {text && (
         <p
           className={textSizes[size]}
           style={{
-            color: colors.muted,
+            color: "var(--muted)",
             textAlign: "center",
+            fontWeight: 500,
+            letterSpacing: "-0.01em",
           }}
         >
           {text}

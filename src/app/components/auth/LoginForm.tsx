@@ -42,11 +42,12 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
   };
 
   return (
-    <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+    <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
       <div>
         <label
-          className="block text-sm font-semibold text-[#F1F5F9] mb-2"
+          className="block text-xs font-semibold mb-1 uppercase tracking-wide"
           htmlFor="email"
+          style={{ color: "var(--muted)" }}
         >
           Email Address
         </label>
@@ -57,14 +58,28 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
           value={formData.email}
           onChange={(e) => updateFormField("email")(e.target.value)}
           required
-          className="w-full px-4 py-3 rounded-lg border border-[#2D3142] bg-[#181A20] text-[#F1F5F9] text-[15px] outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
+          className="w-full px-3 py-2.5 rounded-md text-sm outline-none transition-all"
+          style={{
+            border: "2px solid var(--border)",
+            background: "var(--background)",
+            color: "var(--card-foreground)",
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = "var(--primary)";
+            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.1)";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = "var(--border)";
+            e.currentTarget.style.boxShadow = "none";
+          }}
         />
       </div>
 
       <div>
         <label
-          className="block text-sm font-semibold text-[#F1F5F9] mb-2"
+          className="block text-xs font-semibold mb-1 uppercase tracking-wide"
           htmlFor="password"
+          style={{ color: "var(--muted)" }}
         >
           Password
         </label>
@@ -75,41 +90,117 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
           value={formData.password}
           onChange={(e) => updateFormField("password")(e.target.value)}
           required
-          className="w-full px-4 py-3 rounded-lg border border-[#2D3142] bg-[#181A20] text-[#F1F5F9] text-[15px] outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
+          className="w-full px-3 py-2.5 rounded-md text-sm outline-none transition-all"
+          style={{
+            border: "2px solid var(--border)",
+            background: "var(--background)",
+            color: "var(--card-foreground)",
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = "var(--primary)";
+            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.1)";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = "var(--border)";
+            e.currentTarget.style.boxShadow = "none";
+          }}
         />
       </div>
 
-      <div className="flex items-center justify-between text-sm">
-        <label className="flex items-center gap-2 text-[#94A3B8] cursor-pointer">
+      <div className="flex items-center justify-between text-xs">
+        <label 
+          className="flex items-center gap-2 cursor-pointer select-none"
+          style={{ color: "var(--card-foreground)" }}
+        >
           <input
             type="checkbox"
             checked={formData.rememberMe}
             onChange={(e) => updateFormField("rememberMe")(e.target.checked)}
-            className="accent-[#2563eb]"
+            className="w-4 h-4 rounded cursor-pointer"
+            style={{ 
+              accentColor: "var(--primary)",
+              border: "2px solid var(--border)"
+            }}
           />
-          Remember me
+          <span className="text-sm">Keep me signed in</span>
         </label>
-        <a
-          href="/auth/forgot-password"
-          className="text-[#2563eb] no-underline font-medium hover:underline"
-        >
-          Forgot password?
-        </a>
       </div>
 
       {error && (
-        <div className="bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg px-4 py-3 text-sm text-center">
-          {error}
+        <div 
+          className="rounded-md px-3 py-2.5 text-sm flex items-start gap-2"
+          style={{
+            background: "rgba(239, 68, 68, 0.1)",
+            color: "var(--danger)",
+            border: "1px solid rgba(239, 68, 68, 0.3)",
+          }}
+        >
+          <svg 
+            className="w-5 h-5 flex-shrink-0 mt-0.5" 
+            fill="currentColor" 
+            viewBox="0 0 20 20"
+          >
+            <path 
+              fillRule="evenodd" 
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" 
+              clipRule="evenodd" 
+            />
+          </svg>
+          <span>{error}</span>
         </div>
       )}
 
       <button
         type="submit"
         disabled={isLoading}
-        className="bg-[#2563eb] text-[#F1F5F9] border-none rounded-lg px-6 py-[14px] font-semibold cursor-pointer text-base disabled:opacity-70 disabled:cursor-not-allowed hover:bg-[#1E40AF] transition-colors"
+        className="border-none rounded-md px-4 py-3 font-semibold cursor-pointer text-sm disabled:opacity-60 disabled:cursor-not-allowed transition-all mt-1"
+        style={{
+          background: "var(--primary)",
+          color: "var(--primary-foreground)",
+          boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
+        }}
+        onMouseEnter={(e) => {
+          if (!isLoading) {
+            e.currentTarget.style.background = "#1E40AF";
+            e.currentTarget.style.boxShadow = "0 4px 6px rgba(37, 99, 235, 0.15)";
+            e.currentTarget.style.transform = "translateY(-1px)";
+          }
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "var(--primary)";
+          e.currentTarget.style.boxShadow = "0 1px 2px rgba(0, 0, 0, 0.05)";
+          e.currentTarget.style.transform = "translateY(0)";
+        }}
       >
-        {isLoading ? "Signing in..." : "Sign In"}
+        {isLoading ? (
+          <span className="flex items-center justify-center gap-2">
+            <svg 
+              className="animate-spin h-4 w-4" 
+              xmlns="http://www.w3.org/2000/svg" 
+              fill="none" 
+              viewBox="0 0 24 24"
+            >
+              <circle 
+                className="opacity-25" 
+                cx="12" 
+                cy="12" 
+                r="10" 
+                stroke="currentColor" 
+                strokeWidth="4"
+              />
+              <path 
+                className="opacity-75" 
+                fill="currentColor" 
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
+            </svg>
+            Signing in...
+          </span>
+        ) : (
+          "Sign in"
+        )}
       </button>
+
     </form>
   );
 }

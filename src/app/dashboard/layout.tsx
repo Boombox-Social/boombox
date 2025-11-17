@@ -7,8 +7,6 @@ import { AddClientModal } from "../components/modals/AddClientModal";
 import { SidePanel } from "../components/sidebar/SidePanel";
 import { Navbar } from "../components/header/Navbar";
 
-
-
 export default function DashboardLayout({
   children,
 }: {
@@ -33,7 +31,10 @@ export default function DashboardLayout({
   }, [pathname, loadClients]);
 
   return (
-    <div className="flex min-h-screen relative bg-[#181A20]">
+    <div 
+      className="flex min-h-screen relative"
+      style={{ background: "var(--background)" }}
+    >
       {/* Unified Navbar */}
       <Navbar
         onMenuClick={() => setSidebarMobileOpen(true)}
@@ -56,30 +57,12 @@ export default function DashboardLayout({
         setMobileOpen={setSidebarMobileOpen}
       />
 
-      {sidebarCollapsed && (
-        <button
-          onClick={() => setSidebarCollapsed(false)}
-          className="hidden md:flex fixed top-4 left-[80px] z-30 bg-[#2563eb] text-[#F1F5F9] rounded-full w-10 h-10 items-center justify-center shadow-lg hover:bg-[#1E40AF] transition-colors"
-          aria-label="Expand sidebar"
-        >
-          <svg
-            width="24"
-            height="24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="M8 5l8 7-8 7" />
-          </svg>
-        </button>
-      )}
-
       {/* Main content */}
       <main
         className={`
           flex-1 min-h-screen transition-all duration-200
           pt-20 px-4 md:px-6
-          ${sidebarCollapsed ? "md:ml-[72px]" : "md:ml-[220px]"}
+          ${sidebarCollapsed ? "md:ml-[64px]" : "md:ml-[260px]"}
         `}
       >
         {children}

@@ -1,5 +1,4 @@
 import React from "react";
-import { COLORS, UI_CONFIG } from "../../constants";
 
 interface FormFieldProps {
   label?: string;
@@ -12,7 +11,8 @@ interface FormFieldProps {
   rows?: number;
   className?: string;
   style?: React.CSSProperties;
-  type?: string; // Add this missing property
+  type?: string;
+  autoComplete?: string;
 }
 
 export function FormField({
@@ -26,26 +26,21 @@ export function FormField({
   rows = 4,
   className = "",
   style,
-  type = "text", // Add default value
+  type = "text",
+  autoComplete,
 }: FormFieldProps) {
   const baseStyles: React.CSSProperties = {
     width: "100%",
-    background: COLORS.bg,
-    color: COLORS.text,
-    border: `1px solid ${error ? "#EF4444" : COLORS.border}`,
-    borderRadius: UI_CONFIG.BORDER_RADIUS.MEDIUM,
-    padding: "12px 16px",
+    background: "var(--background)",
+    color: "var(--card-foreground)",
+    border: `2px solid ${error ? "var(--danger)" : "var(--border)"}`,
+    borderRadius: 6,
+    padding: "10px 12px",
     fontSize: 14,
     outline: "none",
     transition: "border-color 0.2s, box-shadow 0.2s",
+    fontFamily: "inherit",
     ...style,
-  };
-
-  const focusStyles = {
-    borderColor: error ? "#EF4444" : COLORS.accent,
-    boxShadow: error
-      ? "0 0 0 3px rgba(239, 68, 68, 0.1)"
-      : `0 0 0 3px rgba(37, 99, 235, 0.1)`,
   };
 
   const InputComponent = multiline ? "textarea" : "input";
@@ -53,14 +48,21 @@ export function FormField({
   return (
     <div className={`space-y-2 ${className}`}>
       {label && (
-        <label className="block text-sm font-medium text-[#F1F5F9]">
+        <label 
+          className="block text-xs font-semibold uppercase tracking-wide"
+          style={{ color: "var(--muted)" }}
+        >
           {label}
-          {required && <span className="text-red-400 ml-1">*</span>}
+          {required && (
+            <span style={{ color: "var(--danger)" }} className="ml-1">
+              *
+            </span>
+          )}
         </label>
       )}
 
       <InputComponent
-        type={multiline ? undefined : type} // Use the type prop
+        type={multiline ? undefined : type}
         placeholder={placeholder}
         value={value}
         onChange={(
@@ -68,22 +70,36 @@ export function FormField({
         ) => onChange(e.target.value)}
         required={required}
         rows={multiline ? rows : undefined}
+        autoComplete={autoComplete}
         style={baseStyles}
         onFocus={(
           e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>
         ) => {
-          Object.assign(e.target.style, focusStyles);
+          e.target.style.borderColor = error ? "var(--danger)" : "var(--primary)";
+          e.target.style.boxShadow = error
+            ? "0 0 0 3px rgba(239, 68, 68, 0.1)"
+            : "0 0 0 3px rgba(37, 99, 235, 0.1)";
         }}
         onBlur={(
           e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>
         ) => {
-          e.target.style.borderColor = error ? "#EF4444" : COLORS.border;
+          e.target.style.borderColor = error ? "var(--danger)" : "var(--border)";
           e.target.style.boxShadow = "none";
         }}
-        className="resize-none"
+        className={multiline ? "resize-none" : ""}
       />
 
-      {error && <p className="text-red-400 text-sm">{error}</p>}
+      {error && (
+        <div 
+          className="flex items-start gap-2 text-sm mt-1"
+          style={{ color: "var(--danger)" }}
+        >
+          <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+          </svg>
+          <span>{error}</span>
+        </div>
+      )}
     </div>
   );
 }

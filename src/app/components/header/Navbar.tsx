@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { UserNav } from "./UserNav";
+import { ThemeToggle } from "../ThemeToggle";
 
 interface NavbarProps {
   onMenuClick: () => void;
@@ -20,7 +21,7 @@ export function Navbar({ onMenuClick, showBurger, sidebarCollapsed = false }: Na
       style={{
         background: "transparent",
         borderBottom: "none",
-        left: sidebarCollapsed ? "72px" : "0px",
+        left: sidebarCollapsed ? "100px" : "0px",
       }}
     >
       <div className="flex items-center justify-between h-full px-4">
@@ -49,6 +50,8 @@ export function Navbar({ onMenuClick, showBurger, sidebarCollapsed = false }: Na
         <div className="ml-auto">
           <UserNav />
         </div>
+
+        <ThemeToggle />
       </div>
     </nav>
   );

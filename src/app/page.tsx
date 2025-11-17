@@ -25,8 +25,8 @@ export default function RootPage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "#181A20",
-        color: "#F1F5F9",
+        background: "var(--background)",
+        color: "var(--foreground)",
       }}
     >
       <div style={{ textAlign: "center" }}>
@@ -35,13 +35,14 @@ export default function RootPage() {
             width: 48,
             height: 48,
             borderRadius: "50%",
-            background: "#2563eb",
+            background: "var(--primary)",
             margin: "0 auto 16px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             fontSize: "24px",
             fontWeight: "bold",
+            color: "var(--primary-foreground)",
           }}
         >
           B

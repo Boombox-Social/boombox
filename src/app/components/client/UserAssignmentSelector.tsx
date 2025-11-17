@@ -1,4 +1,3 @@
-// components/client/UserAssignmentSelector.tsx
 "use client";
 import React, { useState, useEffect } from "react";
 
@@ -29,16 +28,11 @@ export function UserAssignmentSelector({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");
 
-  // Load available SMM users
   useEffect(() => {
     const loadSMMUsers = async () => {
       try {
         setError("");
-        console.log("Loading SMM users..."); // Debug log
-
         const response = await fetch("/api/users/smm");
-
-        console.log("Response status:", response.status); // Debug log
 
         if (!response.ok) {
           if (response.status === 403) {
@@ -53,11 +47,8 @@ export function UserAssignmentSelector({
         }
 
         const data = await response.json();
-        console.log("Response data:", data); // Debug log
-
         if (data.success && data.users) {
           setAvailableUsers(data.users);
-          console.log("SMM users loaded:", data.users.length); // Debug log
         } else {
           throw new Error("Invalid response format");
         }
@@ -84,7 +75,6 @@ export function UserAssignmentSelector({
     setSelectedUserIds(newSelectedIds);
     onChange(newSelectedIds);
 
-    // If we have a clientId, update the database immediately
     if (clientId) {
       setIsLoading(true);
       try {
@@ -99,7 +89,6 @@ export function UserAssignmentSelector({
         }
       } catch (error) {
         console.error("Error updating assignments:", error);
-        // Revert on error
         setSelectedUserIds(selectedUserIds);
         onChange(selectedUserIds);
       } finally {
@@ -108,16 +97,13 @@ export function UserAssignmentSelector({
     }
   };
 
-  // Don't render anything if user can't edit
   if (!canEdit) {
     return (
       <div
+        className="text-center p-4 rounded-md italic text-sm"
         style={{
-          color: "#94A3B8",
-          fontSize: 13,
-          fontStyle: "italic",
-          textAlign: "center",
-          padding: 16,
+          color: "var(--muted)",
+          background: "var(--secondary)",
         }}
       >
         You don't have permission to assign users to clients
@@ -125,18 +111,14 @@ export function UserAssignmentSelector({
     );
   }
 
-  // Show error state
   if (error) {
     return (
       <div
+        className="text-center p-4 rounded-md text-sm"
         style={{
-          color: "#EF4444",
-          fontSize: 13,
-          textAlign: "center",
-          padding: 16,
-          background: "#EF444420",
-          borderRadius: 8,
-          border: "1px solid #EF444440",
+          color: "var(--danger)",
+          background: "rgba(239, 68, 68, 0.1)",
+          border: "1px solid rgba(239, 68, 68, 0.3)",
         }}
       >
         Error: {error}
@@ -144,16 +126,11 @@ export function UserAssignmentSelector({
     );
   }
 
-  // Show loading state
   if (availableUsers.length === 0 && !error) {
     return (
       <div
-        style={{
-          color: "#94A3B8",
-          fontSize: 13,
-          textAlign: "center",
-          padding: 16,
-        }}
+        className="text-center p-4 text-sm"
+        style={{ color: "var(--muted)" }}
       >
         Loading SMM users...
       </div>
@@ -161,36 +138,26 @@ export function UserAssignmentSelector({
   }
 
   return (
-    <div style={{ marginTop: 16 }}>
+    <div className="mt-4">
       <h4
-        style={{
-          color: "#F1F5F9",
-          fontSize: 14,
-          fontWeight: 600,
-          marginBottom: 12,
-        }}
+        className="text-sm font-semibold mb-3 uppercase tracking-wide"
+        style={{ color: "var(--muted)" }}
       >
         Assign SMMs ({selectedUserIds.length} selected)
       </h4>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div className="flex flex-col gap-2">
         {availableUsers.map((user) => {
           const isSelected = selectedUserIds.includes(user.id);
 
           return (
             <label
               key={user.id}
+              className="flex items-center gap-3 p-3 rounded-md cursor-pointer transition-all duration-200"
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                padding: 12,
-                borderRadius: 8,
-                background: isSelected ? "#2563eb20" : "#23262F",
-                border: `1px solid ${isSelected ? "#2563eb" : "#2D3142"}`,
-                cursor: canEdit ? "pointer" : "default",
+                background: isSelected ? "rgba(37, 99, 235, 0.1)" : "var(--background)",
+                border: `2px solid ${isSelected ? "var(--primary)" : "var(--border)"}`,
                 opacity: isLoading ? 0.7 : 1,
-                transition: "all 0.2s ease",
               }}
             >
               <input
@@ -198,75 +165,49 @@ export function UserAssignmentSelector({
                 checked={isSelected}
                 onChange={() => handleUserToggle(user.id)}
                 disabled={!canEdit || isLoading}
-                style={{
-                  width: 16,
-                  height: 16,
-                  accentColor: "#2563eb",
-                }}
+                className="w-4 h-4 rounded cursor-pointer"
+                style={{ accentColor: "var(--primary)" }}
               />
 
-              {/* User Avatar */}
               <div
+                className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold overflow-hidden"
                 style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: "50%",
-                  background: user.avatar ? "transparent" : "#2563eb",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: "#F1F5F9",
-                  overflow: "hidden",
+                  background: user.avatar ? "transparent" : "var(--primary)",
+                  color: "var(--primary-foreground)",
                 }}
               >
                 {user.avatar ? (
                   <img
                     src={user.avatar}
                     alt={user.name}
-                    style={{ width: 32, height: 32, borderRadius: "50%" }}
+                    className="w-8 h-8 rounded-full"
                   />
                 ) : (
                   user.name.charAt(0).toUpperCase()
                 )}
               </div>
 
-              {/* User Info */}
-              <div style={{ flex: 1 }}>
+              <div className="flex-1">
                 <div
-                  style={{
-                    color: "#F1F5F9",
-                    fontSize: 14,
-                    fontWeight: 500,
-                  }}
+                  className="text-sm font-medium"
+                  style={{ color: "var(--card-foreground)" }}
                 >
                   {user.name}
                 </div>
                 <div
-                  style={{
-                    color: "#94A3B8",
-                    fontSize: 12,
-                  }}
+                  className="text-xs"
+                  style={{ color: "var(--muted)" }}
                 >
                   {user.email}
                 </div>
               </div>
 
-              {/* Selection Indicator */}
               {isSelected && (
                 <div
+                  className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold"
                   style={{
-                    width: 20,
-                    height: 20,
-                    borderRadius: "50%",
-                    background: "#2563eb",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "white",
-                    fontSize: 12,
-                    fontWeight: "bold",
+                    background: "var(--primary)",
+                    color: "var(--primary-foreground)",
                   }}
                 >
                   ✓
@@ -278,13 +219,8 @@ export function UserAssignmentSelector({
 
         {availableUsers.length === 0 && !error && (
           <div
-            style={{
-              color: "#94A3B8",
-              fontSize: 13,
-              textAlign: "center",
-              padding: 16,
-              fontStyle: "italic",
-            }}
+            className="text-center p-4 text-sm italic"
+            style={{ color: "var(--muted)" }}
           >
             No SMM users available for assignment
           </div>

@@ -1,6 +1,7 @@
 import React from "react";
-import { ChevronLeftIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { ChevronLeftIcon, XMarkIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
+import { useTheme } from "../../contexts/ThemeContext";
 
 interface SidebarHeaderProps {
   collapsed: boolean;
@@ -10,34 +11,77 @@ interface SidebarHeaderProps {
 }
 
 export function SidebarHeader({ collapsed, onCollapse, mobileOpen, setMobileOpen }: SidebarHeaderProps) {
+  const { theme } = useTheme();
+  
+  const logoSrc = theme === "dark" 
+    ? "/assets/images/boombox-logo.webp" 
+    : "/assets/images/boombox-primary-logo.png";
+
   return (
     <div
-      className={
-        collapsed
-          ? "flex flex-col items-center justify-center py-4 px-2 relative"
-          : "flex flex-row items-center justify-center py-4 px-2 gap-3"
-      }
+      className={`
+        flex items-center py-4 px-4 transition-all duration-300
+        ${collapsed ? "justify-center" : "justify-between"}
+      `}
+      style={{
+        borderBottom: "1px solid var(--border)",
+        minHeight: "64px",
+      }}
     >
-      <Image
-        src="/assets/images/boombox-logo.webp"
-        alt="Logo"
-        width={40}
-        height={40}
-        className="rounded-full"
-      />
+      <div className="flex items-center gap-3">
+        <Image
+          src={logoSrc}
+          alt="Logo"
+          width={collapsed ? 32 : 36}
+          height={collapsed ? 32 : 36}
+          className="rounded-lg transition-all duration-300"
+          style={{
+            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+          }}
+        />
 
-      {/* Desktop collapse button (when expanded) */}
+        {!collapsed && (
+          <div className="flex flex-col">
+            <span 
+              className="font-bold text-base tracking-tight"
+              style={{ color: "var(--card-foreground)" }}
+            >
+              Boombox Social
+            </span>
+            <span 
+              className="text-xs"
+              style={{ color: "var(--muted)" }}
+            >
+              Internal AI App
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Desktop collapse button */}
       {!collapsed && (
         <button
           onClick={onCollapse}
-          className="bg-[#23262F] text-[#F1F5F9] rounded-full w-8 h-8 items-center justify-center border-none cursor-pointer ml-2 hidden md:flex hover:bg-[#2D3142] transition-colors"
+          className="rounded-md w-8 h-8 items-center justify-center border-none cursor-pointer hidden md:flex transition-all duration-200"
+          style={{
+            background: "transparent",
+            color: "var(--muted)",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "var(--secondary)";
+            e.currentTarget.style.color = "var(--card-foreground)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+            e.currentTarget.style.color = "var(--muted)";
+          }}
           aria-label="Collapse sidebar"
         >
           <ChevronLeftIcon className="w-5 h-5" />
         </button>
       )}
 
-      {/* Desktop expand button (when collapsed) - positioned beside the collapsed sidebar */}
+      {/* Desktop expand button (floating) */}
       {collapsed && (
         <button
           onClick={(e) => {
@@ -45,14 +89,30 @@ export function SidebarHeader({ collapsed, onCollapse, mobileOpen, setMobileOpen
             e.stopPropagation();
             onCollapse();
           }}
-          className="hidden md:flex fixed left-[80px] top-4 text-[#F1F5F9] rounded-full w-10 h-10 items-center justify-center border-none cursor-pointer shadow-lg hover:bg-[#1E40AF] transition-all"
+          className="hidden md:flex fixed left-[72px] top-5 rounded-full w-8 h-8 items-center justify-center border cursor-pointer transition-all duration-200"
           style={{ 
-            zIndex: 100,
-            pointerEvents: "auto"
+            zIndex: 999,
+            pointerEvents: "auto",
+            background: "var(--card)",
+            borderColor: "var(--border)",
+            color: "var(--muted)",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.12)",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "var(--primary)";
+            e.currentTarget.style.borderColor = "var(--primary)";
+            e.currentTarget.style.color = "var(--primary-foreground)";
+            e.currentTarget.style.boxShadow = "0 4px 12px rgba(37, 99, 235, 0.3)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "var(--card)";
+            e.currentTarget.style.borderColor = "var(--border)";
+            e.currentTarget.style.color = "var(--muted)";
+            e.currentTarget.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.12)";
           }}
           aria-label="Expand sidebar"
         >
-          <ChevronLeftIcon className="w-5 h-5 rotate-180" />
+          <ChevronRightIcon className="w-4 h-4" />
         </button>
       )}
 
@@ -60,7 +120,19 @@ export function SidebarHeader({ collapsed, onCollapse, mobileOpen, setMobileOpen
       {mobileOpen && setMobileOpen && (
         <button
           onClick={() => setMobileOpen(false)}
-          className="bg-[#23262F] text-[#F1F5F9] rounded-full w-8 h-8 flex items-center justify-center border-none cursor-pointer ml-2 md:hidden absolute right-2 hover:bg-[#2D3142] transition-colors"
+          className="rounded-md w-8 h-8 flex items-center justify-center border-none cursor-pointer md:hidden transition-all duration-200"
+          style={{
+            background: "transparent",
+            color: "var(--muted)",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "var(--secondary)";
+            e.currentTarget.style.color = "var(--card-foreground)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+            e.currentTarget.style.color = "var(--muted)";
+          }}
           aria-label="Close sidebar"
         >
           <XMarkIcon className="w-5 h-5" />

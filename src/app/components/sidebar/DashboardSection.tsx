@@ -2,7 +2,6 @@
 import React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { HomeIcon } from "@heroicons/react/24/solid";
-import { COLORS } from "../../constants";
 
 interface DashboardSectionProps {
   collapsed: boolean;
@@ -13,7 +12,6 @@ export function DashboardSection({ collapsed }: DashboardSectionProps) {
   const pathname = usePathname();
 
   const handleDashboardClick = () => {
-    // Navigate to main dashboard
     router.push("/dashboard");
   };
 
@@ -22,47 +20,62 @@ export function DashboardSection({ collapsed }: DashboardSectionProps) {
   return (
     <div
       style={{
-        padding: collapsed ? "0 8px" : "0 20px",
-        marginBottom: 8,
+        padding: collapsed ? "8px 8px" : "12px 16px",
+        borderBottom: "1px solid var(--border)",
       }}
     >
       <button
         onClick={handleDashboardClick}
+        className="w-full flex items-center border-none cursor-pointer transition-all duration-200"
         style={{
-          width: "100%",
-          display: "flex",
-          alignItems: "center",
           gap: 10,
-          background: isOnDashboard ? COLORS.hover : COLORS.card,
-          color: COLORS.text,
-          border: `1px solid ${COLORS.border}`,
-          borderRadius: 8,
-          padding: collapsed ? 8 : "8px 12px",
+          background: isOnDashboard ? "var(--primary)" : "transparent",
+          color: isOnDashboard ? "var(--primary-foreground)" : "var(--card-foreground)",
+          border: isOnDashboard ? "none" : "2px solid var(--border)",
+          borderRadius: 6,
+          padding: collapsed ? 8 : "10px 12px",
           fontWeight: 600,
-          fontSize: 15,
-          cursor: "pointer",
+          fontSize: 14,
           justifyContent: collapsed ? "center" : "flex-start",
-          marginBottom: 8,
+          marginBottom: collapsed ? 0 : 8,
+        }}
+        onMouseEnter={(e) => {
+          if (!isOnDashboard) {
+            e.currentTarget.style.background = "var(--secondary)";
+            e.currentTarget.style.borderColor = "var(--primary)";
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!isOnDashboard) {
+            e.currentTarget.style.background = "transparent";
+            e.currentTarget.style.borderColor = "var(--border)";
+          }
         }}
         aria-label={collapsed ? "Dashboard" : undefined}
       >
-        <HomeIcon width={20} />
+        <HomeIcon width={18} />
         {!collapsed && "Dashboard"}
       </button>
 
       {!collapsed && (
         <input
           type="text"
-          placeholder="Search for clients"
+          placeholder="Search clients..."
+          className="w-full text-sm outline-none transition-all duration-200"
           style={{
-            width: "100%",
-            padding: "6px 12px",
-            borderRadius: 8,
-            border: `1px solid ${COLORS.border}`,
-            background: COLORS.bg,
-            color: COLORS.text,
-            marginBottom: 12,
-            fontSize: 14,
+            padding: "8px 12px",
+            borderRadius: 6,
+            border: "2px solid var(--border)",
+            background: "var(--background)",
+            color: "var(--card-foreground)",
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = "var(--primary)";
+            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.1)";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = "var(--border)";
+            e.currentTarget.style.boxShadow = "none";
           }}
         />
       )}
