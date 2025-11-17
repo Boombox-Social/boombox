@@ -59,6 +59,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     sessionStorage.setItem(SESSION_STORAGE_KEY, Date.now().toString());
   }, []);
 
+  // Logout function
+  const logout = useCallback(async () => {
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      // Clear session data
+      sessionStorage.removeItem(SESSION_STORAGE_KEY);
+      if (sessionCheckTimerRef.current) {
+        clearInterval(sessionCheckTimerRef.current);
+      }
+      
+      setAuthState({ user: null, isLoading: false, error: null });
+      router.push("/signin");
+    }
+  }, [router]);
+
   // Fetch current user
   const fetchCurrentUser = useCallback(async () => {
     if (isRefreshingRef.current) return;
@@ -107,7 +128,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         logout();
       }
     }, SESSION_CHECK_INTERVAL);
-  }, [isSessionValid]);
+  }, [isSessionValid, logout]);
 
   // Initialize auth state on mount
   useEffect(() => {
@@ -178,26 +199,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const logout = async () => {
-    try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-    } catch (error) {
-      console.error("Logout error:", error);
-    } finally {
-      // Clear session data
-      sessionStorage.removeItem(SESSION_STORAGE_KEY);
-      if (sessionCheckTimerRef.current) {
-        clearInterval(sessionCheckTimerRef.current);
-      }
-      
-      setAuthState({ user: null, isLoading: false, error: null });
-      router.push("/signin");
-    }
-  };
-
   const refreshAuth = async () => {
     await fetchCurrentUser();
   };
@@ -228,7 +229,8 @@ export function usePermission() {
     isSMM: user?.role === UserRole.SMM,
     canManageUsers: user?.role === UserRole.SUPER_ADMIN,
     canManageClients: user?.role === UserRole.ADMIN || user?.role === UserRole.SUPER_ADMIN,
-    canEditClient: (clientId?: number) => {
+    canEditClient: (_clientId?: number) => {
+      // Prefix with underscore to indicate intentionally unused parameter
       if (user?.role === UserRole.SUPER_ADMIN || user?.role === UserRole.ADMIN) {
         return true;
       }
