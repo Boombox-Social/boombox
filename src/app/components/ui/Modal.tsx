@@ -1,21 +1,36 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  children: React.ReactNode;
   title?: string;
+  children: React.ReactNode;
   maxWidth?: string;
 }
 
-export function Modal({
-  isOpen,
-  onClose,
-  children,
-  title,
-  maxWidth = "600px",
-}: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, maxWidth = "600px" }: ModalProps) {
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Prevent body scrolling when modal is open
+    document.body.style.overflow = 'hidden';
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    
+    return () => {
+      document.body.style.overflow = 'unset';
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
@@ -60,9 +75,8 @@ export function Modal({
           padding: "20px",
         }}
         onClick={(e) => {
-          if (e.target === e.currentTarget) {
-            onClose();
-          }
+          e.preventDefault();
+          e.stopPropagation();
         }}
       >
         <div
