@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { PencilSquareIcon, CheckCircleIcon, XMarkIcon } from "@heroicons/react/24/solid";
 
 interface BasecampProps {
-  clientId: number;
+  clientId?: number;
 }
 
 export function BasecampButton({ clientId }: BasecampProps) {
