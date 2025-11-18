@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { PencilSquareIcon, CheckCircleIcon, XMarkIcon } from "@heroicons/react/24/solid";
 
 interface OverviewButtonProps {
@@ -13,6 +13,12 @@ export function OverviewButton({ clientId }: OverviewButtonProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleCancel = useCallback(() => {
+    setInputValue(overviewLink);
+    setEditing(false);
+    setError(null);
+  }, [overviewLink]);
 
   useEffect(() => {
     if (!clientId) return;
@@ -63,7 +69,7 @@ export function OverviewButton({ clientId }: OverviewButtonProps) {
       document.removeEventListener('mousedown', handleClickOutside, true);
       document.removeEventListener('keydown', handleEscape);
     };
-  }, [editing, overviewLink]);
+  }, [editing, handleCancel]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -81,12 +87,6 @@ export function OverviewButton({ clientId }: OverviewButtonProps) {
       setError("Failed to save overview link.");
     }
     setSaving(false);
-  };
-
-  const handleCancel = () => {
-    setInputValue(overviewLink);
-    setEditing(false);
-    setError(null);
   };
 
   const hasChanges = inputValue.trim() !== overviewLink && inputValue.trim() !== "";

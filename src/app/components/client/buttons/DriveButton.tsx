@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { PencilSquareIcon, CheckCircleIcon, XMarkIcon } from "@heroicons/react/24/solid";
 
 interface DriveButtonProps {
@@ -14,6 +14,12 @@ export function DriveButton({ clientId, initialDriveLink }: DriveButtonProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleCancel = useCallback(() => {
+    setInputValue(driveLink);
+    setEditing(false);
+    setError(null);
+  }, [driveLink]);
 
   useEffect(() => {
     const link = initialDriveLink || "";
@@ -52,7 +58,7 @@ export function DriveButton({ clientId, initialDriveLink }: DriveButtonProps) {
       document.removeEventListener('mousedown', handleClickOutside, true);
       document.removeEventListener('keydown', handleEscape);
     };
-  }, [editing, driveLink]);
+  }, [editing, handleCancel]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -70,12 +76,6 @@ export function DriveButton({ clientId, initialDriveLink }: DriveButtonProps) {
       setError("Failed to save drive link.");
     }
     setSaving(false);
-  };
-
-  const handleCancel = () => {
-    setInputValue(driveLink);
-    setEditing(false);
-    setError(null);
   };
 
   const hasChanges = inputValue.trim() !== driveLink && inputValue.trim() !== "";

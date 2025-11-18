@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { PencilSquareIcon, CheckCircleIcon, XMarkIcon } from "@heroicons/react/24/solid";
 
 interface BasecampProps {
@@ -36,6 +36,12 @@ export function BasecampButton({ clientId }: BasecampProps) {
     fetchLink();
   }, [clientId]);
 
+  const handleCancel = useCallback(() => {
+    setInputValue(basecampLink);
+    setEditing(false);
+    setError(null);
+  }, [basecampLink]);
+
   // Prevent clicks outside and scrolling while editing
   useEffect(() => {
     if (!editing) return;
@@ -63,7 +69,7 @@ export function BasecampButton({ clientId }: BasecampProps) {
       document.removeEventListener('mousedown', handleClickOutside, true);
       document.removeEventListener('keydown', handleEscape);
     };
-  }, [editing, basecampLink]);
+  }, [editing, handleCancel]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -81,12 +87,6 @@ export function BasecampButton({ clientId }: BasecampProps) {
       setError("Failed to save Basecamp link.");
     }
     setSaving(false);
-  };
-
-  const handleCancel = () => {
-    setInputValue(basecampLink);
-    setEditing(false);
-    setError(null);
   };
 
   const hasChanges = inputValue.trim() !== basecampLink && inputValue.trim() !== "";

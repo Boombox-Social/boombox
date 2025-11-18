@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { PencilSquareIcon, CheckCircleIcon, XMarkIcon } from "@heroicons/react/24/solid";
 
 interface ViewAiStrategyButtonProps {
@@ -13,6 +13,12 @@ export function ViewAiStrategyButton({ clientId }: ViewAiStrategyButtonProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleCancel = useCallback(() => {
+    setInputValue(aiLink);
+    setEditing(false);
+    setError(null);
+  }, [aiLink]);
 
   useEffect(() => {
     if (!clientId) return;
@@ -40,7 +46,6 @@ export function ViewAiStrategyButton({ clientId }: ViewAiStrategyButtonProps) {
   useEffect(() => {
     if (!editing) return;
 
-    // Prevent scrolling on body
     document.body.style.overflow = 'hidden';
 
     const handleClickOutside = (event: MouseEvent) => {
@@ -64,7 +69,7 @@ export function ViewAiStrategyButton({ clientId }: ViewAiStrategyButtonProps) {
       document.removeEventListener('mousedown', handleClickOutside, true);
       document.removeEventListener('keydown', handleEscape);
     };
-  }, [editing, aiLink]);
+  }, [editing, handleCancel]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -82,12 +87,6 @@ export function ViewAiStrategyButton({ clientId }: ViewAiStrategyButtonProps) {
       setError("Failed to save AI Strategy link.");
     }
     setSaving(false);
-  };
-
-  const handleCancel = () => {
-    setInputValue(aiLink);
-    setEditing(false);
-    setError(null);
   };
 
   const hasChanges = inputValue.trim() !== aiLink && inputValue.trim() !== "";
@@ -137,6 +136,11 @@ export function ViewAiStrategyButton({ clientId }: ViewAiStrategyButtonProps) {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 className="flex-1 px-3 py-2 rounded-md text-sm outline-none transition-all"
+                style={{
+                  border: "2px solid var(--border)",
+                  background: "var(--background)",
+                  color: "var(--card-foreground)",
+                }}
                 placeholder="Enter AI Strategy link"
                 onFocus={(e) => {
                   e.currentTarget.style.borderColor = "var(--primary)";
@@ -167,7 +171,7 @@ export function ViewAiStrategyButton({ clientId }: ViewAiStrategyButtonProps) {
                   disabled={saving}
                   onMouseEnter={(e) => {
                     if (!saving) {
-                      e.currentTarget.style.background = "var(--primary)";
+                      e.currentTarget.style.background = "#059669";
                     }
                   }}
                   onMouseLeave={(e) => {
@@ -195,6 +199,9 @@ export function ViewAiStrategyButton({ clientId }: ViewAiStrategyButtonProps) {
                   }}
                   onClick={handleCancel}
                   title="Cancel (Escape)"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "#DC2626";
+                  }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = "var(--danger)";
                   }}
@@ -215,6 +222,11 @@ export function ViewAiStrategyButton({ clientId }: ViewAiStrategyButtonProps) {
               onClick={() => {
                 if (aiLink) window.open(aiLink, "_blank");
               }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#1E40AF";
+                e.currentTarget.style.transform = "translateY(-1px)";
+                e.currentTarget.style.boxShadow = "0 4px 12px rgba(37, 99, 235, 0.3)";
+              }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = "var(--primary)";
                 e.currentTarget.style.transform = "translateY(0)";
@@ -231,6 +243,10 @@ export function ViewAiStrategyButton({ clientId }: ViewAiStrategyButtonProps) {
               }}
               onClick={() => setEditing(true)}
               title="Edit AI Strategy Link"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "var(--background)";
+                e.currentTarget.style.borderColor = "var(--primary)";
+              }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = "var(--secondary)";
                 e.currentTarget.style.borderColor = "var(--border)";
