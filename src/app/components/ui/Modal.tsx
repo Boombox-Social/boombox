@@ -1,11 +1,10 @@
 "use client";
 import React, { useEffect } from "react";
-import { XMarkIcon } from "@heroicons/react/24/solid";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title: string;
+  title?: string;
   children: React.ReactNode;
   maxWidth?: string;
 }
@@ -109,30 +108,47 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = "600px" }: 
               }}
             >
               <h2
-                className="text-2xl font-bold"
-                style={{ color: "var(--card-foreground)" }}
+                style={{
+                  fontWeight: 700,
+                  fontSize: 24,
+                  margin: 0,
+                  color: "var(--card-foreground)",
+                  letterSpacing: "-0.5px",
+                  lineHeight: 1.2,
+                }}
               >
                 {title}
               </h2>
-                <button
-                  className="p-2 rounded-md transition-colors"
-                  style={{
-                    background: "var(--secondary)",
-                    color: "var(--foreground)",
-                  }}
-                  onClick={onClose}
-                  title="Close (Escape)"
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "var(--danger)";
-                    e.currentTarget.style.color = "#ffffff";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "var(--secondary)";
-                    e.currentTarget.style.color = "var(--foreground)";
-                  }}
-                >
-                  <XMarkIcon className="w-5 h-5" />
-                </button>
+              <button
+                onClick={onClose}
+                className="transition-all duration-200"
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "var(--muted)",
+                  fontSize: 28,
+                  cursor: "pointer",
+                  padding: 4,
+                  width: 32,
+                  height: 32,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: 6,
+                  lineHeight: 1,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "var(--secondary)";
+                  e.currentTarget.style.color = "var(--card-foreground)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.color = "var(--muted)";
+                }}
+                aria-label="Close modal"
+              >
+                ×
+              </button>
             </div>
           )}
           {children}
