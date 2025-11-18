@@ -1,21 +1,38 @@
 "use client";
-import React from "react";
+import React, { useEffect, useRef } from "react";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
+  title: string;
   children: React.ReactNode;
-  title?: string;
   maxWidth?: string;
 }
 
-export function Modal({
-  isOpen,
-  onClose,
-  children,
-  title,
-  maxWidth = "600px",
-}: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, maxWidth = "600px" }: ModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Prevent body scrolling when modal is open
+    document.body.style.overflow = 'hidden';
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    
+    return () => {
+      document.body.style.overflow = 'unset';
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
@@ -60,9 +77,8 @@ export function Modal({
           padding: "20px",
         }}
         onClick={(e) => {
-          if (e.target === e.currentTarget) {
-            onClose();
-          }
+          e.preventDefault();
+          e.stopPropagation();
         }}
       >
         <div
@@ -94,47 +110,30 @@ export function Modal({
               }}
             >
               <h2
-                style={{
-                  fontWeight: 700,
-                  fontSize: 24,
-                  margin: 0,
-                  color: "var(--card-foreground)",
-                  letterSpacing: "-0.5px",
-                  lineHeight: 1.2,
-                }}
+                className="text-2xl font-bold"
+                style={{ color: "var(--card-foreground)" }}
               >
                 {title}
               </h2>
-              <button
-                onClick={onClose}
-                className="transition-all duration-200"
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  color: "var(--muted)",
-                  fontSize: 28,
-                  cursor: "pointer",
-                  padding: 4,
-                  width: 32,
-                  height: 32,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderRadius: 6,
-                  lineHeight: 1,
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "var(--secondary)";
-                  e.currentTarget.style.color = "var(--card-foreground)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "transparent";
-                  e.currentTarget.style.color = "var(--muted)";
-                }}
-                aria-label="Close modal"
-              >
-                ×
-              </button>
+                <button
+                  className="p-2 rounded-md transition-colors"
+                  style={{
+                    background: "var(--secondary)",
+                    color: "var(--foreground)",
+                  }}
+                  onClick={onClose}
+                  title="Close (Escape)"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "var(--danger)";
+                    e.currentTarget.style.color = "#ffffff";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "var(--secondary)";
+                    e.currentTarget.style.color = "var(--foreground)";
+                  }}
+                >
+                  <XMarkIcon className="w-5 h-5" />
+                </button>
             </div>
           )}
           {children}
