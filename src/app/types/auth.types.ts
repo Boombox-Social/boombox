@@ -1,6 +1,9 @@
 // types/auth.types.ts
 import { UserRole } from '../../generated/prisma';
+
+// Re-export UserRole
 export { UserRole } from '../../generated/prisma';
+export type { UserRole as UserRoleType } from '../../generated/prisma';
 
 export interface User {
   id: number;
@@ -23,10 +26,9 @@ export interface JWTPayload {
   exp: number;
 }
 
-// Fix: Add missing isAuthenticated property
 export interface AuthState {
   user: User | null;
-  isAuthenticated: boolean; // ADD THIS MISSING PROPERTY
+  isAuthenticated: boolean;
   isLoading: boolean;
 }
 
