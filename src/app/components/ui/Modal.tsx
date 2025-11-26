@@ -12,23 +12,27 @@ interface ModalProps {
 export function Modal({ isOpen, onClose, title, children, maxWidth = "600px" }: ModalProps) {
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
 
-    // Prevent body scrolling when modal is open
-    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
 
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+  // Handle escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) {
         onClose();
       }
     };
 
-    document.addEventListener('keydown', handleEscape);
-    
-    return () => {
-      document.body.style.overflow = 'unset';
-      document.removeEventListener('keydown', handleEscape);
-    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
@@ -74,10 +78,7 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = "600px" }: 
           overflowY: "auto",
           padding: "20px",
         }}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        }}
+        onClick={onClose}
       >
         <div
           className="modal-scrollbar"
@@ -95,6 +96,9 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = "600px" }: 
             display: "flex",
             flexDirection: "column",
             gap: 24,
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
           }}
         >
           {title && (
