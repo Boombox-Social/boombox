@@ -1,21 +1,40 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  children: React.ReactNode;
   title?: string;
+  children: React.ReactNode;
   maxWidth?: string;
 }
 
-export function Modal({
-  isOpen,
-  onClose,
-  children,
-  title,
-  maxWidth = "600px",
-}: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, maxWidth = "600px" }: ModalProps) {
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
+
+  // Handle escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) {
+        onClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
@@ -59,11 +78,7 @@ export function Modal({
           overflowY: "auto",
           padding: "20px",
         }}
-        onClick={(e) => {
-          if (e.target === e.currentTarget) {
-            onClose();
-          }
-        }}
+        onClick={onClose}
       >
         <div
           className="modal-scrollbar"
@@ -81,6 +96,9 @@ export function Modal({
             display: "flex",
             flexDirection: "column",
             gap: 24,
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
           }}
         >
           {title && (
