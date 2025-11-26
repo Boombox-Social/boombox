@@ -1,16 +1,18 @@
-import React, { useEffect, useState } from "react";
-import { PencilSquareIcon, CheckCircleIcon } from "@heroicons/react/24/solid";
+import React, { useEffect, useState, useRef, useCallback } from "react";
+import { PencilSquareIcon, CheckCircleIcon, XMarkIcon } from "@heroicons/react/24/solid";
 
-interface BasecampButtonProps {
+interface BasecampProps {
   clientId?: number;
 }
 
-export function BasecampButton({ clientId }: BasecampButtonProps) {
+export function BasecampButton({ clientId }: BasecampProps) {
   const [basecampLink, setBasecampLink] = useState("");
+  const [inputValue, setInputValue] = useState("");
   const [editing, setEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!clientId) return;
@@ -22,7 +24,7 @@ export function BasecampButton({ clientId }: BasecampButtonProps) {
         const data = await res.json();
         const link = data.basecampLink || "";
         setBasecampLink(link);
-        // Only set editing to true if there's no link
+        setInputValue(link);
         if (!link) {
           setEditing(true);
         }
@@ -34,23 +36,48 @@ export function BasecampButton({ clientId }: BasecampButtonProps) {
     fetchLink();
   }, [clientId]);
 
+  const handleCancel = useCallback(() => {
+    setInputValue(basecampLink);
+    setEditing(false);
+    setError(null);
+  }, [basecampLink]);
+
+  // Handle escape key only
+  useEffect(() => {
+    if (!editing) return;
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        handleCancel();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [editing, handleCancel]);
+
   const handleSave = async () => {
-    if (!basecampLink.trim()) return;
     setSaving(true);
     setError(null);
     try {
       const res = await fetch(`/api/clients/${clientId}/basecamp-link`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ basecampLink: basecampLink.trim() }),
+        body: JSON.stringify({ basecampLink: inputValue.trim() }),
       });
       if (!res.ok) throw new Error("Failed to save link");
+      setBasecampLink(inputValue.trim());
       setEditing(false);
     } catch (_err) {
       setError("Failed to save Basecamp link.");
     }
     setSaving(false);
   };
+
+  const hasChanges = inputValue.trim() !== basecampLink && inputValue.trim() !== "";
 
   if (!clientId) return null;
 
@@ -73,14 +100,17 @@ export function BasecampButton({ clientId }: BasecampButtonProps) {
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div 
+      className="flex flex-col gap-2"
+      ref={containerRef}
+    >
       {editing ? (
         <>
           <div className="flex gap-2">
             <input
               type="url"
-              value={basecampLink}
-              onChange={(e) => setBasecampLink(e.target.value)}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
               className="flex-1 px-3 py-2 rounded-md text-sm outline-none transition-all"
               style={{
                 border: "2px solid var(--border)",
@@ -96,58 +126,66 @@ export function BasecampButton({ clientId }: BasecampButtonProps) {
                 e.currentTarget.style.borderColor = "var(--border)";
                 e.currentTarget.style.boxShadow = "none";
               }}
-              onKeyPress={(e) => {
-                if (e.key === "Enter" && basecampLink.trim()) {
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && hasChanges) {
                   handleSave();
+                } else if (e.key === "Escape") {
+                  handleCancel();
                 }
               }}
+              autoFocus
             />
-            <button
-              className="px-3 py-2 rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{
-                background: "var(--success)",
-                color: "#ffffff",
-              }}
-              onClick={handleSave}
-              title="Save Basecamp Link"
-              disabled={!basecampLink.trim() || saving}
-              onMouseEnter={(e) => {
-                if (!saving && basecampLink.trim()) {
-                  e.currentTarget.style.background = "#059669";
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "var(--success)";
-              }}
-            >
-              {saving ? (
-                <div 
-                  className="w-4 h-4 rounded-full animate-spin"
-                  style={{
-                    border: "2px solid rgba(255, 255, 255, 0.3)",
-                    borderTopColor: "#ffffff",
-                  }}
-                />
-              ) : (
-                <CheckCircleIcon className="w-4 h-4" />
-              )}
-            </button>
+            {hasChanges ? (
+              <button
+                className="px-3 py-2 rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  background: "var(--success)",
+                  color: "#ffffff",
+                }}
+                onClick={handleSave}
+                title="Save Basecamp Link (Enter)"
+                disabled={saving}
+                onMouseEnter={(e) => {
+                  if (!saving) {
+                    e.currentTarget.style.background = "#059669";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "var(--success)";
+                }}
+              >
+                {saving ? (
+                  <div 
+                    className="w-4 h-4 rounded-full animate-spin"
+                    style={{
+                      border: "2px solid rgba(255, 255, 255, 0.3)",
+                      borderTopColor: "#ffffff",
+                    }}
+                  />
+                ) : (
+                  <CheckCircleIcon className="w-4 h-4" />
+                )}
+              </button>
+            ) : (
+              <button
+                className="px-3 py-2 rounded-md transition-all duration-200"
+                style={{
+                  background: "var(--danger)",
+                  color: "#ffffff",
+                }}
+                onClick={handleCancel}
+                title="Cancel (Escape)"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "#DC2626";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "var(--danger)";
+                }}
+              >
+                <XMarkIcon className="w-4 h-4" />
+              </button>
+            )}
           </div>
-          {basecampLink && (
-            <button
-              onClick={() => setEditing(false)}
-              className="text-xs transition-colors self-start"
-              style={{ color: "var(--muted)" }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = "var(--card-foreground)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = "var(--muted)";
-              }}
-            >
-              Cancel
-            </button>
-          )}
         </>
       ) : (
         <div className="flex gap-2">
@@ -157,7 +195,9 @@ export function BasecampButton({ clientId }: BasecampButtonProps) {
               background: "var(--primary)",
               color: "var(--primary-foreground)",
             }}
-            onClick={() => window.open(basecampLink, "_blank")}
+            onClick={() => {
+              if (basecampLink) window.open(basecampLink, "_blank");
+            }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = "#1E40AF";
               e.currentTarget.style.transform = "translateY(-1px)";
@@ -169,7 +209,7 @@ export function BasecampButton({ clientId }: BasecampButtonProps) {
               e.currentTarget.style.boxShadow = "none";
             }}
           >
-            Go to Basecamp
+            View Basecamp
           </button>
           <button
             className="px-3 py-2 rounded-md transition-all duration-200"

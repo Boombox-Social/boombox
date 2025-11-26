@@ -31,8 +31,9 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Session configuration
-const SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 hours
-const SESSION_CHECK_INTERVAL = 5 * 60 * 1000; // Check every 5 minutes
+const SESSION_DURATION = 60 * 60 * 1000; // 1 hour (matches JWT expiration)
+const SESSION_CHECK_INTERVAL = 2 * 60 * 1000; // Check every 2 minutes
+const SESSION_WARNING_TIME = 5 * 60 * 1000; // Warn 5 minutes before expiration
 const SESSION_STORAGE_KEY = "auth_session_timestamp";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -44,10 +45,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const sessionCheckTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isRefreshingRef = useRef(false);
+  const lastActivityRef = useRef<number>(Date.now());
 
   // Check if session is still valid
   const isSessionValid = useCallback(() => {
-    const sessionTimestamp = sessionStorage.getItem(SESSION_STORAGE_KEY);
+    if (typeof window === 'undefined') return false;
+    
+    const sessionTimestamp = localStorage.getItem(SESSION_STORAGE_KEY);
     if (!sessionTimestamp) return false;
 
     const sessionAge = Date.now() - parseInt(sessionTimestamp, 10);
@@ -56,7 +60,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Update session timestamp
   const updateSessionTimestamp = useCallback(() => {
-    sessionStorage.setItem(SESSION_STORAGE_KEY, Date.now().toString());
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(SESSION_STORAGE_KEY, Date.now().toString());
+    lastActivityRef.current = Date.now();
+  }, []);
+
+  // Clear session data
+  const clearSession = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    localStorage.removeItem(SESSION_STORAGE_KEY);
   }, []);
 
   // Logout function
@@ -70,15 +82,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error("Logout error:", error);
     } finally {
       // Clear session data
-      sessionStorage.removeItem(SESSION_STORAGE_KEY);
+      clearSession();
       if (sessionCheckTimerRef.current) {
         clearInterval(sessionCheckTimerRef.current);
+        sessionCheckTimerRef.current = null;
       }
       
       setAuthState({ user: null, isLoading: false, error: null });
       router.push("/signin");
     }
-  }, [router]);
+  }, [router, clearSession]);
 
   // Fetch current user
   const fetchCurrentUser = useCallback(async () => {
@@ -86,6 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     // Check session validity before making API call
     if (!isSessionValid()) {
+      clearSession();
       setAuthState({ user: null, isLoading: false, error: null });
       return;
     }
@@ -103,18 +117,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         updateSessionTimestamp();
       } else {
         // Clear invalid session
-        sessionStorage.removeItem(SESSION_STORAGE_KEY);
+        clearSession();
         setAuthState({ user: null, isLoading: false, error: null });
       }
     } catch (error) {
       console.error("Failed to fetch user:", error);
+      clearSession();
       setAuthState({ user: null, isLoading: false, error: "Failed to fetch user" });
     } finally {
       isRefreshingRef.current = false;
     }
-  }, [isSessionValid, updateSessionTimestamp]);
+  }, [isSessionValid, updateSessionTimestamp, clearSession]);
 
-  // Start periodic session validation
+  // Periodic session validation
   const startSessionCheck = useCallback(() => {
     // Clear existing timer
     if (sessionCheckTimerRef.current) {
@@ -125,7 +140,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     sessionCheckTimerRef.current = setInterval(() => {
       if (!isSessionValid()) {
         // Session expired, log out user
+        console.log("Session expired, logging out...");
         logout();
+      } else {
+        // Check if user has been inactive
+        const inactiveTime = Date.now() - lastActivityRef.current;
+        const timeUntilExpiry = SESSION_DURATION - inactiveTime;
+        
+        // Warn if close to expiration
+        if (timeUntilExpiry < SESSION_WARNING_TIME && timeUntilExpiry > 0) {
+          console.log(`Session expiring in ${Math.floor(timeUntilExpiry / 1000 / 60)} minutes`);
+        }
       }
     }, SESSION_CHECK_INTERVAL);
   }, [isSessionValid, logout]);
@@ -144,6 +169,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       if (sessionCheckTimerRef.current) {
         clearInterval(sessionCheckTimerRef.current);
+        sessionCheckTimerRef.current = null;
       }
     };
   }, [authState.user, authState.isLoading, startSessionCheck]);
@@ -159,7 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     // Listen for user activity events
-    const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
     events.forEach(event => {
       window.addEventListener(event, handleUserActivity, { passive: true });
     });
@@ -230,12 +256,9 @@ export function usePermission() {
     canManageUsers: user?.role === UserRole.SUPER_ADMIN,
     canManageClients: user?.role === UserRole.ADMIN || user?.role === UserRole.SUPER_ADMIN,
     canEditClient: (_clientId?: number) => {
-      // Prefix with underscore to indicate intentionally unused parameter
       if (user?.role === UserRole.SUPER_ADMIN || user?.role === UserRole.ADMIN) {
         return true;
       }
-      // SMMs can only edit clients they're assigned to
-      // This would need to check against assigned clients
       return false;
     },
   };

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { PencilSquareIcon, CheckCircleIcon } from "@heroicons/react/24/solid";
+import React, { useEffect, useState, useRef, useCallback } from "react";
+import { PencilSquareIcon, CheckCircleIcon, XMarkIcon } from "@heroicons/react/24/solid";
 
 interface OverviewButtonProps {
   clientId: number;
@@ -7,10 +7,18 @@ interface OverviewButtonProps {
 
 export function OverviewButton({ clientId }: OverviewButtonProps) {
   const [overviewLink, setOverviewLink] = useState("");
+  const [inputValue, setInputValue] = useState("");
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleCancel = useCallback(() => {
+    setInputValue(overviewLink);
+    setEditing(false);
+    setError(null);
+  }, [overviewLink]);
 
   useEffect(() => {
     if (!clientId) return;
@@ -22,6 +30,7 @@ export function OverviewButton({ clientId }: OverviewButtonProps) {
         const data = await res.json();
         const link = data.businessSummaryLink || "";
         setOverviewLink(link);
+        setInputValue(link);
         if (!link) {
           setEditing(true);
         }
@@ -33,6 +42,23 @@ export function OverviewButton({ clientId }: OverviewButtonProps) {
     fetchLink();
   }, [clientId]);
 
+  // Handle escape key
+  useEffect(() => {
+    if (!editing) return;
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        handleCancel();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [editing, handleCancel]);
+
   const handleSave = async () => {
     setSaving(true);
     setError(null);
@@ -40,15 +66,18 @@ export function OverviewButton({ clientId }: OverviewButtonProps) {
       const res = await fetch(`/api/clients/${clientId}/overview-link`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessSummaryLink: overviewLink.trim() }),
+        body: JSON.stringify({ businessSummaryLink: inputValue.trim() }),
       });
       if (!res.ok) throw new Error("Failed to save link");
+      setOverviewLink(inputValue.trim());
       setEditing(false);
     } catch (_err) {
       setError("Failed to save overview link.");
     }
     setSaving(false);
   };
+
+  const hasChanges = inputValue.trim() !== overviewLink && inputValue.trim() !== "";
 
   if (!clientId) return null;
 
@@ -71,14 +100,17 @@ export function OverviewButton({ clientId }: OverviewButtonProps) {
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div 
+      className="flex flex-col gap-2"
+      ref={containerRef}
+    >
       {editing ? (
         <>
           <div className="flex gap-2">
             <input
               type="url"
-              value={overviewLink}
-              onChange={(e) => setOverviewLink(e.target.value)}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
               className="flex-1 px-3 py-2 rounded-md text-sm outline-none transition-all"
               style={{
                 border: "2px solid var(--border)",
@@ -94,58 +126,66 @@ export function OverviewButton({ clientId }: OverviewButtonProps) {
                 e.currentTarget.style.borderColor = "var(--border)";
                 e.currentTarget.style.boxShadow = "none";
               }}
-              onKeyPress={(e) => {
-                if (e.key === "Enter" && overviewLink.trim()) {
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && hasChanges) {
                   handleSave();
+                } else if (e.key === "Escape") {
+                  handleCancel();
                 }
               }}
+              autoFocus
             />
-            <button
-              className="px-3 py-2 rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{
-                background: "var(--success)",
-                color: "#ffffff",
-              }}
-              onClick={handleSave}
-              title="Save Overview Link"
-              disabled={saving}
-              onMouseEnter={(e) => {
-                if (!saving) {
-                  e.currentTarget.style.background = "#059669";
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "var(--success)";
-              }}
-            >
-              {saving ? (
-                <div 
-                  className="w-4 h-4 rounded-full animate-spin"
-                  style={{
-                    border: "2px solid rgba(255, 255, 255, 0.3)",
-                    borderTopColor: "#ffffff",
-                  }}
-                />
-              ) : (
-                <CheckCircleIcon className="w-4 h-4" />
-              )}
-            </button>
+            {hasChanges ? (
+              <button
+                className="px-3 py-2 rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  background: "var(--success)",
+                  color: "#ffffff",
+                }}
+                onClick={handleSave}
+                title="Save Overview Link (Enter)"
+                disabled={saving}
+                onMouseEnter={(e) => {
+                  if (!saving) {
+                    e.currentTarget.style.background = "#059669";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "var(--success)";
+                }}
+              >
+                {saving ? (
+                  <div 
+                    className="w-4 h-4 rounded-full animate-spin"
+                    style={{
+                      border: "2px solid rgba(255, 255, 255, 0.3)",
+                      borderTopColor: "#ffffff",
+                    }}
+                  />
+                ) : (
+                  <CheckCircleIcon className="w-4 h-4" />
+                )}
+              </button>
+            ) : (
+              <button
+                className="px-3 py-2 rounded-md transition-all duration-200"
+                style={{
+                  background: "var(--danger)",
+                  color: "#ffffff",
+                }}
+                onClick={handleCancel}
+                title="Cancel (Escape)"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "#DC2626";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "var(--danger)";
+                }}
+              >
+                <XMarkIcon className="w-4 h-4" />
+              </button>
+            )}
           </div>
-          {overviewLink && (
-            <button
-              onClick={() => setEditing(false)}
-              className="text-xs transition-colors self-start"
-              style={{ color: "var(--muted)" }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = "var(--card-foreground)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = "var(--muted)";
-              }}
-            >
-              Cancel
-            </button>
-          )}
         </>
       ) : (
         <div className="flex gap-2">
@@ -155,7 +195,9 @@ export function OverviewButton({ clientId }: OverviewButtonProps) {
               background: "var(--primary)",
               color: "var(--primary-foreground)",
             }}
-            onClick={() => window.open(overviewLink, "_blank")}
+            onClick={() => {
+              if (overviewLink) window.open(overviewLink, "_blank");
+            }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = "#1E40AF";
               e.currentTarget.style.transform = "translateY(-1px)";
