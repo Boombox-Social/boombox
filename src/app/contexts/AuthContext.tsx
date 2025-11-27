@@ -1,6 +1,6 @@
 "use client";
 import React, { createContext, useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { UserRole } from "../../generated/prisma";
 
 interface User {
@@ -43,9 +43,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     error: null,
   });
   const router = useRouter();
+  const pathname = usePathname();
   const sessionCheckTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isRefreshingRef = useRef(false);
   const lastActivityRef = useRef<number>(Date.now());
+  const hasFetchedRef = useRef(false);
 
   // Check if session is still valid
   const isSessionValid = useCallback(() => {
@@ -94,17 +96,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [router, clearSession]);
 
   // Fetch current user
-  const fetchCurrentUser = useCallback(async () => {
-    if (isRefreshingRef.current) return;
+  const fetchCurrentUser = useCallback(async (force: boolean = false) => {
+    // Prevent multiple simultaneous calls
+    if (isRefreshingRef.current && !force) return;
     
-    // Check session validity before making API call
-    if (!isSessionValid()) {
-      clearSession();
-      setAuthState({ user: null, isLoading: false, error: null });
+    // Check if we're on a protected route
+    const isProtectedRoute = pathname?.startsWith('/dashboard') || pathname?.startsWith('/settings');
+    
+    // If not on protected route and already fetched, skip
+    if (!isProtectedRoute && hasFetchedRef.current && !force) {
+      setAuthState(prev => ({ ...prev, isLoading: false }));
       return;
     }
 
     isRefreshingRef.current = true;
+    
     try {
       const response = await fetch("/api/auth/me", {
         credentials: "include",
@@ -115,19 +121,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const data = await response.json();
         setAuthState({ user: data.user, isLoading: false, error: null });
         updateSessionTimestamp();
+        hasFetchedRef.current = true;
       } else {
         // Clear invalid session
         clearSession();
         setAuthState({ user: null, isLoading: false, error: null });
+        
+        // Redirect to signin if on protected route
+        if (isProtectedRoute) {
+          router.push("/signin");
+        }
       }
     } catch (error) {
       console.error("Failed to fetch user:", error);
       clearSession();
       setAuthState({ user: null, isLoading: false, error: "Failed to fetch user" });
+      
+      // Redirect to signin if on protected route
+      if (isProtectedRoute) {
+        router.push("/signin");
+      }
     } finally {
       isRefreshingRef.current = false;
     }
-  }, [isSessionValid, updateSessionTimestamp, clearSession]);
+  }, [pathname, updateSessionTimestamp, clearSession, router]);
 
   // Periodic session validation
   const startSessionCheck = useCallback(() => {
@@ -159,6 +176,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     fetchCurrentUser();
   }, [fetchCurrentUser]);
+
+  // Re-fetch user when pathname changes to a protected route
+  useEffect(() => {
+    const isProtectedRoute = pathname?.startsWith('/dashboard') || pathname?.startsWith('/settings');
+    
+    if (isProtectedRoute && !authState.user && !authState.isLoading) {
+      fetchCurrentUser(true);
+    }
+  }, [pathname, authState.user, authState.isLoading, fetchCurrentUser]);
 
   // Start session checking when user is authenticated
   useEffect(() => {
@@ -217,6 +243,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setAuthState({ user: data.user, isLoading: false, error: null });
       updateSessionTimestamp();
       startSessionCheck();
+      hasFetchedRef.current = true;
       router.push("/dashboard");
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Login failed";
@@ -226,7 +253,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const refreshAuth = async () => {
-    await fetchCurrentUser();
+    await fetchCurrentUser(true);
   };
 
   return (
