@@ -20,6 +20,7 @@ export function ClientInfoModal({ client }: ClientInfoModalProps) {
 
   const getInitialFormData = useCallback(
     () => ({
+      name: client?.name ?? "",
       industry: client?.industry ?? "",
       slogan: client?.slogan ?? "",
       links: client?.links ?? [],
@@ -214,6 +215,17 @@ export function ClientInfoModal({ client }: ClientInfoModalProps) {
 
       {/* Grid Layout */}
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        {/* Client Name */}
+        <div className="md:col-span-2 lg:col-span-3">
+          <EditableField
+            label="Client Name"
+            value={formData.name}
+            fallback={client.name}
+            editing={editing}
+            onChange={updateField("name")}
+          />
+        </div>
+
         {/* Basic Info */}
         <EditableField
           label="Industry"
