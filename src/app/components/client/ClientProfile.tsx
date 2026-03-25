@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   TrashIcon,
@@ -7,6 +7,8 @@ import {
   UsersIcon,
   PencilSquareIcon,
   ArchiveBoxIcon,
+  PhotoIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/solid";
 import { UserRole } from "../../../generated/prisma";
 import { useAuth } from "../../hooks/useAuth";
@@ -48,6 +50,63 @@ export function ClientProfile({ client }: ClientProfileProps) {
   const [loadingSMMs, setLoadingSMMs] = useState(true);
 
   const isSuperAdmin = authState.user?.role === UserRole.SUPER_ADMIN;
+  const canEditLogo =
+    isSuperAdmin || authState.user?.role === UserRole.ADMIN;
+
+  const [localLogo, setLocalLogo] = useState<string | null>(
+    client.logo ?? null
+  );
+  const [logoSaving, setLogoSaving] = useState(false);
+  const [logoError, setLogoError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      setLogoError("Image must be under 2MB.");
+      return;
+    }
+    setLogoError(null);
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const base64 = event.target?.result as string;
+      setLogoSaving(true);
+      try {
+        const res = await fetch(`/api/clients/${client.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ logo: base64 }),
+        });
+        if (!res.ok) throw new Error();
+        setLocalLogo(base64);
+      } catch {
+        setLogoError("Failed to save logo.");
+      } finally {
+        setLogoSaving(false);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleLogoClear = async () => {
+    setLogoSaving(true);
+    setLogoError(null);
+    try {
+      const res = await fetch(`/api/clients/${client.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ logo: null }),
+      });
+      if (!res.ok) throw new Error();
+      setLocalLogo(null);
+    } catch {
+      setLogoError("Failed to remove logo.");
+    } finally {
+      setLogoSaving(false);
+    }
+  };
 
   const handleArchiveClick = () => {
     setShowArchiveModal(true);
@@ -190,26 +249,77 @@ export function ClientProfile({ client }: ClientProfileProps) {
 
         <div className="flex items-start gap-4 sm:gap-6">
           {/* Client Logo/Avatar */}
-          <div className="flex-shrink-0">
-            {client.logo ? (
-              <img
-                src={client.logo}
-                alt="Logo"
-                className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg object-cover"
-                style={{
-                  border: "2px solid var(--border)",
-                }}
-              />
-            ) : (
-              <div 
-                className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg flex items-center justify-center text-xl sm:text-2xl font-bold"
-                style={{
-                  background: "var(--primary)",
-                  color: "var(--primary-foreground)",
-                }}
+          <div className="flex-shrink-0 flex flex-col items-center">
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              className="hidden"
+              onChange={handleLogoUpload}
+            />
+            <div className="relative group">
+              {localLogo ? (
+                <img
+                  src={localLogo}
+                  alt="Logo"
+                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg object-cover"
+                  style={{ border: "2px solid var(--border)" }}
+                />
+              ) : (
+                <div
+                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg flex items-center justify-center text-xl sm:text-2xl font-bold"
+                  style={{
+                    background: "var(--primary)",
+                    color: "var(--primary-foreground)",
+                  }}
+                >
+                  {client.name?.charAt(0)?.toUpperCase() || "?"}
+                </div>
+              )}
+
+              {/* Edit overlay */}
+              {canEditLogo && !logoSaving && (
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute inset-0 w-full h-full rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                  style={{ background: "rgba(0,0,0,0.45)" }}
+                  title="Change logo"
+                >
+                  <PhotoIcon className="w-5 h-5 text-white" />
+                </button>
+              )}
+
+              {/* Saving spinner */}
+              {logoSaving && (
+                <div
+                  className="absolute inset-0 w-full h-full rounded-lg flex items-center justify-center"
+                  style={{ background: "rgba(0,0,0,0.5)" }}
+                >
+                  <span className="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+
+              {/* Remove logo button */}
+              {canEditLogo && localLogo && !logoSaving && (
+                <button
+                  onClick={handleLogoClear}
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                  style={{ background: "var(--danger)", color: "#fff" }}
+                  title="Remove logo"
+                >
+                  <XMarkIcon className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+
+            {/* Logo error */}
+            {logoError && (
+              <p
+                className="text-xs mt-1 max-w-[5rem] text-center leading-tight"
+                style={{ color: "var(--danger)" }}
               >
-                {client.name?.charAt(0)?.toUpperCase() || "?"}
-              </div>
+                {logoError}
+              </p>
             )}
           </div>
 
