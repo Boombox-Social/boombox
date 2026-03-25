@@ -5,6 +5,7 @@ import { ClientInformation } from "./client/ClientInformation";
 import { SMMPromptPlaybook } from "./client/SMMPromptPlaybook";
 import { Basecamp } from "./client/Basecamp";
 import { ClientDrive } from "./client/ClientDrive";
+import { ContentCreation } from "./client/ContentCreation";
 
 type ClientDetailsProps = {
   client: Client;
@@ -33,10 +34,11 @@ export default function ClientDetails({ client }: ClientDetailsProps) {
 
         {/* Info, Basecamp, and Drive stacked on mobile, in a grid on md+ */}
         <div className="flex flex-col gap-4 mt-4 md:grid md:grid-cols-2 md:gap-4">
-          <div className="min-w-0 h-full">
-            <div className="min-w-0 h-full">
-              <ClientInformation client={client} />
-            </div>
+          <div className="flex flex-col gap-4 min-w-0">
+            <ClientInformation client={client} />
+            {typeof client.id === "number" ? (
+              <ContentCreation clientId={client.id} />
+            ) : null}
           </div>
           <div className="flex flex-col min-w-0 h-full gap-4">
             <div className="min-w-0">
