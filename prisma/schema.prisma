@@ -70,6 +70,7 @@ model ClientLinks {
   strategyAiLink      String?
   businessSummaryLink String?
   basecampLink        String?
+  contentCreationLink String?
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
   Client              Client[]

@@ -23,7 +23,7 @@ export function DriveButton({ clientId, initialDriveLink }: DriveButtonProps) {
       try {
         const res = await fetch(`/api/clients/${clientId}`);
         const data = await res.json();
-        const link = data.smmDriveLink || "";
+        const link = data.client?.smmDriveLink || "";
         setDriveLink(link);
         setInputValue(link);
         if (!link) {
@@ -65,7 +65,7 @@ export function DriveButton({ clientId, initialDriveLink }: DriveButtonProps) {
     setError(null);
     try {
       const res = await fetch(`/api/clients/${clientId}`, {
-        method: "PATCH",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ smmDriveLink: inputValue.trim() }),
       });

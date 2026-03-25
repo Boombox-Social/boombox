@@ -3,6 +3,7 @@ export { SMMPromptPlaybook } from './SMMPromptPlaybook';
 export { ClientInformation } from './ClientInformation';
 export { ClientDrive } from './ClientDrive';
 export { Basecamp } from './Basecamp';
+export { ContentCreation } from './ContentCreation';
 export { PromptCard } from './PromptCard';
 export { EditableField } from './EditableField';
 export { EditableTagField } from './EditableTagField';
