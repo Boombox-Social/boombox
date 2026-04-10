@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
+import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { SidebarHeader } from "./SidebarHeader";
 import { DashboardSection } from "./DashboardSection";
 import { ClientList } from "./ClientList";
@@ -26,6 +27,16 @@ export function SidePanel({
   mobileOpen = false,
   setMobileOpen,
 }: SidePanelProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Filter clients based on search query
+  const filteredClients = useMemo(() => {
+    if (!searchQuery.trim()) return clients;
+    const query = searchQuery.toLowerCase().trim();
+    return clients.filter(client => 
+      client.name.toLowerCase().includes(query)
+    );
+  }, [clients, searchQuery]);
 
   return (
     <>
@@ -64,6 +75,51 @@ export function SidePanel({
           setMobileOpen={setMobileOpen}
         />
         <DashboardSection collapsed={mobileOpen ? false : collapsed} />
+
+        {/* Search Bar */}
+        {!(mobileOpen ? false : collapsed) && (
+          <div className="px-3 py-2">
+            <div 
+              className="relative flex items-center"
+              style={{
+                background: "var(--secondary)",
+                borderRadius: "8px",
+                border: "1px solid var(--border)",
+              }}
+            >
+              <MagnifyingGlassIcon 
+                className="w-4 h-4 absolute left-3"
+                style={{ color: "var(--muted)" }}
+              />
+              <input
+                type="text"
+                placeholder="Search clients..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-transparent border-none outline-none pl-10 pr-8 py-2 text-sm"
+                style={{ color: "var(--card-foreground)" }}
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2 p-1 rounded hover:bg-opacity-80 transition-all"
+                  style={{ background: "transparent" }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "rgba(0, 0, 0, 0.1)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "transparent";
+                  }}
+                >
+                  <XMarkIcon 
+                    className="w-4 h-4"
+                    style={{ color: "var(--muted)" }}
+                  />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Scrollable content area */}
         <div 
@@ -114,8 +170,19 @@ export function SidePanel({
                 <span>Error: {error}</span>
               )}
             </div>
+          ) : filteredClients.length === 0 && searchQuery.trim() ? (
+            <div 
+              className="flex items-center justify-center text-center text-sm flex-1 py-8 px-4"
+              style={{ color: "var(--muted)" }}
+            >
+              <div>
+                <MagnifyingGlassIcon className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <div>No clients found</div>
+                <div className="text-xs mt-1">Try a different search</div>
+              </div>
+            </div>
           ) : (
-            <ClientList clients={clients} collapsed={mobileOpen ? false : collapsed} />
+            <ClientList clients={filteredClients} collapsed={mobileOpen ? false : collapsed} />
           )}
         </div>
 

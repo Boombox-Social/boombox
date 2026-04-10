@@ -57,28 +57,6 @@ export function DashboardSection({ collapsed }: DashboardSectionProps) {
         {!collapsed && "Dashboard"}
       </button>
 
-      {!collapsed && (
-        <input
-          type="text"
-          placeholder="Search clients..."
-          className="w-full text-sm outline-none transition-all duration-200"
-          style={{
-            padding: "8px 12px",
-            borderRadius: 6,
-            border: "2px solid var(--border)",
-            background: "var(--background)",
-            color: "var(--card-foreground)",
-          }}
-          onFocus={(e) => {
-            e.currentTarget.style.borderColor = "var(--primary)";
-            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.1)";
-          }}
-          onBlur={(e) => {
-            e.currentTarget.style.borderColor = "var(--border)";
-            e.currentTarget.style.boxShadow = "none";
-          }}
-        />
-      )}
     </div>
   );
 }
