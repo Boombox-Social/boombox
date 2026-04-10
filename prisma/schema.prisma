@@ -130,7 +130,7 @@ model InfluencerMasterList {
   name               String
   tag                String?
   niche              String?
-  username           String   @unique
+  username           String?   @unique
   
   // Stored as String because your sheets have data like "34.3K", "350K+", or "1M+"
   // If you plan to sort by followers later, consider cleaning data on import and using `Int`
