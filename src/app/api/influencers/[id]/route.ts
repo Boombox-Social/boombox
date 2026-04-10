@@ -3,19 +3,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 
-interface RouteParams {
-  params: {
-    id: string;
-  };
-}
-
 /**
  * PATCH /api/influencers/[id]
  * Update an influencer
  */
-export async function PATCH(request: NextRequest, { params }: RouteParams) {
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const id = parseInt(params.id);
+    const resolvedParams = await params;
+    const id = parseInt(resolvedParams.id);
     if (isNaN(id)) {
       return NextResponse.json(
         { error: "Invalid influencer ID" },
@@ -91,9 +89,13 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
  * DELETE /api/influencers/[id]
  * Delete an influencer
  */
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const id = parseInt(params.id);
+    const resolvedParams = await params;
+    const id = parseInt(resolvedParams.id);
     if (isNaN(id)) {
       return NextResponse.json(
         { error: "Invalid influencer ID" },
