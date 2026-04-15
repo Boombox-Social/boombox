@@ -24,4 +24,4 @@ export async function POST(_request: NextRequest) { // Add underscore prefix
       { status: 500 }
     );
   }
-}``
+}

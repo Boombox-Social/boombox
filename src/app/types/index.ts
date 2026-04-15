@@ -2,6 +2,7 @@
 export * from './client.types';
 export * from './ui.types';
 export * from './auth.types';
+export * from './influencer.types';
 
 // Explicitly re-export UserRole enum from Prisma
 export { UserRole } from '../../generated/prisma';

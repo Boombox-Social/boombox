@@ -15,6 +15,10 @@ export default function DashboardContent() {
     { name: "Client Content Calendar Template", emoji: "📝", link: "https://docs.google.com/presentation/d/1WX0pkyKVOKIvXtSSKjs2Wi_1vTGmBrtvpDLguvfHL2k/edit?usp=sharing" },
   ];
 
+  const quickLinks = [
+    { name: "Influencer Master List", emoji: "👥", route: "/dashboard/influencers" },
+  ];
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
       {/* Header Section */}
@@ -122,6 +126,51 @@ export default function DashboardContent() {
                 style={{ color: "var(--success)" }}
               />
             </div>
+          </div>
+        </div>
+
+        {/* Quick Links Card */}
+        <div 
+          className="rounded-xl p-4 sm:p-6"
+          style={{
+            background: "var(--card)",
+            border: "1px solid var(--border)",
+          }}
+        >
+          <h3 
+            className="text-lg font-semibold mb-4"
+            style={{ color: "var(--card-foreground)" }}
+          >
+            Quick Access
+          </h3>
+          <div className="flex flex-col gap-3">
+            {quickLinks.map((link, index) => (
+              <button
+                key={index}
+                onClick={() => window.location.href = link.route}
+                className="flex items-center gap-3 p-3 rounded-lg transition-all duration-200 group border-none cursor-pointer w-full text-left"
+                style={{
+                  background: "var(--background)",
+                  border: "1px solid var(--border)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "var(--secondary)";
+                  e.currentTarget.style.borderColor = "var(--primary)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "var(--background)";
+                  e.currentTarget.style.borderColor = "var(--border)";
+                }}
+              >
+                <span className="text-2xl flex-shrink-0">{link.emoji}</span>
+                <span 
+                  className="text-sm font-medium transition-colors"
+                  style={{ color: "var(--card-foreground)" }}
+                >
+                  {link.name}
+                </span>
+              </button>
+            ))}
           </div>
         </div>
 

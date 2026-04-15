@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { HomeIcon } from "@heroicons/react/24/solid";
+import { HomeIcon, UsersIcon } from "@heroicons/react/24/solid";
 
 interface DashboardSectionProps {
   collapsed: boolean;
@@ -15,7 +15,12 @@ export function DashboardSection({ collapsed }: DashboardSectionProps) {
     router.push("/dashboard");
   };
 
+  const handleInfluencersClick = () => {
+    router.push("/dashboard/influencers");
+  };
+
   const isOnDashboard = pathname === "/dashboard";
+  const isOnInfluencers = pathname === "/dashboard/influencers";
 
   return (
     <div
@@ -57,28 +62,38 @@ export function DashboardSection({ collapsed }: DashboardSectionProps) {
         {!collapsed && "Dashboard"}
       </button>
 
-      {!collapsed && (
-        <input
-          type="text"
-          placeholder="Search clients..."
-          className="w-full text-sm outline-none transition-all duration-200"
-          style={{
-            padding: "8px 12px",
-            borderRadius: 6,
-            border: "2px solid var(--border)",
-            background: "var(--background)",
-            color: "var(--card-foreground)",
-          }}
-          onFocus={(e) => {
+      {/* Influencer Master List Navigation */}
+      <button
+        onClick={handleInfluencersClick}
+        className="w-full flex items-center border-none cursor-pointer transition-all duration-200"
+        style={{
+          gap: 10,
+          background: isOnInfluencers ? "var(--primary)" : "transparent",
+          color: isOnInfluencers ? "var(--primary-foreground)" : "var(--card-foreground)",
+          border: isOnInfluencers ? "none" : "2px solid var(--border)",
+          borderRadius: 6,
+          padding: collapsed ? 8 : "10px 12px",
+          fontWeight: 600,
+          fontSize: 14,
+          justifyContent: collapsed ? "center" : "flex-start",
+        }}
+        onMouseEnter={(e) => {
+          if (!isOnInfluencers) {
+            e.currentTarget.style.background = "var(--secondary)";
             e.currentTarget.style.borderColor = "var(--primary)";
-            e.currentTarget.style.boxShadow = "0 0 0 3px rgba(37, 99, 235, 0.1)";
-          }}
-          onBlur={(e) => {
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!isOnInfluencers) {
+            e.currentTarget.style.background = "transparent";
             e.currentTarget.style.borderColor = "var(--border)";
-            e.currentTarget.style.boxShadow = "none";
-          }}
-        />
-      )}
+          }
+        }}
+        aria-label={collapsed ? "Influencers" : undefined}
+      >
+        <UsersIcon width={18} />
+        {!collapsed && "Influencers"}
+      </button>
     </div>
   );
 }

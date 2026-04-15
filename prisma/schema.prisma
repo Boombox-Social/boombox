@@ -60,6 +60,9 @@ model Client {
   ClientLinks     ClientLinks? @relation(fields: [clientLinksId], references: [id])
   clientLinksId   Int?
 
+  // NEW: Relation to Influencer Projects
+  influencerProjects InfluencerProject[]
+
   @@map("clients")
 }
 
@@ -116,4 +119,85 @@ model ArchivedClient {
   // archivedBy           User? @relation(fields: [archivedById], references: [id])
 
   @@map("archived_clients")
+}
+
+// ==========================================
+// NEW MODELS FOR INFLUENCER MANAGEMENT
+// ==========================================
+
+model InfluencerMasterList {
+  id                 Int      @id @default(autoincrement())
+  name               String
+  tag                String?
+  niche              String?
+  username           String?   @unique
+  
+  // Stored as String because your sheets have data like "34.3K", "350K+", or "1M+"
+  // If you plan to sort by followers later, consider cleaning data on import and using `Int`
+  tiktokFollowers    String?  
+  facebookFollowers  String?
+  instagramFollowers String?
+  
+  tier               Tier?    // Uses the enum below (A, B, C)
+  contentStyle       String?
+  avgViews           String?  // String to allow ranges/approximations like "10k-20k"
+  contact            String?
+  notes              String?
+  
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  // Relation to projects they belong to
+  projects           ProjectInfluencer[]
+
+  @@map("influencer_master_list")
+}
+
+model InfluencerProject {
+  id          Int      @id @default(autoincrement())
+  name        String   // e.g., "Ayo Ayo Campaign - Jan-Apr 2026"
+  description String?
+  
+  clientId    Int
+  client      Client   @relation(fields: [clientId], references: [id])
+
+  // Defines the dynamic "Schema" of columns for this specific project spreadsheet.
+  // Example: [{"key": "vouchers", "label": "Vouchers Given", "type": "number"}, {"key": "visit_date", "label": "Visit Date", "type": "date"}]
+  dynamicColumnsDef Json?    @default("[]") 
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  influencers ProjectInfluencer[]
+
+  @@map("influencer_projects")
+}
+
+// Pivot/Junction Table linking Influencers to specific Projects
+model ProjectInfluencer {
+  id               Int      @id @default(autoincrement())
+  
+  projectId        Int
+  project          InfluencerProject    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  influencerId     Int
+  influencer       InfluencerMasterList @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+
+  // DYNAMIC COLUMNS DATA GOES HERE
+  // This stores the actual cell values for this influencer in this project
+  // Example: { "vouchers": 2, "visit_date": "2026-03-12", "intro_sent": "Y", "post_link": "https://tiktok.com/..." }
+  dynamicData      Json?    @default("{}")
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([projectId, influencerId]) // An influencer can only be added to the same project once
+  @@map("project_influencers")
+}
+
+enum Tier {
+  A
+  B
+  C
+  D
 }
