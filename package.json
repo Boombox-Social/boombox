@@ -5,11 +5,18 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
+    "build:production": "dotenv -e .env.production -- prisma generate && dotenv -e .env.production -- next build",
     "start": "next start",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "type-check": "tsc --noEmit",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "prisma:migrate:dev": "dotenv -e .env.local -- prisma migrate dev",
+    "prisma:migrate:deploy": "dotenv -e .env.local -- prisma migrate deploy",
+    "prisma:migrate:deploy:production": "dotenv -e .env.production -- prisma migrate deploy",
+    "prisma:generate": "prisma generate",
+    "prisma:studio": "dotenv -e .env.local -- prisma studio",
+    "prisma:studio:production": "dotenv -e .env.production -- prisma studio"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -30,6 +37,7 @@
     "@types/node": "^20",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19",
+    "dotenv-cli": "^7.4.2",
     "eslint": "^9",
     "eslint-config-next": "15.4.6",
     "prisma": "^6.15.0",
