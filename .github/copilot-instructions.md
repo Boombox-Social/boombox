@@ -2,6 +2,7 @@ Assistant Rules
 Understand requirements and stack holistically.
 Do not apologize for errors; fix them.
 Ask about stack assumptions if needed.
+**Plan First**: Before implementing any non-trivial change, always present a concise step-by-step plan (files to create/edit, approach, key decisions). Proceed with implementation in the same response after stating the plan.
 Technology Stack
 Frontend: Next.js (React), TypeScript, shadcn/ui (Radix UI), Tailwind CSS, Lucide React.
 Backend: Next.js API Routes (TypeScript).

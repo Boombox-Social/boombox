@@ -1,9 +1,11 @@
 "use client";
-import React, { useState } from "react";
+// src/app/components/modals/AddClientModal.tsx
+import React, { useState, useEffect, useRef } from "react";
 import {
   UserIcon,
   XMarkIcon,
   CloudArrowUpIcon,
+  BookmarkIcon,
 } from "@heroicons/react/24/solid";
 import {
   NewClientForm,
@@ -14,6 +16,37 @@ import { INITIAL_FORM_STATE } from "../../constants";
 import { Modal, FormField } from "../ui";
 import { useAuth } from "../../hooks/useAuth";
 import { UserAssignmentSelector } from "../client/UserAssignmentSelector";
+
+const SESSION_KEY = "client-onboarding-draft";
+
+interface DraftPayload {
+  formData: NewClientForm;
+  logoPreview: string;
+  currentStep: number;
+  assignedUserIds: number[];
+}
+
+function loadDraft(): DraftPayload | null {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as DraftPayload;
+  } catch {
+    return null;
+  }
+}
+
+function saveDraft(payload: DraftPayload): void {
+  try {
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(payload));
+  } catch {
+    // sessionStorage quota exceeded (e.g. large logo) — fail silently
+  }
+}
+
+function clearDraft(): void {
+  sessionStorage.removeItem(SESSION_KEY);
+}
 
 interface AddClientModalProps {
   isOpen: boolean;
@@ -33,6 +66,25 @@ export function AddClientModal({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [currentStep, setCurrentStep] = useState(0);
   const [assignedUserIds, setAssignedUserIds] = useState<number[]>([]);
+  const [hasDraft, setHasDraft] = useState(false);
+  const prevIsOpen = useRef(false);
+
+  // Restore draft when the modal is opened
+  useEffect(() => {
+    if (isOpen && !prevIsOpen.current) {
+      const draft = loadDraft();
+      if (draft) {
+        setFormData(draft.formData);
+        setLogoPreview(draft.logoPreview ?? "");
+        setCurrentStep(draft.currentStep ?? 0);
+        setAssignedUserIds(draft.assignedUserIds ?? []);
+        setHasDraft(true);
+      } else {
+        setHasDraft(false);
+      }
+    }
+    prevIsOpen.current = isOpen;
+  }, [isOpen]);
 
   const steps = [
     { title: "Basic Information", description: "Company details and logo" },
@@ -56,7 +108,7 @@ export function AddClientModal({
       if (!formData.name.trim()) newErrors.name = "Business name is required";
       if (!formData.industry.trim())
         newErrors.industry = "Industry is required";
-      if (!formData.address.trim()) newErrors.address = "Address is required";
+      if (!formData.address.trim()) newErrors.address = "Business address is required";
     }
 
     setErrors(newErrors);
@@ -80,7 +132,11 @@ export function AddClientModal({
 
     if (currentStep < steps.length - 1) {
       if (validateStep(currentStep)) {
-        setCurrentStep((prev) => prev + 1);
+        const nextStep = currentStep + 1;
+        // Save & Next: persist draft then advance
+        saveDraft({ formData, logoPreview, currentStep: nextStep, assignedUserIds });
+        setCurrentStep(nextStep);
+        setHasDraft(false);
       }
       return;
     }
@@ -107,11 +163,14 @@ export function AddClientModal({
 
       await onSubmit(clientData);
 
+      // Only clear draft on successful final submission
+      clearDraft();
       setFormData(INITIAL_FORM_STATE);
       setLogoPreview("");
       setCurrentStep(0);
       setAssignedUserIds([]);
       setErrors({});
+      setHasDraft(false);
       onClose();
     } catch (error) {
       setErrors({
@@ -134,13 +193,24 @@ export function AddClientModal({
     }
   };
 
+  // Close resets component state but leaves sessionStorage intact for next open
   const handleClose = () => {
     setFormData(INITIAL_FORM_STATE);
     setLogoPreview("");
     setCurrentStep(0);
     setAssignedUserIds([]);
     setErrors({});
+    setHasDraft(false);
     onClose();
+  };
+
+  const handleDiscardDraft = () => {
+    clearDraft();
+    setFormData(INITIAL_FORM_STATE);
+    setLogoPreview("");
+    setCurrentStep(0);
+    setAssignedUserIds([]);
+    setHasDraft(false);
   };
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -211,6 +281,42 @@ export function AddClientModal({
             />
           </button>
         </div>
+
+        {/* Draft Restored Banner */}
+        {hasDraft && (
+          <div
+            className="flex items-center justify-between mb-4 px-4 py-3 rounded-lg"
+            style={{
+              background: "rgba(59, 130, 246, 0.08)",
+              border: "1px solid rgba(59, 130, 246, 0.25)",
+            }}
+          >
+            <div className="flex items-center space-x-2">
+              <BookmarkIcon className="w-4 h-4" style={{ color: "var(--primary)" }} />
+              <p className="text-sm font-medium" style={{ color: "var(--primary)" }}>
+                Draft restored — you can pick up where you left off.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleDiscardDraft}
+              className="text-xs font-medium px-3 py-1 rounded transition-all duration-200"
+              style={{
+                color: "var(--muted)",
+                background: "transparent",
+                border: "1px solid var(--border)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "var(--secondary)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+              }}
+            >
+              Discard
+            </button>
+          </div>
+        )}
 
         {/* Progress Steps */}
         <div className="flex items-center justify-between mb-8">
@@ -406,7 +512,8 @@ export function AddClientModal({
                   </>
                 ) : currentStep < steps.length - 1 ? (
                   <>
-                    <span>Next</span>
+                    <BookmarkIcon className="w-4 h-4" />
+                    <span>Save &amp; Next</span>
                   </>
                 ) : (
                   <>
