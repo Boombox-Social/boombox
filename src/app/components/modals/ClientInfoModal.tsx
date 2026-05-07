@@ -6,7 +6,58 @@ import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { EditableField } from "../client/EditableField";
 import { EditableTagField } from "../client/EditableTagField";
 import { BrandAssetsSection } from "../client/BrandAssetsSection";
-import { PencilSquareIcon, CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
+import { PencilSquareIcon, CheckCircleIcon, XCircleIcon, BookmarkIcon } from "@heroicons/react/24/solid";
+
+// ─── Per-client session draft helpers ─────────────────────────────────────────
+function draftKey(clientId: number) {
+  return `client-info-draft-${clientId}`;
+}
+
+type ClientFormData = ReturnType<typeof buildInitialFormData>;
+
+function buildInitialFormData(client: Client) {
+  return {
+    name: client?.name ?? "",
+    industry: client?.industry ?? "",
+    slogan: client?.slogan ?? "",
+    links: client?.links ?? [],
+    coreProducts: client?.coreProducts ?? [],
+    idealCustomers: client?.idealCustomers ?? "",
+    brandEmotion: client?.brandEmotion ?? "",
+    uniqueProposition: client?.uniqueProposition ?? "",
+    whyChooseUs: client?.whyChooseUs ?? "",
+    mainGoal: client?.mainGoal ?? "",
+    shortTermGoal: client?.shortTermGoal ?? "",
+    longTermGoal: client?.longTermGoal ?? "",
+    competitors: client?.competitors ?? [],
+    indirectCompetitors: client?.indirectCompetitors ?? [],
+    brandAssets: client?.brandAssets ?? [],
+    fontUsed: client?.fontUsed ?? [],
+    smmDriveLink: client?.smmDriveLink ?? "",
+    contractDeliverables: client?.contractDeliverables ?? "",
+  };
+}
+
+function loadClientDraft(clientId: number): ClientFormData | null {
+  try {
+    const raw = sessionStorage.getItem(draftKey(clientId));
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveClientDraft(clientId: number, data: ClientFormData): void {
+  try {
+    sessionStorage.setItem(draftKey(clientId), JSON.stringify(data));
+  } catch {
+    // Quota exceeded — fail silently
+  }
+}
+
+function clearClientDraft(clientId: number): void {
+  sessionStorage.removeItem(draftKey(clientId));
+}
 
 interface ClientInfoModalProps {
   client: Client;
@@ -17,43 +68,54 @@ export function ClientInfoModal({ client }: ClientInfoModalProps) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>("");
+  const [hasDraft, setHasDraft] = useState(false);
 
   const getInitialFormData = useCallback(
-    () => ({
-      name: client?.name ?? "",
-      industry: client?.industry ?? "",
-      slogan: client?.slogan ?? "",
-      links: client?.links ?? [],
-      coreProducts: client?.coreProducts ?? [],
-      idealCustomers: client?.idealCustomers ?? "",
-      brandEmotion: client?.brandEmotion ?? "",
-      uniqueProposition: client?.uniqueProposition ?? "",
-      whyChooseUs: client?.whyChooseUs ?? "",
-      mainGoal: client?.mainGoal ?? "",
-      shortTermGoal: client?.shortTermGoal ?? "",
-      longTermGoal: client?.longTermGoal ?? "",
-      competitors: client?.competitors ?? [],
-      indirectCompetitors: client?.indirectCompetitors ?? [],
-      brandAssets: client?.brandAssets ?? [],
-      fontUsed: client?.fontUsed ?? [],
-      smmDriveLink: client?.smmDriveLink ?? "",
-      contractDeliverables: client?.contractDeliverables ?? "",
-    }),
+    () => buildInitialFormData(client),
     [client]
   );
 
   const [originalFormData, setOriginalFormData] = useState(getInitialFormData);
   const [formData, setFormData] = useState(getInitialFormData);
 
+  // On client change: reset form, then check for a saved draft
   useEffect(() => {
     if (client) {
-      const newFormData = getInitialFormData();
-      setFormData(newFormData);
-      setOriginalFormData(newFormData);
+      const fresh = getInitialFormData();
+      setOriginalFormData(fresh);
       setEditing(false);
       setError("");
+
+      const draft = loadClientDraft(client.id);
+      if (draft) {
+        setFormData(draft);
+        setHasDraft(true);
+      } else {
+        setFormData(fresh);
+        setHasDraft(false);
+      }
     }
   }, [client, getInitialFormData]);
+
+  // Auto-save to session whenever formData changes while editing
+  useEffect(() => {
+    if (editing && client?.id) {
+      saveClientDraft(client.id, formData);
+    }
+  }, [formData, editing, client?.id]);
+
+  const handleRestoreDraft = () => {
+    // Draft is already applied in state; just dismiss the banner and enter edit mode
+    setHasDraft(false);
+    setEditing(true);
+  };
+
+  const handleDiscardDraft = useCallback(() => {
+    if (client?.id) clearClientDraft(client.id);
+    setFormData(originalFormData);
+    setHasDraft(false);
+    setEditing(false);
+  }, [client?.id, originalFormData]);
 
   const handleSave = useCallback(async () => {
     if (!client?.id) return;
@@ -69,8 +131,10 @@ export function ClientInfoModal({ client }: ClientInfoModalProps) {
       };
 
       await updateClient(updatedClient);
+      clearClientDraft(client.id);
       setOriginalFormData(formData);
       setEditing(false);
+      setHasDraft(false);
     } catch (error) {
       if (process.env.NODE_ENV !== "production") {
         console.error("Error updating client:", error);
@@ -86,10 +150,12 @@ export function ClientInfoModal({ client }: ClientInfoModalProps) {
   }, [client, formData, updateClient]);
 
   const handleCancel = useCallback(() => {
+    if (client?.id) clearClientDraft(client.id);
     setFormData(originalFormData);
     setEditing(false);
     setError("");
-  }, [originalFormData]);
+    setHasDraft(false);
+  }, [client?.id, originalFormData]);
 
   const updateField = useCallback(
     (field: string) => (value: any) => {
@@ -101,6 +167,46 @@ export function ClientInfoModal({ client }: ClientInfoModalProps) {
 
   return (
     <div className="w-full relative">
+      {/* Unsaved Draft Banner */}
+      {hasDraft && !editing && (
+        <div
+          className="flex items-center justify-between mb-4 px-4 py-3 rounded-lg"
+          style={{
+            background: "rgba(245, 158, 11, 0.08)",
+            border: "1px solid rgba(245, 158, 11, 0.35)",
+          }}
+        >
+          <div className="flex items-center space-x-2">
+            <BookmarkIcon className="w-4 h-4 flex-shrink-0" style={{ color: "#F59E0B" }} />
+            <p className="text-sm font-medium" style={{ color: "#B45309" }}>
+              You have unsaved changes from a previous session.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 ml-4 flex-shrink-0">
+            <button
+              type="button"
+              onClick={handleDiscardDraft}
+              className="text-xs font-medium px-3 py-1 rounded transition-all duration-200"
+              style={{ color: "var(--muted)", background: "transparent", border: "1px solid var(--border)" }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "var(--secondary)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+            >
+              Discard
+            </button>
+            <button
+              type="button"
+              onClick={handleRestoreDraft}
+              className="text-xs font-medium px-3 py-1 rounded transition-all duration-200"
+              style={{ color: "var(--primary-foreground)", background: "var(--primary)" }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#1E40AF"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "var(--primary)"; }}
+            >
+              Resume editing
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-end mb-6">
         <div className="flex items-center gap-2">

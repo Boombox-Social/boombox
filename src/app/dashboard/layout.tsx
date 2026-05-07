@@ -1,9 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import { usePathname } from "next/navigation";
-import { useClientManagement, useModal } from "../hooks";
-import { NewClientForm } from "../types";
-import { AddClientModal } from "../components/modals/AddClientModal";
+import { usePathname, useRouter } from "next/navigation";
+import { useClientManagement } from "../hooks";
 import { SidePanel } from "../components/sidebar/SidePanel";
 import { Navbar } from "../components/header/Navbar";
 
@@ -12,13 +10,8 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { clients, addClient, isLoading, error, loadClients } =
-    useClientManagement();
-  const {
-    isOpen: isModalOpen,
-    open: openModal,
-    close: closeModal,
-  } = useModal();
+  const { clients, isLoading, error, loadClients } = useClientManagement();
+  const router = useRouter();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarMobileOpen, setSidebarMobileOpen] = useState(false);
 
@@ -42,7 +35,7 @@ export default function DashboardLayout({
           setSidebarCollapsed(!sidebarCollapsed);
         }}
         clients={clients}
-        onAddClientClick={openModal}
+        onAddClientClick={() => router.push("/dashboard/add-new-client")}
         isLoading={isLoading}
         error={error}
         mobileOpen={sidebarMobileOpen}
@@ -66,15 +59,6 @@ export default function DashboardLayout({
       >
         {children}
       </main>
-
-      <AddClientModal
-        isOpen={isModalOpen}
-        onClose={closeModal}
-        onSubmit={async (clientData: NewClientForm) => {
-          await addClient(clientData);
-          closeModal();
-        }}
-      />
     </div>
   );
 }

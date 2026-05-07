@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3001",
     "build": "prisma generate && next build",
     "build:production": "dotenv -e .env.production -- prisma generate && dotenv -e .env.production -- next build",
     "start": "next start",
